@@ -5,8 +5,9 @@ from src.data.google_sheets_worker import GoogleSheetsWorker
 
 
 class TechSupportMessage:
-    def __init__(self, _id: str, question: str, answer: str, photo_id: str, client_id: str, admin_username: str):
+    def __init__(self, _id: str, category: str, question: str, answer: str, photo_id: str, client_id: str, admin_username: str):
         self.id = _id
+        self.category = category
         self.question = question
         self.answer = answer
         self.photo_id = photo_id
@@ -15,6 +16,7 @@ class TechSupportMessage:
 
     def __init__(self, values: list):
         self.id = values[Columns.id_]
+        self.category = values[Columns.category]
         self.question = values[Columns.question]
         self.answer = values[Columns.answer]
         self.photo_id = values[Columns.photo_id]
@@ -36,11 +38,12 @@ class TSList:
 
 class Columns:
     id_: int = 0
-    question: int = 1
-    answer: int = 2
-    photo_id: int = 3
-    client_id: int = 4
-    admin_id: int = 5
+    category: int = 1
+    question: int = 2
+    answer: int = 3
+    photo_id: int = 4
+    client_id: int = 5
+    admin_id: int = 6
 
 
 class Const:
@@ -54,7 +57,7 @@ class TechSupportGoogleSheetsWorker(GoogleSheetsWorker):
     def find_top_empty_row(self, col: int) -> int:
         return len(self.ws.col_values(col+1))
 
-    def write_techsupport(self, question: str, photo_id: str, client_id: int) -> None:
+    def write_techsupport(self, category: str, question: str, photo_id: str, client_id: int) -> None:
         row = self.find_top_empty_row(Columns.question)
 
         self.ws.update_cells([
@@ -63,6 +66,13 @@ class TechSupportGoogleSheetsWorker(GoogleSheetsWorker):
                 col=Columns.id_ + 1,
                 value=str(row)
             ),
+
+            Cell(
+                row=row + 1,
+                col=Columns.category + 1,
+                value=category
+            ),
+
             Cell(
                 row=row + 1,
                 col=Columns.question + 1,
