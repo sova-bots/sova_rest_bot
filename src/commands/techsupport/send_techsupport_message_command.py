@@ -22,17 +22,21 @@ def get_skip_photo_kb() -> IKM:
     ])
     return skip_photo_kb
 
+
+# функция когда нажимается кнопка "Отправить сообщение в тех-поддержку"
 @router.callback_query(F.data == "send_techsupport_message")
 async def send_techsupport_callback_handler(query: CallbackQuery, state: FSMContext) -> None:
     await send_techsupport_handler(query.from_user, query.message, state)
     await query.answer()
 
 
+# функция когда боту отправляется комманда "/send_techsupport_message"
 @router.message(Command("send_techsupport_message"))
 async def command_send_techsupport_handler(message: Message, state: FSMContext) -> None:
     await send_techsupport_handler(message.from_user, message, state)
 
 
+# функция, отвечающая за отправку сообщения в тех-поддержку
 async def send_techsupport_handler(user: User, message_for_answer: Message, state: FSMContext) -> None:
     await state.clear()
 
