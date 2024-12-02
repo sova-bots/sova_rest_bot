@@ -11,9 +11,10 @@ from src.commands.start.start_keyboards import get_start_registration_markup, ge
 import json
 
 router = Router(name=__name__)
+import os
+print("Текущая рабочая директория:", os.getcwd())
 
-
-with open("resources.keys.responces.json", "r", encoding="utf-8") as f:
+with open(r"resources\keys\responses.json", "r", encoding="utf-8") as f:
     RESPONSES = json.load(f)
 
 
@@ -33,7 +34,7 @@ def get_skip_photo_kb() -> IKM:
 # функция когда нажимается кнопка "Отправить сообщение в тех-поддержку"
 @router.callback_query(F.data == "send_techsupport_message")
 async def send_techsupport_callback_handler(query: CallbackQuery, state: FSMContext) -> None:
-    await send_techsupport_handler(query.from_user, query.message, state)
+    await choice(query.message)
     await query.answer()
 
 
@@ -56,7 +57,7 @@ async def choice(message: Message):
     )
 
 @router.callback_query(lambda c: c.data in RESPONSES["options"])
-async def handle_option(callback: CallbackQuery):
+async def handle_option(messade: Message, callback: CallbackQuery):
     option_key = callback.data  # Это ключ, например "опция1"
     response_text = RESPONSES["options"][option_key]  # Берём текст из словаря
 
