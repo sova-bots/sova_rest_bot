@@ -57,7 +57,7 @@ async def choice(message: Message):
     )
 
 @router.callback_query(lambda c: c.data in RESPONSES["options"])
-async def handle_option(messade: Message, callback: CallbackQuery):
+async def handle_option(callback: CallbackQuery):
     option_key = callback.data  # Это ключ, например "опция1"
     response_text = RESPONSES["options"][option_key]  # Берём текст из словаря
 
@@ -73,7 +73,7 @@ async def handle_option(messade: Message, callback: CallbackQuery):
     await callback.answer()
 
 @router.callback_query(lambda c: ":" in c.data)
-async def sub_option_handler(callback: CallbackQuery, message: Message, state: FSMContext):
+async def sub_option_handler(callback: CallbackQuery, state: FSMContext):
 
     await state.set_state(FSMSendTechSupportMessage.await_category_input)
 
@@ -89,7 +89,7 @@ async def sub_option_handler(callback: CallbackQuery, message: Message, state: F
     # Завершаем обработку
     await callback.answer()
     await state.set_data({"response_text": response_text})
-    await send_techsupport_handler(message.from_user, message, state)
+    await send_techsupport_handler(callback.message.from_user, callback.message, state)
 
 
 # функция, отвечающая за отправку сообщения в тех-поддержку
