@@ -85,8 +85,6 @@ async def sub_option_handler(callback: CallbackQuery, state: FSMContext):
     await state.set_data({'category': response_text})
     # Завершаем обработку
 
-    data = await state.get_data()
-    print(f"Сохраненные данные в state: {data}")
     await callback.answer()
     await send_techsupport_handler(callback.message.from_user, callback.message, state)
 
@@ -100,8 +98,9 @@ async def send_techsupport_handler(user: User, message_for_answer: Message, stat
 
 @router.message(FSMSendTechSupportMessage.await_quiestion_input)
 async def get_techsupport_question(message: Message, state: FSMContext) -> None:
+
     question_text = message.text
-    await state.set_data({'techsupport_question': question_text})
+    await state.update_data({'techsupport_question': question_text})
 
     await message.answer(
         text="Пришлите фото вашей проблемы 📸",
