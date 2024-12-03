@@ -60,19 +60,23 @@ class TechSupportGoogleSheetsWorker(GoogleSheetsWorker):
     def write_techsupport(self, category: str, question: str, photo_id: str, client_id: int) -> None:
         row = self.find_top_empty_row(Columns.question)
 
+        print(f"Записываем в строку: {row}")
+        print(
+            f"Данные: категория={category}, вопрос={question}, фото_id={photo_id}, клиент_id={client_id}")
+        print(
+            f"Индексы колонок: category={Columns.category}, question={Columns.question}, client_id={Columns.client_id}")
+
         self.ws.update_cells([
             Cell(
                 row=row + 1,
                 col=Columns.id_ + 1,
                 value=str(row)
             ),
-
             Cell(
                 row=row + 1,
                 col=Columns.category + 1,
                 value=category
             ),
-
             Cell(
                 row=row + 1,
                 col=Columns.question + 1,
@@ -81,7 +85,7 @@ class TechSupportGoogleSheetsWorker(GoogleSheetsWorker):
             Cell(
                 row=row + 1,
                 col=Columns.photo_id + 1,
-                value=photo_id
+                value=photo_id if photo_id else Const.NO_DATA
             ),
             Cell(
                 row=row + 1,

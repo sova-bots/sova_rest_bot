@@ -11,8 +11,6 @@ from src.commands.start.start_keyboards import get_start_registration_markup, ge
 import json
 
 router = Router(name=__name__)
-import os
-print("Текущая рабочая директория:", os.getcwd())
 
 with open(r"resources\keys\responses.json", "r", encoding="utf-8") as f:
     RESPONSES = json.load(f)
@@ -74,29 +72,29 @@ async def handle_option(callback: CallbackQuery):
 
 @router.callback_query(lambda c: ":" in c.data)
 async def sub_option_handler(callback: CallbackQuery, state: FSMContext):
-
-    await state.set_state(FSMSendTechSupportMessage.await_category_input)
-
+    await state.clear()
     # Разделяем callback_data на ключи родительской опции и подварианта
     parent_option, sub_option = callback.data.split(":", 1)
 
+    await state.set_state(FSMSendTechSupportMessage.await_quiestion_input)
     # Извлекаем ответ из словаря
     response_text = RESPONSES["sub_options"][parent_option][sub_option]
-
     # Удаляем кнопки, но оставляем текст ответа
     await callback.message.edit_text(response_text)
 
+    await state.set_data({'category': response_text})
     # Завершаем обработку
+
+    data = await state.get_data()
+    print(f"Сохраненные данные в state: {data}")
     await callback.answer()
-    await state.set_data({"response_text": response_text})
     await send_techsupport_handler(callback.message.from_user, callback.message, state)
 
 
 # функция, отвечающая за отправку сообщения в тех-поддержку
 async def send_techsupport_handler(user: User, message_for_answer: Message, state: FSMContext) -> None:
-    await state.clear()
 
-    await state.set_state(FSMSendTechSupportMessage.await_quiestion_input)
+
     await message_for_answer.answer(text_and_kb.await_techsupport_question)
 
 
@@ -125,8 +123,9 @@ async def get_techsupport_question(message: Message, state: FSMContext) -> None:
 
     data = await state.get_data()
 
+    print(data)
     await write_techsupport(
-        category=data["response_text"],
+        category=data['category'],
         question=data['techsupport_question'],
         photo_id=message.photo[-1].file_id,
         client_id=message.from_user.id,
@@ -139,9 +138,9 @@ async def get_techsupport_question(message: Message, state: FSMContext) -> None:
 @router.callback_query(FSMSendTechSupportMessage.await_photo_input, F.data == "techsupport_skip_photo")
 async def skip_photo(query: CallbackQuery, state: FSMContext) -> None:
     data = await state.get_data()
-
+    print(data)
     await write_techsupport(
-        category=data["response_text"],
+        category=data['category'],
         question=data['techsupport_question'],
         photo_id=Const.NO_DATA,
         client_id=query.from_user.id,
@@ -152,7 +151,7 @@ async def skip_photo(query: CallbackQuery, state: FSMContext) -> None:
     await state.clear()
 
 
-async def write_techsupport(question: str, photo_id: str, client_id: int, message: Message) -> None:
+async def write_techsupport(category: str, question: str, photo_id: str, client_id: int, message: Message) -> None:
     msg = await message.answer("Загрузка ⚙️")
 
     techsupport_gsworker.write_techsupport(category, question, photo_id, client_id)
