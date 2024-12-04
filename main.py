@@ -6,6 +6,7 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 
 from src.notification.sender import NotificationSender
+from src.commands.server.util import db
 
 import config as cf
 from src.log import logger
@@ -14,7 +15,9 @@ from src.commands.register.registration_command import router as register_comman
 from src.commands.unregister.unregistration_command import router as unregister_command_router
 from src.commands.techsupport.send_techsupport_message_command import router as send_ts_message_router
 from src.commands.techsupport.show_techsupport_messages import router as show_ts_messages_router
-from src.commands.techsupport.answer_techsupport_message import  router as answer_ts_message_router
+from src.commands.techsupport.answer_techsupport_message import router as answer_ts_message_router
+from src.commands.server.authorization.authorization import router as authorization_command_router
+from src.commands.server.report.report import router as get_report_router
 
 routers = [
     start_command_router,
@@ -22,7 +25,9 @@ routers = [
     unregister_command_router,
     send_ts_message_router,
     show_ts_messages_router,
-    answer_ts_message_router
+    answer_ts_message_router,
+    authorization_command_router,
+    get_report_router
 ]
 
 dp = Dispatcher()
@@ -38,15 +43,21 @@ async def main() -> None:
     await bot.delete_webhook()
     await include_routers()
 
-    sender = NotificationSender(bot)
-    sender.start()
+    db.init_user_tokens_db('resources/db/user_tokens.db')
+
+    if cf.notifications:
+        sender = NotificationSender(bot)
+        sender.start()
 
     try:
         logger.info('bot is running!')
         await dp.start_polling(bot)
     except (CancelledError, KeyboardInterrupt, SystemExit):
         dp.shutdown()
-        sender.stop()
+
+        if cf.notifications:
+            sender.stop()
+
         logger.info('stopping')
 
 
