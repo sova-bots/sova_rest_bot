@@ -172,3 +172,4 @@ class TechSupportGoogleSheetsWorker(GoogleSheetsWorker):
 
 
 techsupport_gsworker = TechSupportGoogleSheetsWorker(cf.TECHSUPPORT_SPREADSHEET_URL)
+BUTTONS_DATA = techsupport_gsworker.get_buttons(sheet_title="Кнопки")
