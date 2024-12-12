@@ -1,5 +1,6 @@
 import os
 import sqlite3
+import config as cf
 
 import sqlite3
 
@@ -17,11 +18,23 @@ class UserTokensDB:
         ''', (tgid, token,))
         self.conn.commit()
 
-    def get_token(self, tgid: str) -> str:
+    def get_token(self, tgid: str) -> str | None:
         self.cursor.execute('''
         SELECT * FROM Users WHERE tgid == ?
         ''', (tgid,))
-        return self.cursor.fetchone()[1]
+        result = self.cursor.fetchone()
+        if result is None:
+            return None
+        return result[1]
+
+    def has_tgid(self, tgid: str) -> bool:
+        return self.get_token(tgid) is not None
+
+    def delete_user(self, tgid: str) -> bool:
+        self.cursor.execute('''
+        DELETE FROM Users WHERE tgid == ?
+        ''', (tgid,))
+        self.conn.commit()
 
     def create_table(self):
         # Создаем таблицу Users
@@ -38,20 +51,9 @@ class UserTokensDB:
         self.conn.close()
 
 
-user_tokens_db = None
-
-
-def init_user_tokens_db(path):
-    global user_tokens_db
-    user_tokens_db = UserTokensDB(path)
+user_tokens_db = UserTokensDB(cf.USER_TOKENS_DB_PATH)
 
 
 def get_user_tokens_db() -> UserTokensDB | None:
     global user_tokens_db
     return user_tokens_db
-
-
-if __name__ == '__main__':
-    init_user_tokens_db("../../../../resources/db/user_tokens.db")
-    get_user_tokens_db().create_table()
-

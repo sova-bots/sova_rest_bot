@@ -25,34 +25,19 @@ async def command_start_handler(message: Message, state: FSMContext) -> None:
 async def start_handler(user_id: int, message: Message, state: FSMContext) -> None:
     await state.clear()
 
-    msg = await message.answer("Загрузка ⚙️")
-
-    admin_usernames = techsupport_gsworker.get_admin_usernames()
-    username = message.from_user.username
-
-    if user_id in techsupport_gsworker.get_admin_user_ids():
-        is_admin = True
-    elif username in admin_usernames:
-        is_admin = True
-        row = admin_usernames.index(username) + 2
-        techsupport_gsworker.write_admin_user_id(user_id, row)
-    else:
-        is_admin = False
-
-    await msg.edit_text(
+    await message.answer(
         text=f"Вас приветствует чат-бот SOVA-tech!",
-        reply_markup=get_markup(user_id, is_admin)
+        reply_markup=get_markup(user_id)
     )
 
 
-def get_markup(user_id: int, is_admin: bool) -> IKM:
+def get_markup(user_id: int) -> IKM:
     inline_kb = []
 
-    if is_admin:
-        btn = [IKB(text='Посмореть сообщения в тех-поддержку 🛠', callback_data='show_techsupport_messages')]
-        inline_kb.append(btn)
+    btn = [IKB(text='Меню отчётов', callback_data='report_menu')]
+    inline_kb.append(btn)
 
-    btn = [IKB(text='Отправить сообщение в тех-поддержку 🛠', callback_data='send_techsupport_message')]
+    btn = [IKB(text='Меню тех-поддержки 🛠', callback_data='techsupport_menu')]
     inline_kb.append(btn)
 
     if notification_gsworker.contains_id(user_id):

@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-from os import getenv
+from os import getenv, getcwd
 
 import pytz
 
@@ -9,6 +9,8 @@ load_dotenv(dotenv_path='.env')
 TOKEN = getenv('BOT_TOKEN')
 
 notifications = False
+
+USER_TOKENS_DB_PATH = f"{getcwd()}/resources/db/user_tokens.db"
 
 NOTIFICATION_SPREADSHEET_URL = getenv('NOTIFICATION_SPREADSHEET_URL')
 TECHSUPPORT_SPREADSHEET_URL = getenv('TECHSUPPORT_SPREADSHEET_URL')

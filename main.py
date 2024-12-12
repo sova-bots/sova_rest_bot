@@ -5,6 +5,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 
+from src.commands.server.util.db import user_tokens_db
 from src.notification.sender import NotificationSender
 from src.commands.server.util import db
 
@@ -18,6 +19,8 @@ from src.commands.techsupport.show_techsupport_messages import router as show_ts
 from src.commands.techsupport.answer_techsupport_message import router as answer_ts_message_router
 from src.commands.server.authorization.authorization import router as authorization_command_router
 from src.commands.server.report.report import router as get_report_router
+from src.commands.techsupport.techsupport_menu import router as techsupport_menu_router
+from src.commands.server.report.report_menu import router as report_menu_router
 
 routers = [
     start_command_router,
@@ -27,7 +30,9 @@ routers = [
     show_ts_messages_router,
     answer_ts_message_router,
     authorization_command_router,
-    get_report_router
+    get_report_router,
+    techsupport_menu_router,
+    report_menu_router,
 ]
 
 dp = Dispatcher()
@@ -43,8 +48,6 @@ async def main() -> None:
     await bot.delete_webhook()
     await include_routers()
 
-    db.init_user_tokens_db('resources/db/user_tokens.db')
-
     if cf.notifications:
         sender = NotificationSender(bot)
         sender.start()
@@ -57,6 +60,8 @@ async def main() -> None:
 
         if cf.notifications:
             sender.stop()
+
+        user_tokens_db.close()
 
         logger.info('stopping')
 
