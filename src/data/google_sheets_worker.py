@@ -23,22 +23,30 @@ class GoogleSheetsWorker:
     def get_worksheet(self, title: str) -> Worksheet:
         return self.sh.worksheet(title)
 
-    def get_buttons(self, sheet_title: str) -> dict[str, dict[str, dict]]:
-
+    def get_buttons(self, sheet_title: str) -> dict[int, dict]:
         ws = self.get_worksheet(sheet_title)
         rows = ws.get_all_values()[1:]
         options = {}
+        index = 0
 
         for row in rows:
-            btn_type, main_option, sub_option = row
+            if len(row) < 3:
+                continue
+
+            btn_type, main_option, sub_option = row[:3]
 
             if btn_type == "option":
-                options[main_option] = {
+                options[index] = {
                     "text": main_option,
                     "response": sub_option,
                     "sub_options": {}
                 }
-            elif btn_type == "sub_option" and main_option in options:
-                options[main_option]["sub_options"][sub_option] = f"{sub_option} для {main_option}"
+                index += 1
+
+            elif btn_type == "sub_option":
+                parent_index = next((i for i, opt in options.items() if opt["text"] == main_option), None)
+                if parent_index is not None:
+                    options[parent_index]["sub_options"][index] = sub_option
+                    index += 1
 
         return options

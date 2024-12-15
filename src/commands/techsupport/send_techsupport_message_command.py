@@ -38,26 +38,25 @@ async def command_send_techsupport_handler(message: Message) -> None:
     await choice(message)
 
 async def choice(message: Message):
-    # Генерация клавиатуры из основных опций
+
     keyboard = IKM(inline_keyboard=[
-        [IKB(text=data["text"], callback_data=key)]
+        [IKB(text=data["text"], callback_data=str(key))]
         for key, data in BUTTONS_DATA.items()
     ])
     await message.answer(
-        "Здравствуйте. С какой проблемой вы столкнулись? Выберите из нижеследующих Вариантов:",
+        "Здравствуйте. С чем вы столкнулись, хотите заказать отчёт? Выберите из нижеследующих Вариантов:",
         reply_markup=keyboard
     )
 
-@router.callback_query(lambda c: c.data in BUTTONS_DATA)
+@router.callback_query(lambda c: c.data.isdigit() and int(c.data) in BUTTONS_DATA)
 async def handle_option(callback: CallbackQuery):
-    option_key = callback.data  # Например, "Поломка"
-    response_text = BUTTONS_DATA[option_key]["response"]
+    option_index = int(callback.data)
+    response_text = BUTTONS_DATA[option_index]["response"]
+    sub_options = BUTTONS_DATA[option_index]["sub_options"]
 
-    # Генерация клавиатуры для подвариантов
-    sub_options = BUTTONS_DATA[option_key]["sub_options"]
     keyboard = IKM(inline_keyboard=[
-        [IKB(text=sub_key, callback_data=f"{option_key}:{sub_key}")]
-        for sub_key in sub_options.keys()
+        [IKB(text=sub_text, callback_data=f"{option_index}:{sub_idx}")]
+        for sub_idx, sub_text in sub_options.items()
     ])
 
     await callback.message.edit_text(response_text, reply_markup=keyboard)
@@ -66,13 +65,21 @@ async def handle_option(callback: CallbackQuery):
 @router.callback_query(lambda c: ":" in c.data)
 async def sub_option_handler(callback: CallbackQuery, state: FSMContext):
     await state.clear()
-    parent_option, sub_option = callback.data.split(":", 1)
-    response_text = f'Вы выбрали данный тип проблемы:{BUTTONS_DATA[parent_option]["sub_options"][sub_option]}'
-    await state.set_state(FSMSendTechSupportMessage.await_quiestion_input)
-    await state.set_data({'category': BUTTONS_DATA[parent_option]["sub_options"][sub_option]})
-    await callback.message.edit_text(response_text)
-    await callback.answer()
-    await send_techsupport_handler(callback.message.from_user, callback.message, state)
+    try:
+        parent_index, sub_index = map(int, callback.data.split(":"))  # Разделяем индексы
+        sub_option_text = BUTTONS_DATA[parent_index]["sub_options"][sub_index]
+        response_text = f'Вы выбрали: {sub_option_text}'
+
+        await state.set_state(FSMSendTechSupportMessage.await_quiestion_input)
+        await state.set_data({
+            'category': [parent_index,sub_index]
+        })
+        await callback.message.edit_text(response_text)
+        await callback.answer()
+        await send_techsupport_handler(callback.message.from_user, callback.message, state)
+    except (ValueError, KeyError, IndexError) as e:
+        await callback.answer("Произошла ошибка при обработке подварианта.")
+        print(f"Error processing sub-option: {e}")
 
 
 # функция, отвечающая за отправку сообщения в тех-поддержку
@@ -107,9 +114,9 @@ async def get_techsupport_question(message: Message, state: FSMContext) -> None:
         return
 
     data = await state.get_data()
-
+    parent_index, sub_index = data['category']
     await write_techsupport(
-        category=data['category'],
+        category = BUTTONS_DATA[parent_index]["text"] + " -> " + BUTTONS_DATA[parent_index]["sub_options"][sub_index],
         question=data['techsupport_question'],
         photo_id=message.photo[-1].file_id,
         client_id=message.from_user.id,
@@ -122,8 +129,9 @@ async def get_techsupport_question(message: Message, state: FSMContext) -> None:
 @router.callback_query(FSMSendTechSupportMessage.await_photo_input, F.data == "techsupport_skip_photo")
 async def skip_photo(query: CallbackQuery, state: FSMContext) -> None:
     data = await state.get_data()
+    parent_index, sub_index = data['category']
     await write_techsupport(
-        category=data['category'],
+        category = BUTTONS_DATA[parent_index]["text"] + " -> " + BUTTONS_DATA[parent_index]["sub_options"][sub_index],
         question=data['techsupport_question'],
         photo_id=Const.NO_DATA,
         client_id=query.from_user.id,
