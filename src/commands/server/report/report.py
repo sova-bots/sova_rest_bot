@@ -10,6 +10,7 @@ from aiogram.types import InlineKeyboardMarkup as IKM, InlineKeyboardButton as I
 import config as cf
 from src.commands.server.util.db import user_tokens_db
 from src.log import logger
+from .report_recommendations import get_revenue_recommendation_types, RecommendationCallbackData
 from .text import *
 
 router = Router(name=__name__)
@@ -37,10 +38,22 @@ report_periods = {
 
 class FSMServerReportGet(StatesGroup):
     ask_report_type = State()
+    ask_report_department = State()
     ask_report_period = State()
 
 
-def request_get_reports(token: str, report_type: str, period: str) -> dict | None:
+def get_departments(token: str) -> list:
+    req = requests.get(
+        url=f"{cf.API_PATH}/api/departments",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    if req.status_code != 200:
+        logger.msg("ERROR", f"Could not get departments: {token=}")
+        return []
+    return req.json()['departments']
+
+
+def request_get_reports(token: str, report_type: str, report_departments: list , period: str) -> tuple[int, dict]:
     today = datetime.now(tz=cf.TIMEZONE).date()
 
     match period:
@@ -67,20 +80,24 @@ def request_get_reports(token: str, report_type: str, period: str) -> dict | Non
             date_to = today.replace(day=1, month=1) - timedelta(days=1)
         case _:
             logger.msg("ERROR", f"Error SendReports UnknownReportPeriod: {period=}")
-            return None
+            return 2, {"error": "Unknown period"}
 
     req = requests.post(
         url=f"{cf.API_PATH}/api/{report_type}",
-        headers={"Authorization": f"Bearer {token}"},
-        data={
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Content-type": "application/json",
+        },
+        json={
             "dateFrom": date_from.isoformat(),
-            "dateTo": date_to.isoformat()
+            "dateTo": date_to.isoformat(),
+            "departments": report_departments,
         }
     )
     if req.status_code != 200:
-        logger.msg("ERROR", f"Error RequestGetReports: {req.text}\n{report_type=} {period=} {token=}")
-        return None
-    return req.json()
+        logger.msg("ERROR", f"Error RequestGetReports: {req.text}\n{report_type=} {report_departments=} {period=} {token=}")
+        return 2, req.json()
+    return 0, req.json()
 
 
 @router.callback_query(F.data == "server_report_get")
@@ -95,8 +112,22 @@ async def choose_report_type(query: CallbackQuery, state: FSMContext):
 
 
 @router.callback_query(FSMServerReportGet.ask_report_type)
-async def choose_report_period(query: CallbackQuery, state: FSMContext):
+async def choose_report_department(query: CallbackQuery, state: FSMContext):
     await state.update_data({'report_type': query.data})
+
+    token = user_tokens_db.get_token(tgid=query.from_user.id)
+
+    kb = IKM(inline_keyboard=[
+        [IKB(text=department['name'], callback_data=department['id'])] for department in get_departments(token)
+    ] + [[IKB(text="Все", callback_data="report_departments_all")]])
+    await state.set_state(FSMServerReportGet.ask_report_department)
+    await query.message.edit_text("Выберите подразделение", reply_markup=kb)
+    await query.answer()
+
+
+@router.callback_query(FSMServerReportGet.ask_report_department)
+async def choose_report_period(query: CallbackQuery, state: FSMContext):
+    await state.update_data({'report_department': query.data})
 
     kb = IKM(inline_keyboard=[
         [IKB(text=v, callback_data=k)] for k, v in report_periods.items()
@@ -113,17 +144,35 @@ async def send_reports(query: CallbackQuery, state: FSMContext):
 
     user_id = query.from_user.id
     token = user_tokens_db.get_token(user_id)
-    report_type = (await state.get_data()).get('report_type')
+    state_data = await state.get_data()
+
+    report_type = state_data.get('report_type')
+
+    report_department = state_data.get('report_department')
+    if report_department == "report_departments_all":
+        report_departments = []
+    else:
+        report_departments = [report_department]
+
     report_period = query.data
 
     await state.clear()
 
     logger.info(f"SendReport: {user_id=} {report_type=} {report_period=} {token=}")
 
-    data = request_get_reports(token, report_type, report_period)
+    status_code, data = request_get_reports(token, report_type, report_departments, report_period)
 
-    if data is None:
-        await query.message.edit_text("Ошибка")
+    if status_code == 2:
+        if "error" not in data.keys():
+            await query.message.edit_text("Ошибка")
+            return
+
+        match data["error"]:
+            case "Wrong token":
+                kb = IKM(inline_keyboard=[[IKB(text="Выйти и войти в систему 🔄️", callback_data="server_report_reauth")]])
+                await query.message.edit_text("Ошибка, попробуйте переавторизоваться", reply_markup=kb)
+            case _:
+                await query.message.edit_text("Ошибка")
         return
 
     if len(data.get('report')) == 0:
@@ -149,7 +198,19 @@ async def send_reports(query: CallbackQuery, state: FSMContext):
                 return
         text += "\n\n\n"
 
-    kb = IKM(inline_keyboard=[[IKB(text='В меню отчётов ↩️', callback_data='report_menu')]])
+    ikb = [[IKB(text='В меню отчётов ↩️', callback_data='report_menu')]]
+
+    if report_type == "revenue" and len(data.get('report')) == 1:
+        report = data.get('report')[0]
+        recommendation_types = get_revenue_recommendation_types(
+            report['dynamics_week'],
+            report['dynamics_month'],
+            report['dynamics_year'],
+        )
+        if len(recommendation_types) > 0:
+            ikb += [[IKB(text="Рекомендации 🔎", callback_data=RecommendationCallbackData(recs_types=recommendation_types, report_type=report_type).pack())]]
+
+    kb = IKM(inline_keyboard=ikb)
     await query.message.answer(text, reply_markup=kb)
 
     logger.info(f"SendReport: Success {user_id=}")
@@ -174,4 +235,3 @@ async def send_reports(query: CallbackQuery, state: FSMContext):
 #         text += f"\n{rep}\n"
 #
 #     await loading_msg.edit_text(text)
-

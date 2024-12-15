@@ -18,6 +18,12 @@ class FSMReportAuthorization(StatesGroup):
     ask_password = State()
 
 
+@router.callback_query(F.data == "server_report_reauth")
+async def reauthorization_handler(query: CallbackQuery, state: FSMContext):
+    user_tokens_db.delete_user(tgid=str(query.from_user.id))
+    await server_report_authorize_cq_handler(query, state)
+
+
 @router.callback_query(F.data == "server_report_authorization")
 async def server_report_authorize_cq_handler(query: CallbackQuery, state: FSMContext):
     await state.clear()
@@ -57,7 +63,11 @@ async def authorize(message: Message, state: FSMContext):
     )
 
     if req.status_code != 200:
-        logger.msg("ERROR", f"Server Report Authorization Error: {req.status_code}\n{req.text}")
+        logger.msg("ERROR", f"Server Report Authorization Error: {req.status_code}, {req.text}")
+
+        if "error" in req.json().keys() and req.json().get("error") == "Wrong login or password":
+            await msg.edit_text("Неверный логин или пароль")
+            return
         await msg.edit_text("Ошибка")
         return
 
