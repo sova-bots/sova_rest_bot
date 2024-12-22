@@ -1,8 +1,6 @@
-import os
 import sqlite3
 import config as cf
-
-import sqlite3
+from src.log import logger
 
 
 class UserTokensDB:
@@ -51,7 +49,17 @@ class UserTokensDB:
         self.conn.close()
 
 
-user_tokens_db = UserTokensDB(cf.USER_TOKENS_DB_PATH)
+def create_database(path: str) -> UserTokensDB:
+    try:
+        db = UserTokensDB(path)
+        db.create_table()
+        return db
+    except sqlite3.OperationalError:
+        logger.msg("ERROR", f"Please create directory for the database: {path}")
+        raise BaseException(f"Please create directory for the database: {path}")
+
+
+user_tokens_db = create_database(cf.USER_TOKENS_DB_PATH)
 
 
 def get_user_tokens_db() -> UserTokensDB | None:

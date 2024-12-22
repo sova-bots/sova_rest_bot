@@ -1,3 +1,5 @@
+from asyncio import get_event_loop
+
 from aiogram import Router, html, F
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
@@ -25,9 +27,14 @@ async def command_start_handler(message: Message, state: FSMContext) -> None:
 async def start_handler(user_id: int, message: Message, state: FSMContext) -> None:
     await state.clear()
 
-    await message.answer(
+    msg = await message.answer("Загрузка... ⚙️")
+
+    loop = get_event_loop()
+    kb = await loop.run_in_executor(None, get_markup, user_id)
+
+    await msg.edit_text(
         text=f"Вас приветствует чат-бот SOVA-tech!",
-        reply_markup=get_markup(user_id)
+        reply_markup=kb,
     )
 
 

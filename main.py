@@ -1,9 +1,11 @@
 import asyncio
 from asyncio.exceptions import CancelledError
 
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher, Router
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from aiogram.filters import Command
+from aiogram.types import Message
 
 from src.commands.server.util.db import user_tokens_db
 from src.notification.sender import NotificationSender
@@ -23,7 +25,10 @@ from src.commands.techsupport.techsupport_menu import router as techsupport_menu
 from src.commands.server.report.report_menu import router as report_menu_router
 from src.commands.server.report.report_recommendations import router as report_recomendations_router
 
+router = Router(name=__name__)
+
 routers = [
+    router,
     start_command_router,
     register_command_router,
     unregister_command_router,
@@ -38,6 +43,13 @@ routers = [
 ]
 
 dp = Dispatcher()
+
+
+@router.message(Command("test"))
+async def test_command(message: Message):
+    await message.answer("sleep 5")
+    await asyncio.sleep(5)
+    await message.answer("sleep end")
 
 
 async def include_routers() -> None:

@@ -1,3 +1,4 @@
+from asyncio import get_event_loop
 from datetime import datetime, timedelta
 
 import requests
@@ -117,9 +118,12 @@ async def choose_report_department(query: CallbackQuery, state: FSMContext):
 
     token = user_tokens_db.get_token(tgid=query.from_user.id)
 
+    loop = get_event_loop()
+    departments = await loop.run_in_executor(None, get_departments, token)
+
     kb = IKM(inline_keyboard=[
-        [IKB(text=department['name'], callback_data=department['id'])] for department in get_departments(token)
-    ] + [[IKB(text="Все", callback_data="report_departments_all")]])
+        [IKB(text=department['name'], callback_data=department['id'])] for department in departments
+    ] + [[IKB(text="Все объекты", callback_data="report_departments_all")]])
     await state.set_state(FSMServerReportGet.ask_report_department)
     await query.message.edit_text("Выберите подразделение", reply_markup=kb)
     await query.answer()
@@ -139,7 +143,7 @@ async def choose_report_period(query: CallbackQuery, state: FSMContext):
 
 @router.callback_query(FSMServerReportGet.ask_report_period)
 async def send_reports(query: CallbackQuery, state: FSMContext):
-    await query.message.edit_text("Загрузка... ⚙️<i>\nМожет занять несколько минут</i>")
+    await query.message.edit_text("Загрузка... ⚙️")
     await query.answer()
 
     user_id = query.from_user.id
@@ -160,7 +164,12 @@ async def send_reports(query: CallbackQuery, state: FSMContext):
 
     logger.info(f"SendReport: {user_id=} {report_type=} {report_period=} {token=}")
 
-    status_code, data = request_get_reports(token, report_type, report_departments, report_period)
+    loop = get_event_loop()
+    status_code, data = await loop.run_in_executor(
+        None, 
+        request_get_reports, 
+        token, report_type, report_departments, report_period
+    )
 
     if status_code == 2:
         if "error" not in data.keys():
@@ -210,12 +219,15 @@ async def send_reports(query: CallbackQuery, state: FSMContext):
         if len(recommendation_types) > 0:
             ikb += [[IKB(text="Рекомендации 🔎", callback_data=RecommendationCallbackData(recs_types=recommendation_types, report_type=report_type).pack())]]
 
+    # Сообщение - вид отчёта
+    await query.message.answer(f"<i>Отчёт: <b>{report_types.get(report_type)}</b> за {report_periods.get(report_period)}:</i> 👇")
+    await query.message.delete()
+
+    # Сообщение - отчёт
     kb = IKM(inline_keyboard=ikb)
     await query.message.answer(text, reply_markup=kb)
 
     logger.info(f"SendReport: Success {user_id=}")
-    await query.message.edit_text(f"<i>Отчёт: <b>{report_types.get(report_type)}</b> за {report_periods.get(report_period)}:</i> 👇")
-
 
 # @router.message(Command('server_get_report'))
 # async def get_report(msg: Message):
