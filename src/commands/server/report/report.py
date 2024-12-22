@@ -23,6 +23,8 @@ report_types = {
     "avg-check": "Средний чек",
     "write-off": "Списания",
     "food-cost": "Фудкост",
+    "turnover": "Оборачиваемость в днях",
+    "losses": "Общие потери/экономия закупки",
 }
 
 
@@ -54,7 +56,7 @@ def get_departments(token: str) -> list:
     return req.json()['departments']
 
 
-def request_get_reports(token: str, report_type: str, report_departments: list , period: str) -> tuple[int, dict]:
+def get_dates(period: str) -> tuple[datetime.date, datetime.date] | None:
     today = datetime.now(tz=cf.TIMEZONE).date()
 
     match period:
@@ -81,7 +83,23 @@ def request_get_reports(token: str, report_type: str, report_departments: list ,
             date_to = today.replace(day=1, month=1) - timedelta(days=1)
         case _:
             logger.msg("ERROR", f"Error SendReports UnknownReportPeriod: {period=}")
+            return None
+    
+    return date_from, date_to
+
+
+def request_get_reports(token: str, report_type: str, report_departments: list , period: str) -> tuple[int, dict]:
+    if period is not None:
+        dates = get_dates(period)
+        if dates is None:
             return 2, {"error": "Unknown period"}
+        date_from, date_to = dates
+
+    data = {"departments": report_departments}
+
+    if report_type != "losses":
+        data["dateFrom"] = date_from.isoformat()
+        data["dateTo"] = date_to.isoformat()
 
     req = requests.post(
         url=f"{cf.API_PATH}/api/{report_type}",
@@ -89,11 +107,7 @@ def request_get_reports(token: str, report_type: str, report_departments: list ,
             "Authorization": f"Bearer {token}",
             "Content-type": "application/json",
         },
-        json={
-            "dateFrom": date_from.isoformat(),
-            "dateTo": date_to.isoformat(),
-            "departments": report_departments,
-        }
+        json=data
     )
     if req.status_code != 200:
         logger.msg("ERROR", f"Error RequestGetReports: {req.text}\n{report_type=} {report_departments=} {period=} {token=}")
@@ -133,6 +147,12 @@ async def choose_report_department(query: CallbackQuery, state: FSMContext):
 async def choose_report_period(query: CallbackQuery, state: FSMContext):
     await state.update_data({'report_department': query.data})
 
+    report_type = (await state.get_data()).get('report_type')
+
+    if report_type == "losses":
+        await send_reports(query, state)
+        return
+
     kb = IKM(inline_keyboard=[
         [IKB(text=v, callback_data=k)] for k, v in report_periods.items()
     ])
@@ -142,9 +162,14 @@ async def choose_report_period(query: CallbackQuery, state: FSMContext):
 
 
 @router.callback_query(FSMServerReportGet.ask_report_period)
+async def get_period(query: CallbackQuery, state: FSMContext):
+    await state.update_data({'report_period': query.data})
+    await query.answer()
+    await send_reports(query, state)
+
+
 async def send_reports(query: CallbackQuery, state: FSMContext):
     await query.message.edit_text("Загрузка... ⚙️")
-    await query.answer()
 
     user_id = query.from_user.id
     token = user_tokens_db.get_token(user_id)
@@ -158,7 +183,7 @@ async def send_reports(query: CallbackQuery, state: FSMContext):
     else:
         report_departments = [report_department]
 
-    report_period = query.data
+    report_period = state_data.get('report_period')
 
     await state.clear()
 
@@ -201,6 +226,10 @@ async def send_reports(query: CallbackQuery, state: FSMContext):
                 text += report_write_off_text(report)
             case "food-cost":
                 text += report_food_cost_text(report)
+            case "turnover":
+                text += report_turnover_text(report)
+            case "losses":
+                text += report_losses_text(report)
             case _:
                 logger.msg("ERROR", f"Error SendReports UnknownReportType: {report_type=}")
                 await query.message.answer("Ошибка")
@@ -220,7 +249,7 @@ async def send_reports(query: CallbackQuery, state: FSMContext):
             ikb += [[IKB(text="Рекомендации 🔎", callback_data=RecommendationCallbackData(recs_types=recommendation_types, report_type=report_type).pack())]]
 
     # Сообщение - вид отчёта
-    await query.message.answer(f"<i>Отчёт: <b>{report_types.get(report_type)}</b> за {report_periods.get(report_period)}:</i> 👇")
+    await query.message.answer(f"<i>Отчёт: <b>{report_types.get(report_type)}</b></i> {f"<i>за {report_periods.get(report_period)}:</i> 👇" if report_periods.get(report_period) is not None else " 👇"}")
     await query.message.delete()
 
     # Сообщение - отчёт
