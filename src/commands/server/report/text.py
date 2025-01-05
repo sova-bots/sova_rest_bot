@@ -10,20 +10,20 @@ def dynamic_f(dynamic) -> str:
 
 def report_revenue_text(r: dict) -> str:
     return f"""
-<b><i>{r['department']}</i></b>
+<b><i>{r['label']}</i></b>
     
 <b>Выручка</b>: {f"{r['revenue']:,.0f} руб." if r['revenue'] is not None else "<i>нет данных</i>"}
 
-{"<b>Динамика выручки:</b>" if r['dynamics_week'] is not None else ""}
-{f"- Неделя: {dynamic_f(r['dynamics_week'])}" if r['dynamics_week'] is not None else ""}
-{f"- Месяц: {dynamic_f(r['dynamics_month'])}" if r['dynamics_month'] is not None else ""}
-{f"- Год: {dynamic_f(r['dynamics_year'])}" if r['dynamics_year'] is not None else ""}
+{"<b>Динамика выручки:</b>" if r['revenue_dynamics_week'] is not None else ""}
+{f"- Неделя: {dynamic_f(r['revenue_dynamics_week'])}" if r['revenue_dynamics_week'] is not None else ""}
+{f"- Месяц: {dynamic_f(r['revenue_dynamics_month'])}" if r['revenue_dynamics_month'] is not None else ""}
+{f"- Год: {dynamic_f(r['revenue_dynamics_year'])}" if r['revenue_dynamics_year'] is not None else ""}
 """.strip("\n")
 
 
 def report_guests_checks_text(r: dict) -> str:
     return f"""
-<b><i>{r['department']}</i></b>
+<b><i>{r['label']}</i></b>
     
 <b>Гости</b>: {f"{r['guests']:,.0f} чел." if r['guests'] is not None else "<i>нет данных</i>"}
 
@@ -36,7 +36,7 @@ def report_guests_checks_text(r: dict) -> str:
 
 def report_avg_check_text(r: dict) -> str:
     return f"""
-<b><i>{r['department']}</i></b>
+<b><i>{r['label']}</i></b>
     
 <b>Средний чек</b>: {f"{r['avg_check']:,.0f} руб." if r['avg_check'] is not None else "<i>нет данных</i>"}
 
@@ -49,7 +49,7 @@ def report_avg_check_text(r: dict) -> str:
 
 def report_write_off_text(r: dict) -> str:
     return f"""
-<b><i>{r['department']}</i></b>
+<b><i>{r['label']}</i></b>
     
 <b>Списания</b>: {f"{r['write_off']:,.0f} руб." if r['write_off'] is not None else "<i>нет данных</i>"}
 
@@ -92,7 +92,7 @@ def report_food_cost_bar_text(r: dict) -> str:
 
 def report_food_cost_text(r: dict) -> str:
     return f"""
-<b><i>{r['department']}</i></b>
+<b><i>{r['label']}</i></b>
 
 {report_food_cost_general_text(r).strip("\n")}
 
@@ -104,7 +104,7 @@ def report_food_cost_text(r: dict) -> str:
 
 def report_turnover_text(r: dict) -> str:
     return f"""
-<b><i>{r['department']}</i></b>
+<b><i>{r['label']}</i></b>
 
 <b>Оборачиваемость в днях</b>: {f"{r['turnover_in_days']:,.0f}" if r['turnover_in_days'] is not None else "<i>нет данных</i>"}
 <b>Расход в день</b>: {f"{r['expense_day']:,.0f} руб." if r['expense_day'] is not None else "<i>нет данных</i>"}

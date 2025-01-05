@@ -112,7 +112,10 @@ def request_get_reports(token: str, report_type: str, report_departments: list ,
     if req.status_code != 200:
         logger.msg("ERROR", f"Error RequestGetReports: {req.text}\n{report_type=} {report_departments=} {period=} {token=}")
         return 2, req.json()
-    return 0, req.json()
+    
+    result = req.json()
+    result["report"] = result["data"]  # УБРАТЬ! Заменить везде "report" на "data"
+    return 0, result
 
 
 @router.callback_query(F.data == "server_report_get")
@@ -241,9 +244,9 @@ async def send_reports(query: CallbackQuery, state: FSMContext):
     if report_type == "revenue" and len(data.get('report')) == 1:
         report = data.get('report')[0]
         recommendation_types = get_revenue_recommendation_types(
-            report['dynamics_week'],
-            report['dynamics_month'],
-            report['dynamics_year'],
+            report['revenue_dynamics_week'],
+            report['revenue_dynamics_month'],
+            report['revenue_dynamics_year'],
         )
         if len(recommendation_types) > 0:
             ikb += [[IKB(text="Рекомендации 🔎", callback_data=RecommendationCallbackData(recs_types=recommendation_types, report_type=report_type).pack())]]
