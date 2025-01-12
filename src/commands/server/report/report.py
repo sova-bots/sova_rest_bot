@@ -11,111 +11,20 @@ from aiogram.types import InlineKeyboardMarkup as IKM, InlineKeyboardButton as I
 import config as cf
 from src.commands.server.util.db import user_tokens_db
 from src.log import logger
-from .report_recommendations import get_revenue_recommendation_types, RecommendationCallbackData
+from .report_util import *
+from .report_keyboards import get_recommendations_kb
+from .report_stores import ReportStoreCallbackData
 from .text import *
+from .report_recommendations import problem_ares_show_negative, problem_ares_show_positive
+from .report_keyboards import get_report_kb
 
 router = Router(name=__name__)
-
-
-report_types = {
-    "revenue": "Выручка",
-    "guests-checks": "Гости/чеки",
-    "avg-check": "Средний чек",
-    "write-off": "Списания",
-    "food-cost": "Фудкост",
-    "turnover": "Оборачиваемость в днях",
-    "losses": "Общие потери/экономия закупки",
-}
-
-
-report_periods = {
-    "last-day": "Вчерашний день",
-    "this-week": "Текущая неделя",
-    "this-month": "Текущий месяц",
-    "this-year": "Текущий год",
-    "last-week": "Прошлая неделя",
-    "last-month": "Прошлый месяц",
-    "last-year": "Прошлый год",
-}
 
 
 class FSMServerReportGet(StatesGroup):
     ask_report_type = State()
     ask_report_department = State()
     ask_report_period = State()
-
-
-def get_departments(token: str) -> list:
-    req = requests.get(
-        url=f"{cf.API_PATH}/api/departments",
-        headers={"Authorization": f"Bearer {token}"},
-    )
-    if req.status_code != 200:
-        logger.msg("ERROR", f"Could not get departments: {token=}")
-        return []
-    return req.json()['departments']
-
-
-def get_dates(period: str) -> tuple[datetime.date, datetime.date] | None:
-    today = datetime.now(tz=cf.TIMEZONE).date()
-
-    match period:
-        case "last-day":
-            date_from = today - timedelta(days=1)
-            date_to = date_from
-        case "this-week":
-            date_from = today - timedelta(days=today.weekday())
-            date_to = today
-        case "this-month":
-            date_from = today.replace(day=1)
-            date_to = today
-        case "this-year":
-            date_from = today.replace(day=1, month=1)
-            date_to = today
-        case "last-week":
-            date_from = today - timedelta(days=today.weekday()+7)
-            date_to = today - timedelta(days=today.weekday()+1)
-        case "last-month":
-            date_from = (today.replace(day=1) - timedelta(days=1)).replace(day=1)
-            date_to = today.replace(day=1) - timedelta(days=1)
-        case "last-year":
-            date_from = (today.replace(day=1, month=1) - timedelta(days=1)).replace(day=1, month=1)
-            date_to = today.replace(day=1, month=1) - timedelta(days=1)
-        case _:
-            logger.msg("ERROR", f"Error SendReports UnknownReportPeriod: {period=}")
-            return None
-    
-    return date_from, date_to
-
-
-def request_get_reports(token: str, report_type: str, report_departments: list , period: str) -> tuple[int, dict]:
-    if period is not None:
-        dates = get_dates(period)
-        if dates is None:
-            return 2, {"error": "Unknown period"}
-        date_from, date_to = dates
-
-    data = {"departments": report_departments}
-
-    if report_type != "losses":
-        data["dateFrom"] = date_from.isoformat()
-        data["dateTo"] = date_to.isoformat()
-
-    req = requests.post(
-        url=f"{cf.API_PATH}/api/{report_type}",
-        headers={
-            "Authorization": f"Bearer {token}",
-            "Content-type": "application/json",
-        },
-        json=data
-    )
-    if req.status_code != 200:
-        logger.msg("ERROR", f"Error RequestGetReports: {req.text}\n{report_type=} {report_departments=} {period=} {token=}")
-        return 2, req.json()
-    
-    result = req.json()
-    result["report"] = result["data"]  # УБРАТЬ! Заменить везде "report" на "data"
-    return 0, result
 
 
 @router.callback_query(F.data == "server_report_get")
@@ -178,17 +87,7 @@ async def send_reports(query: CallbackQuery, state: FSMContext):
     token = user_tokens_db.get_token(user_id)
     state_data = await state.get_data()
 
-    report_type = state_data.get('report_type')
-
-    report_department = state_data.get('report_department')
-    if report_department == "report_departments_all":
-        report_departments = []
-    else:
-        report_departments = [report_department]
-
-    report_period = state_data.get('report_period')
-
-    await state.clear()
+    report_type, report_departments, report_period = get_report_parameters_from_state_data(state_data)
 
     logger.info(f"SendReport: {user_id=} {report_type=} {report_period=} {token=}")
 
@@ -212,70 +111,32 @@ async def send_reports(query: CallbackQuery, state: FSMContext):
                 await query.message.edit_text("Ошибка")
         return
 
-    if len(data.get('report')) == 0:
+    if len(data["data"]) == 0:
         await query.message.edit_text("Не удалось составить отчёт")
         return
-
-    text = ""
-    for report in data.get('report'):
-        match report_type:
-            case "revenue":
-                text += report_revenue_text(report)
-            case "guests-checks":
-                text += report_guests_checks_text(report)
-            case "avg-check":
-                text += report_avg_check_text(report)
-            case "write-off":
-                text += report_write_off_text(report)
-            case "food-cost":
-                text += report_food_cost_text(report)
-            case "turnover":
-                text += report_turnover_text(report)
-            case "losses":
-                text += report_losses_text(report)
-            case _:
-                logger.msg("ERROR", f"Error SendReports UnknownReportType: {report_type=}")
-                await query.message.answer("Ошибка")
-                return
-        text += "\n\n\n"
-
-    ikb = [[IKB(text='В меню отчётов ↩️', callback_data='report_menu')]]
-
-    if report_type == "revenue" and len(data.get('report')) == 1:
-        report = data.get('report')[0]
-        recommendation_types = get_revenue_recommendation_types(
-            report['revenue_dynamics_week'],
-            report['revenue_dynamics_month'],
-            report['revenue_dynamics_year'],
-        )
-        if len(recommendation_types) > 0:
-            ikb += [[IKB(text="Рекомендации 🔎", callback_data=RecommendationCallbackData(recs_types=recommendation_types, report_type=report_type).pack())]]
+    
+    await state.update_data({"report": report})
 
     # Сообщение - вид отчёта
     await query.message.answer(f"<i>Отчёт: <b>{report_types.get(report_type)}</b></i> {f"<i>за {report_periods.get(report_period)}:</i> 👇" if report_periods.get(report_period) is not None else " 👇"}")
     await query.message.delete()
 
     # Сообщение - отчёт
-    kb = IKM(inline_keyboard=ikb)
-    await query.message.answer(text, reply_markup=kb)
+    for report in data["data"]:
+        text = get_report_text(report_type, report)
+        kb = get_report_kb(token, report_type, report, len(data["data"]))
+        await query.message.answer(text, reply_markup=IKM(inline_keyboard=kb))
 
+    # Сообщение - итог
+    if "sum" in data.keys() and len(data["data"]) > 1:
+        report = data["sum"]
+        text = get_report_text(report_type, report)
+        rkb = get_recommendations_kb(report_type, report) + [[IKB(text='В меню отчётов ↩️', callback_data='report_menu')]]
+        await query.message.answer(text, reply_markup=IKM(inline_keyboard=rkb))
+    elif len(data["data"]) > 1:
+        # кнопка "В меню отчётов"
+        kb = [[IKB(text='В меню отчётов ↩️', callback_data='report_menu')]]
+        await query.message.answer("Вернуться на главную?", reply_markup=IKM(inline_keyboard=kb))
+
+    await state.set_state(FSMReportGeneral.idle)
     logger.info(f"SendReport: Success {user_id=}")
-
-# @router.message(Command('server_get_report'))
-# async def get_report(msg: Message):
-#     database = db.user_tokens_db
-#     token = database.get_token(tgid=str(msg.from_user.id))
-#
-#     loading_msg = await msg.answer("...")
-#
-#     req = await send_request_to_get_reports(token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwic2x1ZyI6IlJPR0FMSUsiLCJpYXQiOjE3MzM3NTMzOTgsImV4cCI6MTczMzgzOTc5OH0.LtUIvj0WHrLRw9D3IMOBdPOuKatIqOyYnVm3D760dsA")
-#
-#     if req.status_code != 200:
-#         await loading_msg.edit_text(f"Error: {req.status_code}")
-#         return
-#
-#     text = ""
-#     for rep in req.json()['report']:
-#         text += f"\n{rep}\n"
-#
-#     await loading_msg.edit_text(text)

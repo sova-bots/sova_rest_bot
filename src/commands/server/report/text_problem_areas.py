@@ -25,16 +25,16 @@ def report_revenue_text(r: dict) -> str:
 """.strip("\n")
 
 
-def report_guests_checks_text(r: dict) -> str:
+def report_guests_checks_problem_areas_text(r: dict) -> str:
     return f"""
 ⏺️ <b><i>{r['label']}</i></b>
     
 <b>Гости / чеки</b>: {f"{r['guests']:,.0f} / {r['checks']:,.0f}" if r['guests'] is not None and r['checks'] is not None else "<i>нет данных</i>"}
 
 {"<b>Динамики:</b>" if r['guests_dynamics_week'] is not None else ""}
-{f"• Неделя: {dynamic_f(r['guests_dynamics_week'])} / {dynamic_f(r['checks_dynamics_week'])}" if r['guests_dynamics_week'] is not None and r['checks_dynamics_week'] is not None  else ""}
-{f"• Месяц: {dynamic_f(r['guests_dynamics_month'])} / {dynamic_f(r['checks_dynamics_month'])}" if r['guests_dynamics_month'] is not None and r['checks_dynamics_month'] is not None  else ""}
-{f"• Год: {dynamic_f(r['guests_dynamics_year'])} / {dynamic_f(r['checks_dynamics_year'])}" if r['guests_dynamics_year'] is not None and r['checks_dynamics_year'] is not None  else ""}
+{f"• Неделя: {dynamic_f(r['guests_dynamics_week'])} / {dynamic_f(r['checks_dynamics_week'])}" if r['guests_dynamics_week'] is not None and r['checks_dynamics_week'] is not None and r['guests_dynamics_week'] < 0 else ""}
+{f"• Месяц: {dynamic_f(r['guests_dynamics_month'])} / {dynamic_f(r['checks_dynamics_month'])}" if r['guests_dynamics_month'] is not None and r['checks_dynamics_month'] is not None and r['guests_dynamics_month'] < 0 else ""}
+{f"• Год: {dynamic_f(r['guests_dynamics_year'])} / {dynamic_f(r['checks_dynamics_year'])}" if r['guests_dynamics_year'] is not None and r['checks_dynamics_year'] is not None and r['guests_dynamics_year'] < 0 else ""}
 """.strip("\n")
 
 
@@ -147,12 +147,12 @@ def report_losses_text(r: dict) -> str:
 
 
 
-def get_report_text(report_type: str, report) -> str:
+def get_problem_areas_text(report_type: str, report) -> str:
     match report_type:
         case "revenue":
             return report_revenue_text(report)
         case "guests-checks":
-            return report_guests_checks_text(report)
+            return report_guests_checks_problem_areas_text(report)
         case "avg-check":
             return report_avg_check_text(report)
         case "write-off":
@@ -168,3 +168,4 @@ def get_report_text(report_type: str, report) -> str:
         case _:
             logger.msg("ERROR", f"Error SendReports UnknownReportType: {report_type=}")
             raise Exception(f"Error SendReports UnknownReportType: {report_type=}")
+    

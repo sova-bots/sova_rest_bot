@@ -1,5 +1,6 @@
 from aiogram import Router, F
 from aiogram.types import CallbackQuery
+from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup as IKM, InlineKeyboardButton as IKB
 
 from src.commands.server.util.db import user_tokens_db
@@ -8,8 +9,10 @@ router = Router(name=__name__)
 
 
 @router.callback_query(F.data == "report_menu")
-async def techsupport_cq_handler(query: CallbackQuery):
+async def techsupport_cq_handler(query: CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
+
+    await state.clear()
 
     await query.message.answer(
         text="Меню ОТЧЁТЫ",

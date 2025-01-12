@@ -24,6 +24,7 @@ from src.commands.server.report.report import router as get_report_router
 from src.commands.techsupport.techsupport_menu import router as techsupport_menu_router
 from src.commands.server.report.report_menu import router as report_menu_router
 from src.commands.server.report.report_recommendations import router as report_recomendations_router
+from src.commands.server.report.report_stores import router as report_stores_router
 
 router = Router(name=__name__)
 
@@ -40,6 +41,7 @@ routers = [
     techsupport_menu_router,
     report_menu_router,
     report_recomendations_router,
+    report_stores_router,
 ]
 
 dp = Dispatcher()

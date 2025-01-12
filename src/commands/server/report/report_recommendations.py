@@ -9,8 +9,11 @@ from aiogram.types import CallbackQuery
 from aiogram.types import InlineKeyboardMarkup as IKM, InlineKeyboardButton as IKB
 
 import config as cf
+from .report_util import *
 from src.commands.server.util.db import user_tokens_db
 from src.log import logger
+from .text_problem_areas import get_problem_areas_text
+from .text import get_report_text
 
 router = Router(name=__name__)
 
@@ -69,6 +72,43 @@ class RecommendationCallbackData(CallbackData, prefix="rprt-recs"):
     recs_types: str
 
 
+class ProblemAreasCallbackData(CallbackData, prefix="rprt-prars"):
+    report_type: str
+
+
+# Проблемные зоны
+@router.callback_query(ProblemAreasCallbackData.filter(), FSMReportGeneral.idle)
+async def problem_areas_callback_handler(query: CallbackQuery, callback_data: ProblemAreasCallbackData, state: FSMContext):
+    cb_report_type = callback_data.report_type
+    state_data = await state.get_data()
+    report_parameters = get_report_parameters_from_state_data(state_data)
+
+    # проверка
+    if "report" not in state_data.keys() or state_data["report"] is None:
+        await query.message.edit_text("Перезайдите в меню отчётов и получите отчёт ещё раз", reply_markup=IKM(inline_keyboard=[[IKB(text='В меню отчётов ↩️', callback_data='report_menu')]]))
+        return
+
+    report = state_data["report"]
+
+    if report_parameters is None:
+        await query.message.edit_text("Перезайдите в меню отчётов и получите отчёт ещё раз", reply_markup=IKM(inline_keyboard=[[IKB(text='В меню отчётов ↩️', callback_data='report_menu')]]))
+        return
+
+    report_type, report_departments, report_period = report_parameters
+
+    if report_type != cb_report_type:
+        await query.message.edit_text("Перезайдите в меню отчётов и получите отчёт ещё раз", reply_markup=IKM(inline_keyboard=[[IKB(text='В меню отчётов ↩️', callback_data='report_menu')]]))
+        return
+    
+    # вывод характеристик
+    text = ("<i>Проблемные характеристики: <b>{report_types.get(report_type)}</b></i> <i>за {report_periods.get(report_period)}:</i> 👇"
+             + 
+            get_problem_areas_text(report, report_type, report_departments, report_period))
+    
+    await query.message.answer(text, reply_markup=IKM(inline_keyboard=[[IKB(text='В меню отчётов ↩️', callback_data='report_menu')]]))
+    await query.answer()
+
+
 def get_revenue_recommendation_types(dynamic_week, dynamic_month, dynamic_year) -> str:
     types = []
 
@@ -97,7 +137,6 @@ async def send_revenue_recs(query: CallbackQuery, callback_data: RecommendationC
         text = recommendations[callback_data.report_type][rec_type]
         texts.append(text)
 
-    await query.message.answer("<b>Рекомендации</b>" + "\n".join(texts))
+    await query.message.answer("<b>Общий анализ 🔎</b>" + "\n".join(texts))
 
     await query.answer()
-
