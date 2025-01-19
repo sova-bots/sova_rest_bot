@@ -10,6 +10,8 @@ from src.data.notification.notification_google_sheets_worker import notification
 from src.data.techsupport.techsupport_google_sheets_worker import techsupport_gsworker
 from src.commands.start.start_keyboards import get_start_registration_markup, get_start_unregistration_markup
 
+from src.commands.server.util.db import user_tokens_db
+
 router = Router(name=__name__)
 
 
@@ -30,7 +32,8 @@ async def start_handler(user_id: int, message: Message, state: FSMContext) -> No
     msg = await message.answer("Загрузка... ⚙️")
 
     loop = get_event_loop()
-    kb = await loop.run_in_executor(None, get_markup, user_id)
+    has_token = user_tokens_db.has_tgid(user_id)
+    kb = await loop.run_in_executor(None, get_markup, user_id, has_token)
 
     await msg.edit_text(
         text=f"Вас приветствует чат-бот SOVA-tech!",
@@ -38,10 +41,13 @@ async def start_handler(user_id: int, message: Message, state: FSMContext) -> No
     )
 
 
-def get_markup(user_id: int) -> IKM:
+def get_markup(user_id: int, has_token: bool) -> IKM:
     inline_kb = []
 
-    btn = [IKB(text='Меню отчётов', callback_data='report_menu')]
+    if not has_token:
+        btn = [IKB(text='Меню отчётов', callback_data='server_report_authorization')]
+    else:
+        btn = [IKB(text='Меню отчётов', callback_data='report')]
     inline_kb.append(btn)
 
     btn = [IKB(text='Меню тех-поддержки 🛠', callback_data='techsupport_menu')]

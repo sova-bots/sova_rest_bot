@@ -27,7 +27,7 @@ async def reauthorization_handler(query: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data == "server_report_authorization")
 async def server_report_authorize_cq_handler(query: CallbackQuery, state: FSMContext):
     await state.clear()
-    await query.message.answer("<b>Авторизация</b>\nВведите логин")
+    await query.message.answer("<b>Сначала необходимо авторизироваться в систему</b>\n\nВведите логин")
     await state.set_state(FSMReportAuthorization.ask_login)
     await query.answer()
 
@@ -80,7 +80,7 @@ async def authorize(message: Message, state: FSMContext):
 
     logger.info(f"Authorized {user_id=}, {token=}")
 
-    kb = IKM(inline_keyboard=[[IKB(text="В меню отчётов ↩️", callback_data="report_menu")]])
+    kb = IKM(inline_keyboard=[[IKB(text="В меню отчётов ↩️", callback_data="report_ask_department")]])
     await msg.edit_text("Успешно ✅", reply_markup=kb)
 
 

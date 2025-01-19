@@ -18,66 +18,68 @@ from .text import *
 from .report_recommendations import problem_ares_show_negative, problem_ares_show_positive
 from .report_keyboards import get_report_kb
 
+from .revenue.layout import revenue_next
+
 router = Router(name=__name__)
 
 
-class FSMServerReportGet(StatesGroup):
-    ask_report_type = State()
-    ask_report_department = State()
-    ask_report_period = State()
+@router.callback_query(F.data == "report")
+async def report_department_choice(query: CallbackQuery, state: FSMContext):
 
+    await delete_state_messages(state)
 
-@router.callback_query(F.data == "server_report_get")
-async def choose_report_type(query: CallbackQuery, state: FSMContext):
     await state.clear()
+
+    departments = await get_departments(tgid=query.from_user.id)
+
+    kb = IKM(inline_keyboard=[
+        [IKB(text=department['name'], callback_data=department['id'])] for department in departments]
+    )
+
+    await state.set_state(FSMReportGeneral.ask_report_department)
+
+    await query.message.edit_text("Выберите интересующий вас объект или сеть целиком", reply_markup=kb)
+    await query.answer()
+
+
+@router.callback_query(FSMReportGeneral.ask_report_department)
+async def report_type_choice(query: CallbackQuery, state: FSMContext):
+
+    await state.update_data({"report_department": query.data})
+
     kb = IKM(inline_keyboard=[
         [IKB(text=v, callback_data=k)] for k, v in report_types.items()
     ])
-    await state.set_state(FSMServerReportGet.ask_report_type)
-    await query.message.answer("Выберите вид отчёта", reply_markup=kb)
+
+    await state.set_state(FSMReportGeneral.ask_report_type)
+
+    department_name = await get_department_name(query.data, query.from_user.id)
+
+    await query.message.edit_text(f"Укажите вид отчёта для объекта: <b>{department_name}</b>", reply_markup=kb)
     await query.answer()
 
 
-@router.callback_query(FSMServerReportGet.ask_report_type)
-async def choose_report_department(query: CallbackQuery, state: FSMContext):
-    await state.update_data({'report_type': query.data})
+@router.callback_query(FSMReportGeneral.ask_report_type)
+async def fork(query: CallbackQuery, state: FSMContext):
 
-    token = user_tokens_db.get_token(tgid=query.from_user.id)
+    report_type = query.data
 
-    loop = get_event_loop()
-    departments = await loop.run_in_executor(None, get_departments, token)
+    await state.update_data({'report_type': report_type})
 
-    kb = IKM(inline_keyboard=[
-        [IKB(text=department['name'], callback_data=department['id'])] for department in departments
-    ] + [[IKB(text="Все объекты", callback_data="report_departments_all")]])
-    await state.set_state(FSMServerReportGet.ask_report_department)
-    await query.message.edit_text("Выберите подразделение", reply_markup=kb)
+    match report_type:
+        case "revenue":
+            await revenue_next(query, state)
+        case _:
+            pass
+    
     await query.answer()
 
 
-@router.callback_query(FSMServerReportGet.ask_report_department)
-async def choose_report_period(query: CallbackQuery, state: FSMContext):
-    await state.update_data({'report_department': query.data})
-
-    report_type = (await state.get_data()).get('report_type')
-
-    if report_type == "losses":
-        await send_reports(query, state)
-        return
-
-    kb = IKM(inline_keyboard=[
-        [IKB(text=v, callback_data=k)] for k, v in report_periods.items()
-    ])
-    await state.set_state(FSMServerReportGet.ask_report_period)
-    await query.message.edit_text("Выберите период отчёта", reply_markup=kb)
-    await query.answer()
-
-
-@router.callback_query(FSMServerReportGet.ask_report_period)
-async def get_period(query: CallbackQuery, state: FSMContext):
-    await state.update_data({'report_period': query.data})
-    await query.answer()
-    await send_reports(query, state)
+# @router.callback_query(FSMServerReportGet.ask_report_period)
+# async def get_period(query: CallbackQuery, state: FSMContext):
+#     await state.update_data({'report_period': query.data})
+#     await query.answer()
+#     await send_reports(query, state)
 
 
 async def send_reports(query: CallbackQuery, state: FSMContext):
@@ -101,21 +103,20 @@ async def send_reports(query: CallbackQuery, state: FSMContext):
     if status_code == 2:
         if "error" not in data.keys():
             await query.message.edit_text("Ошибка")
-            return
+            raise Exception("Could not get report")
 
         match data["error"]:
             case "Wrong token":
                 kb = IKM(inline_keyboard=[[IKB(text="Выйти и войти в систему 🔄️", callback_data="server_report_reauth")]])
                 await query.message.edit_text("Ошибка, попробуйте переавторизоваться", reply_markup=kb)
             case _:
-                await query.message.edit_text("Ошибка")
+                raise Exception("Could not get report")
         return
 
     if len(data["data"]) == 0:
         await query.message.edit_text("Не удалось составить отчёт")
-        return
     
-    await state.update_data({"report": report})
+    await state.update_data({"report": data})
 
     # Сообщение - вид отчёта
     await query.message.answer(f"<i>Отчёт: <b>{report_types.get(report_type)}</b></i> {f"<i>за {report_periods.get(report_period)}:</i> 👇" if report_periods.get(report_period) is not None else " 👇"}")
@@ -131,11 +132,11 @@ async def send_reports(query: CallbackQuery, state: FSMContext):
     if "sum" in data.keys() and len(data["data"]) > 1:
         report = data["sum"]
         text = get_report_text(report_type, report)
-        rkb = get_recommendations_kb(report_type, report) + [[IKB(text='В меню отчётов ↩️', callback_data='report_menu')]]
+        rkb = get_recommendations_kb(report_type, report) + [[IKB(text='В меню отчётов ↩️', callback_data='report')]]
         await query.message.answer(text, reply_markup=IKM(inline_keyboard=rkb))
     elif len(data["data"]) > 1:
         # кнопка "В меню отчётов"
-        kb = [[IKB(text='В меню отчётов ↩️', callback_data='report_menu')]]
+        kb = [[IKB(text='В меню отчётов ↩️', callback_data='report')]]
         await query.message.answer("Вернуться на главную?", reply_markup=IKM(inline_keyboard=kb))
 
     await state.set_state(FSMReportGeneral.idle)
