@@ -1,7 +1,7 @@
 from aiogram.fsm.context import FSMContext
 
-from ..properties import revenue_properties, revenue_dynamics
 from ..report_util import get_department_name, report_types, report_periods, get_report_parameters_from_state
+
 
 
 def str_if_exists(name, value, properties, is_dynamic: bool) -> str:
@@ -13,9 +13,9 @@ def str_if_exists(name, value, properties, is_dynamic: bool) -> str:
             sign = "+"
         else:
             sign = ""
-        return f"<b>{properties[name]}:</b> {sign}{value:,.0f}% \n"
+        return f"<b>{properties[name][0]}:</b> {sign}{value:,.0f} % \n"
     
-    return f"<b>{properties[name]}:</b> {value:,.0f} \n"
+    return f"<b>{properties[name][0]}:</b> {value:,.0f} {properties[name][1]} \n"
 
 
 def str_head(r: dict, report_type, report_period) -> str:
@@ -27,19 +27,17 @@ def str_head(r: dict, report_type, report_period) -> str:
 """
 
 
-async def make_text(r: dict, state: FSMContext) -> str:
+async def make_text(r: dict, properties: dict, state: FSMContext) -> str:
 
     report_type, report_departments, report_period = await get_report_parameters_from_state(state)
 
     text = str_head(r, report_type, report_period)
     text += "\n<i>Показатели</i>\n\n"
 
-    for k, v in r.items():
-        text += str_if_exists(k, v, revenue_properties, False)
-
-    text += '\n'
-
-    for k, v in r.items():
-        text += str_if_exists(k, v, revenue_dynamics, True)
+    for prop_type, props in properties.items():
+        for k, v in r.items():
+            is_dynamic = prop_type == "dynamics"
+            text += str_if_exists(k, v, props, is_dynamic)
+        text += '\n'
 
     return text

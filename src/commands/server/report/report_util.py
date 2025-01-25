@@ -9,6 +9,8 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, InlineKeyboardMarkup as IKM, InlineKeyboardButton as IKB
 
+from aiogram.exceptions import TelegramBadRequest
+
 from src.commands.server.util.db import user_tokens_db
 
 from src.log import logger
@@ -49,6 +51,25 @@ report_periods = {
 
 problem_ares_show_positive = ["write-off", "food-cost", "turnover"]
 problem_ares_show_negative = ["guests-checks", "avg-check"]
+
+
+class ReportRequestData:
+    token: str
+    report_type: str
+    departments: list
+    period: str
+    group: str
+
+    def __init__(self, user_id: int, state_data: dict, group: str = "department"):
+        token = user_tokens_db.get_token(user_id)
+
+        report_type, report_departments, report_period = get_report_parameters_from_state_data(state_data)
+
+        self.token = token
+        self.report_type = report_type
+        self.departments = report_departments
+        self.period = report_period
+        self.group = group
 
 
 class FSMReportGeneral(StatesGroup):
@@ -109,6 +130,15 @@ def get_dates(period: str) -> tuple[datetime.date, datetime.date] | None:
         case "last-year":
             date_from = (today.replace(day=1, month=1) - timedelta(days=1)).replace(day=1, month=1)
             date_to = today.replace(day=1, month=1) - timedelta(days=1)
+        case "last-last-week":
+            date_from = today - timedelta(days=today.weekday()+7) - timedelta(days=7)
+            date_to = today - timedelta(days=today.weekday()+1) - timedelta(days=7)
+        case "last-last-month":
+            date_from = ((today.replace(day=1) - timedelta(days=1)).replace(day=1) - timedelta(days=1)).replace(day=1)
+            date_to = (today.replace(day=1) - timedelta(days=1)).replace(day=1) - timedelta(days=1)
+        case "last-last-year":
+            date_from = today.replace(day=1, month=1, year=today.year-2)
+            date_to = today.replace(day=1, month=1, year=today.year-1) - timedelta(days=1)
         case _:
             logger.msg("ERROR", f"Error SendReports UnknownReportPeriod: {period=}")
             return None
@@ -132,6 +162,10 @@ def request_get_reports(token: str, report_type: str, report_departments: list, 
         data["dateFrom"] = date_from.isoformat()
         data["dateTo"] = date_to.isoformat()
 
+
+    # logger.info(f"{data['dateFrom']=}, {data['dateTo']=}")
+    # return 
+
     req = requests.post(
         url=f"{cf.API_PATH}/api/{report_type}",
         headers={
@@ -148,22 +182,12 @@ def request_get_reports(token: str, report_type: str, report_departments: list, 
     return 0, result
 
 
-async def get_reports(query: CallbackQuery, state: FSMContext) -> dict:
-    await query.message.edit_text("Загрузка... ⚙️")
-
-    user_id = query.from_user.id
-    token = user_tokens_db.get_token(user_id)
-    state_data = await state.get_data()
-
-    report_type, report_departments, report_period = get_report_parameters_from_state_data(state_data)
-
-    logger.info(f"SendReport: {user_id=} {report_type=} {report_period=} {token=}")
-
+async def execute_request_get_reports(query: CallbackQuery, token, report_type, departments, period, group: str = "department") -> dict:
     loop = get_event_loop()
     status_code, data = await loop.run_in_executor(
         None, 
         request_get_reports, 
-        token, report_type, report_departments, report_period
+        token, report_type, departments, period, group
     )
 
     if status_code == 2:
@@ -176,7 +200,7 @@ async def get_reports(query: CallbackQuery, state: FSMContext) -> dict:
                 kb = IKM(inline_keyboard=[[IKB(text="Выйти и войти в систему 🔄️", callback_data="server_report_reauth")]])
                 await query.message.edit_text("Ошибка, попробуйте переавторизоваться", reply_markup=kb)
             case _:
-                raise Exception("Could not get report")
+                raise Exception(f"Could not get report: {data["error"]}")
         return
 
     if len(data["data"]) == 0:
@@ -184,6 +208,27 @@ async def get_reports(query: CallbackQuery, state: FSMContext) -> dict:
         raise Exception("Could not get report")
 
     return data
+
+
+async def get_reports_from_data(query: CallbackQuery, data: ReportRequestData) -> dict:
+    token = data.token
+    user_id = query.from_user.id
+    report_type = data.report_type
+    departments = data.departments
+    period = data.period
+    group = data.group
+
+    logger.info(f"SendReport: {user_id=} {report_type=} {period=} {token=}")
+
+    return await execute_request_get_reports(query, token, report_type, departments, period, group)
+
+
+async def get_reports(query: CallbackQuery, state: FSMContext, group: str = "department") -> dict:
+    await query.message.edit_text("Загрузка... ⚙️")
+
+    state_data = await state.get_data()
+
+    return await get_reports_from_data(query, data=ReportRequestData(query.from_user.id, state_data, group))
 
 
 
@@ -231,3 +276,10 @@ async def delete_state_messages(state: FSMContext):
             await msg.delete()
 
         await state.update_data({'messages_to_delete': None})
+
+
+async def try_answer_query(query: CallbackQuery, text: str | None = None) -> None:
+    try:
+        await query.answer(text)
+    except TelegramBadRequest as e:
+        logger.msg("WARNING" f"TelegramBadRequest: {e}")

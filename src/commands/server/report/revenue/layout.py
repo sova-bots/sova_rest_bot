@@ -6,8 +6,13 @@ from aiogram.types import InlineKeyboardMarkup as IKM, InlineKeyboardButton as I
 from ..report_util import *
 from ..common_choices import report_period_msg
 from .text import *
+from .properties import *
+
+from .analysis import router as analysis_router
 
 router = Router(name=__name__)
+
+router.include_routers(analysis_router)
 
 
 async def revenue_next(query: CallbackQuery, state: FSMContext):
@@ -29,7 +34,10 @@ async def period_fork(query: CallbackQuery, state: FSMContext):
             await show_report_parameters(query, state)
         case _:
             kb = IKM(inline_keyboard=[
-                [IKB(text="Показатели", callback_data="report_show_parameters")]
+                [IKB(text="Показатели 📊 ", callback_data="revenue_show_parameters")],
+                [IKB(text="Анализ 🔎", callback_data="revenue_analysis")],
+                [IKB(text="Обратите внимание 👀", callback_data="report_show_parameters")],
+                [IKB(text="Рекомендации 💡", callback_data="report_show_parameters")]
             ])
             
             text = f"Объект: <b>{department_name}</b>\nОтчёт <b>{report_types[report_type]}</b>\nПериод <b>{report_periods[report_period]}</b>\n\nВыберите представление отчёта:"
@@ -38,17 +46,16 @@ async def period_fork(query: CallbackQuery, state: FSMContext):
 
     await state.set_state()
 
-    await query.answer()
+    await try_answer_query(query)
 
 
-@router.callback_query(F.data == "report_show_parameters")
+@router.callback_query(F.data == "revenue_show_parameters")
 async def show_report_parameters_handler(query: CallbackQuery, state: FSMContext):
     await show_report_parameters(query, state)
     await query.answer()
 
 
 async def show_report_parameters(query: CallbackQuery, state: FSMContext):
-
     data = await get_reports(query, state)
 
     kb = IKM(inline_keyboard=[
@@ -58,7 +65,7 @@ async def show_report_parameters(query: CallbackQuery, state: FSMContext):
     msgs = []
 
     for r in data["data"]:
-        text = await make_text(r, state)
+        text = await make_text(r, revenue_properties, state)
         msg = await query.message.answer(text, reply_markup=None)
         msgs.append(msg)
 
