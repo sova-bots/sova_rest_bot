@@ -68,6 +68,8 @@ async def revenue_analysis_handler(query: CallbackQuery, state: FSMContext):
         text += avg_check_text if avg_check_positive else ""
         text += checks_text if checks_positive else ""
 
+        text += f"\n\n\n{revenue_stores_data}"
+
         msg = await query.message.answer(text, reply_markup=None)
         msgs.append(msg)
 
