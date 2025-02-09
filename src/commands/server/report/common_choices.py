@@ -37,4 +37,4 @@ async def report_period_msg(query: CallbackQuery, state: FSMContext):
         text=f"Выберите период для отчёта: <b>{report_types[report_type]}</b>\nОбъект: <b>{department_name}</b>",
         reply_markup=kb
     )
-    await state.set_state(FSMReportGeneral.ask_report_period)
+    

@@ -17,6 +17,7 @@ router.include_routers(analysis_router)
 
 async def revenue_next(query: CallbackQuery, state: FSMContext):
     await report_period_msg(query, state)
+    await state.set_state(FSMReportGeneral.ask_report_period)
 
 
 @router.callback_query(FSMReportGeneral.ask_report_period)
@@ -34,9 +35,7 @@ async def revenue_menu_callback_handler(query: CallbackQuery, state: FSMContext)
 
 
 async def revenue_menu_handler(query: CallbackQuery, state: FSMContext):
-
     period = (await state.get_data())['report_period']
-
     report_type, report_departments, report_period = await get_report_parameters_from_state(state)
 
     department_name = await get_department_name((await state.get_data())['report_department'], query.from_user.id)
