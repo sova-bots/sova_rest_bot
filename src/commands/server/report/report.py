@@ -19,10 +19,11 @@ from .report_recommendations import problem_ares_show_negative, problem_ares_sho
 from .report_keyboards import get_report_kb
 
 from .revenue.layout import revenue_next, router as revenue_router
+from .losses.layout import losses_next, router as losses_router
 
 router = Router(name=__name__)
 
-router.include_routers(revenue_router)
+router.include_routers(revenue_router, losses_router)
 
 
 @router.callback_query(F.data == "report")
@@ -72,7 +73,7 @@ async def fork(query: CallbackQuery, state: FSMContext):
         case "revenue":
             await revenue_next(query, state)
         case "losses_new":
-            await 
+            await losses_next(query, state)
         case _:
             pass
     

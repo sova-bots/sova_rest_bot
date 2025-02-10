@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import InlineKeyboardMarkup as IKM, InlineKeyboardButton as IKB
 
-from ...report_util import get_report_parameters_from_state, get_department_name, get_reports
+from ...report_util import ReportRequestData, get_report_parameters_from_state, get_department_name, get_reports, get_reports_from_data, report_periods
 
 router = Router(name=__name__)
 
@@ -26,7 +26,8 @@ async def write_off_layout_msg(query: CallbackQuery, state: FSMContext):
             ])
     
     await state.set_state(None)
-    await query.message.answer(f"Объект: <b>{department_name}</b>\nОтчёт: <b>Потери списания</b>\nПериод: {period}", reply_markup=kb)
+    await query.message.edit_text(f"Объект: <b>{department_name}</b>\nОтчёт: <b>Потери списания</b>\nПериод: <b>{report_periods[period]}</b>", reply_markup=kb)
+
 
 
 @router.callback_query(F.data == "losses_write_off_show_parameters")
@@ -34,9 +35,19 @@ async def losses_write_off_show_parameters_handler(query: CallbackQuery, state: 
     period = (await state.get_data())['report_period']
     department_name = await get_department_name((await state.get_data())['report_department'], query.from_user.id)
     
-    data = await get_reports(query, state)
+    await query.message.edit_text("Загрузка... ⌛")
 
-    header = f"Объект: <b>{department_name}</b>\nОтчёт: <b>Потери списания</b>\nПериод: {period}"
+    request_data = ReportRequestData(
+        user_id=query.from_user.id,
+        state_data=(await state.get_data()),
+    )
+
+    print(f"{request_data.report_type}")
+
+    data = await get_reports_from_data(query, request_data)
+    print("asdadasdsa flag!!!")
+
+    header = f"Объект: <b>{department_name}</b>\nОтчёт: <b>Потери списания</b>\nПериод: <b>{report_periods[period]}"
 
     for report in data["data"]:
         text = f"""
@@ -48,7 +59,7 @@ async def losses_write_off_show_parameters_handler(query: CallbackQuery, state: 
 <b>Хозы</b>: 
 """
 
-        await query.message.answer()
+        await query.message.edit_text(f"{report=}")
 
     await query.answer()
 

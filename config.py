@@ -7,6 +7,7 @@ load_dotenv(dotenv_path='.env')
 
 
 TOKEN = getenv('BOT_TOKEN')
+print(f'{TOKEN=}')
 
 notifications = False
 

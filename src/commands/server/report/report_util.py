@@ -20,13 +20,13 @@ import config as cf
 report_types = {
     "revenue": "Выручка",
     "losses_new": "Потери",
-    "guests-checks": "Гости/чеки",
-    "avg-check": "Средний чек",
-    "write-off": "Списания",
-    "dangerous-operations": "Опасные операции",
-    "food-cost": "Фудкост",
-    "turnover": "Оборачиваемость в днях",
-    "losses": "Закупки",
+    # "guests-checks": "Гости/чеки",
+    # "avg-check": "Средний чек",
+    # "write-off": "Списания",
+    # "dangerous-operations": "Опасные операции",
+    # "food-cost": "Фудкост",
+    # "turnover": "Оборачиваемость в днях",
+    # "losses": "Закупки",
 }
 
 

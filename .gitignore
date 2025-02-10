@@ -7,3 +7,6 @@ src/commands/server/util/user_tokens.db
 user_tokens.db
 TODO.md
 SOVA-rest.drawio
+
+__pycache__/
+*.py[cod]
