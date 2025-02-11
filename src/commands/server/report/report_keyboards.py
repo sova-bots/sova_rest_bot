@@ -22,8 +22,9 @@ def get_recommendations_kb(report_type: str, report) -> list[list[IKB]]:
     return ikb
 
 
-def get_problem_areas_kb(report_type: str) -> list[list[IKB]]:
-    kb = [[IKB(text="Проблемные зоны 🎯", callback_data=ProblemAreasCallbackData(report_type))]]
+def get_problem_areas_kb(report_type: str) -> list:
+    button = IKB(text="Проблемные зоны 🎯", callback_data=ProblemAreasCallbackData(report_type=report_type).pack())
+    kb = [[button]]
     return kb
 
 
@@ -43,6 +44,3 @@ def get_report_kb(token, report_type, report, lenght_data):
     # кнопка "В меню отчётов"
     if lenght_data == 1:
         rkb += [[IKB(text='В меню отчётов ↩️', callback_data='report_menu')]]
-
-
-

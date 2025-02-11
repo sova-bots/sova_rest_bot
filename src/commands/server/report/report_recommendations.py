@@ -5,7 +5,7 @@ from aiogram import Router, F
 from aiogram.filters.callback_data import CallbackData
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, Message
 from aiogram.types import InlineKeyboardMarkup as IKM, InlineKeyboardButton as IKB
 
 import config as cf
@@ -79,6 +79,8 @@ class ProblemAreasCallbackData(CallbackData, prefix="rprt-prars"):
 # Проблемные зоны
 @router.callback_query(ProblemAreasCallbackData.filter(), FSMReportGeneral.idle)
 async def problem_areas_callback_handler(query: CallbackQuery, callback_data: ProblemAreasCallbackData, state: FSMContext):
+    assert isinstance(query.message, Message)
+
     cb_report_type = callback_data.report_type
     state_data = await state.get_data()
     report_parameters = get_report_parameters_from_state_data(state_data)
@@ -99,12 +101,13 @@ async def problem_areas_callback_handler(query: CallbackQuery, callback_data: Pr
     if report_type != cb_report_type:
         await query.message.edit_text("Перезайдите в меню отчётов и получите отчёт ещё раз", reply_markup=IKM(inline_keyboard=[[IKB(text='В меню отчётов ↩️', callback_data='report_menu')]]))
         return
-    
+
     # вывод характеристик
-    text = ("<i>Проблемные характеристики: <b>{report_types.get(report_type)}</b></i> <i>за {report_periods.get(report_period)}:</i> 👇"
-             + 
-            get_problem_areas_text(report, report_type, report_departments, report_period))
-    
+    text = (
+        "<i>Проблемные характеристики: <b>{report_types.get(report_type)}</b></i> <i>за {report_periods.get(report_period)}:</i> 👇"
+        + get_problem_areas_text(report_type, report)
+    )
+
     await query.message.answer(text, reply_markup=IKM(inline_keyboard=[[IKB(text='В меню отчётов ↩️', callback_data='report_menu')]]))
     await query.answer()
 
@@ -136,6 +139,8 @@ async def send_revenue_recs(query: CallbackQuery, callback_data: RecommendationC
     for rec_type in callback_data.recs_types.split(';'):
         text = recommendations[callback_data.report_type][rec_type]
         texts.append(text)
+
+    assert isinstance(query.message, Message)
 
     await query.message.answer("<b>Общий анализ 🔎</b>" + "\n".join(texts))
 
