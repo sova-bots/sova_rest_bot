@@ -1,5 +1,5 @@
 from aiogram import Router, F
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, Message
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import InlineKeyboardMarkup as IKM, InlineKeyboardButton as IKB
@@ -16,6 +16,8 @@ async def losses_write_off_menu(query: CallbackQuery, state: FSMContext):
 
 
 async def write_off_layout_msg(query: CallbackQuery, state: FSMContext):
+    assert isinstance(query.message, Message)
+
     period = (await state.get_data())['report_period']
     department_name = await get_department_name((await state.get_data())['report_department'], query.from_user.id)
 
@@ -24,7 +26,7 @@ async def write_off_layout_msg(query: CallbackQuery, state: FSMContext):
                 [IKB(text="Обратите внимание 👀", callback_data="losses_write_off_only_negative")],
                 [IKB(text="Рекомендации 💡", callback_data="losses_write_off_recomendations")]
             ])
-    
+
     await state.set_state(None)
     await query.message.edit_text(f"Объект: <b>{department_name}</b>\nОтчёт: <b>Потери списания</b>\nПериод: <b>{report_periods[period]}</b>", reply_markup=kb)
 
@@ -32,9 +34,11 @@ async def write_off_layout_msg(query: CallbackQuery, state: FSMContext):
 
 @router.callback_query(F.data == "losses_write_off_show_parameters")
 async def losses_write_off_show_parameters_handler(query: CallbackQuery, state: FSMContext):
+    assert isinstance(query.message, Message)
+
     period = (await state.get_data())['report_period']
     department_name = await get_department_name((await state.get_data())['report_department'], query.from_user.id)
-    
+
     await query.message.edit_text("Загрузка... ⌛")
 
     request_data = ReportRequestData(
@@ -51,12 +55,12 @@ async def losses_write_off_show_parameters_handler(query: CallbackQuery, state: 
 
     for report in data["data"]:
         text = f"""
-<b>Витрина</b>: 
+<b>Витрина</b>:
 <b>Служебное питание</b>:
 <b>Бракераж</b>:
 <b>Фритюр</b>:
 
-<b>Хозы</b>: 
+<b>Хозы</b>:
 """
 
         await query.message.edit_text(f"{report=}")
@@ -67,8 +71,10 @@ async def losses_write_off_show_parameters_handler(query: CallbackQuery, state: 
 
 @router.callback_query(F.data == "losses_write_off_recomendations")
 async def losses_write_off_recomendations_handler(query: CallbackQuery, state: FSMContext):
+    assert isinstance(query.message, Message)
+
     text = """
-<b>Рекомендации<b>:
+<b>Рекомендации</b>:
 
 1. Для минимизации потерь проводите списания на регулярной основе, ежедневно или еженедельно, в зависимости от вида списания.
 
@@ -83,4 +89,4 @@ async def losses_write_off_recomendations_handler(query: CallbackQuery, state: F
 6. Проводите регулярные собрания с сотрудниками, с помощью платформы SOVA-rest, совместно смотрите, обсуждайте показатели, вовремя выявляйте перекосы, негативную динамику, оперативно устраняйте нарушения.
 """
     await query.message.answer(text)
-
+    await query.answer()

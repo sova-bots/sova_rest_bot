@@ -7,7 +7,7 @@ from src.log import logger
 import config as cf
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, InlineKeyboardMarkup as IKM, InlineKeyboardButton as IKB
+from aiogram.types import CallbackQuery, Message, InlineKeyboardMarkup as IKM, InlineKeyboardButton as IKB
 
 from aiogram.exceptions import TelegramBadRequest
 
@@ -143,7 +143,7 @@ def get_dates(period: str) -> tuple[datetime.date, datetime.date] | None:
         case _:
             logger.msg("ERROR", f"Error SendReports UnknownReportPeriod: {period=}")
             return None
-    
+
     return date_from, date_to
 
 
@@ -165,29 +165,33 @@ def request_get_reports(token: str, report_type: str, report_departments: list, 
 
 
     # logger.info(f"{data['dateFrom']=}, {data['dateTo']=}")
-    # return 
+    # return
 
     req = requests.post(
         url=f"{cf.API_PATH}/api/{report_type}",
         headers={
             "Authorization": f"Bearer {token}",
             "Content-type": "application/json",
+            "Connection": "keep-alive",
+            "User-Agent": "SOVA-rest Bot"
         },
         json=data
     )
     if req.status_code != 200:
         logger.msg("ERROR", f"Error RequestGetReports: {req.text}\n{report_type=} {report_departments=} {period=} {token=}")
         return 2, req.json()
-    
+
     result = req.json()
     return 0, result
 
 
 async def execute_request_get_reports(query: CallbackQuery, token, report_type, departments, period, group: str = "department") -> dict:
+    assert isinstance(query.message, Message)
+
     loop = get_event_loop()
     status_code, data = await loop.run_in_executor(
-        None, 
-        request_get_reports, 
+        None,
+        request_get_reports,
         token, report_type, departments, period, group
     )
 
@@ -221,10 +225,16 @@ async def get_reports_from_data(query: CallbackQuery, data: ReportRequestData) -
 
     logger.info(f"SendReport: {user_id=} {report_type=} {period=} {token=}")
 
-    return await execute_request_get_reports(query, token, report_type, departments, period, group)
+    reports = await execute_request_get_reports(query, token, report_type, departments, period, group)
+
+    logger.info(f"ReportRecieved: {user_id=} {report_type=} {period=} {token=}")
+
+    return reports
 
 
 async def get_reports(query: CallbackQuery, state: FSMContext, group: str = "department") -> dict:
+    assert isinstance(query.message, Message)
+
     await query.message.edit_text("Загрузка... ⚙️")
 
     state_data = await state.get_data()
@@ -238,6 +248,7 @@ def get_department_index(r: dict, token: str) -> int:
     for i in range(len(departments)):
         if departments[i]["name"] == r["label"]:
             return i
+    return -1
 
 
 def get_report_parameters_from_state_data(state_data: dict) -> tuple[str, list, str] | None:
@@ -250,7 +261,7 @@ def get_report_parameters_from_state_data(state_data: dict) -> tuple[str, list, 
     c = "report_period" not in state_data.keys()
     if a or b or c:
         return None
-    
+
     a = state_data["report_type"] is None
     b = state_data["report_department"] is None
     c = state_data["report_period"] is None
@@ -283,4 +294,4 @@ async def try_answer_query(query: CallbackQuery, text: str | None = None) -> Non
     try:
         await query.answer(text)
     except TelegramBadRequest as e:
-        logger.msg("WARNING" f"TelegramBadRequest: {e}")
+        logger.msg("WARNING", f"TelegramBadRequest: {e}")
