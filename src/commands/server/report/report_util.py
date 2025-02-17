@@ -19,7 +19,8 @@ import config as cf
 
 report_types = {
     "revenue": "Выручка",
-    "losses_new": "Потери",
+    "write_off_report": "Потери",
+    "losses": "Закупки",
     # "guests-checks": "Гости/чеки",
     # "avg-check": "Средний чек",
     # "write-off": "Списания",
@@ -28,6 +29,7 @@ report_types = {
     # "turnover": "Оборачиваемость в днях",
     # "losses": "Закупки",
 }
+
 
 
 reports_with_stores = [

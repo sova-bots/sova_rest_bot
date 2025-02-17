@@ -4,88 +4,59 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import InlineKeyboardMarkup as IKM, InlineKeyboardButton as IKB
 
-from .write_off.layout import router as write_off_router, write_off_layout_msg
-from ..report_util import get_department_name
+from ..common_choices import common_period_msg, common_report_type_msg
+from ...report.report_util import ReportRequestData
+from .product.layout import product_next, router as product_router
 
 router = Router(name=__name__)
 
-router.include_routers(write_off_router)
+router.include_routers(product_router)
 
 
-report_types = {
-    "write-off": "Списания",
-    "inventory": "Инвенторизация",
+local_report_types = {
+    "losses/product", "Закупки потери ФАКТ",
 }
 
-
-report_periods = {
+local_periods = {
     "last-day": "Вчерашний день",
     "this-week": "Текущая неделя",
     "this-month": "Текущий месяц",
-    "this-year": "Текущий год",
     "last-week": "Прошлая неделя",
     "last-month": "Прошлый месяц",
-    "last-year": "Прошлый год",
 }
 
-
 class FSMLosses(StatesGroup):
-    ask_report_type = State()
+    ask_report = State()
     ask_period = State()
 
 
 async def losses_next(query: CallbackQuery, state: FSMContext):
-    kb = IKM(inline_keyboard=[[IKB(text=v, callback_data=k)] for k, v in report_types.items()])
-    await state.set_state(FSMLosses.ask_report_type)
-    await query.message.edit_text(text="Выберите отчёт:", reply_markup=kb)
+    await common_report_type_msg(
+        query=query, 
+        state=state, 
+        choose_from=local_report_types
+    )
+    await state.set_state(FSMLosses.ask_report)
 
 
-@router.callback_query(FSMLosses.ask_report_type)
-async def ask_period_handler(query: CallbackQuery, state: FSMContext):
-    await state.update_data({'report_type': query.data})
-
-    await report_period_msg(query, state)
+@router.callback_query(FSMLosses.ask_report)
+async def ask_period(query: CallbackQuery, state: FSMContext):
+    await common_period_msg(
+        query=query, 
+        state=state, 
+        choose_from=local_periods,
+        local_report_types=local_report_types
+    )
     await state.set_state(FSMLosses.ask_period)
 
-    await query.answer()
 
-
-async def report_period_msg(query: CallbackQuery, state: FSMContext):
-
-    if "report_type" not in (await state.get_data()).keys() or (await state.get_data())['report_type'] is None:
-        await query.message.edit_text(
-            text=f"Вернитесь в меню и выберите отчёт ещё раз",
-            reply_markup=IKM(inline_keyboard=[[IKB(text="Назад ↩️", callback_data="report")]])
-        )
-        return
-
-    report_type = (await state.get_data())['report_type']
-    department_id = (await state.get_data())['report_department']
-
-    kb = IKM(inline_keyboard=[
-        [IKB(text=v, callback_data=k)] for k, v in report_periods.items()
-    ])
-    
-    department_name = await get_department_name(department_id, query.from_user.id)
-
-    await query.message.edit_text(
-        text=f"Выберите период для отчёта: <b>{report_types[report_type]}</b>\nОбъект: <b>{department_name}</b>",
-        reply_markup=kb
-    )
-
-
-@router.callback_query(FSMLosses.ask_period)
+@router.callback_query(FSMLosses.ask_report)
 async def fork(query: CallbackQuery, state: FSMContext):
-    await state.update_data({'report_period': query.data})
-
-    report_type = (await state.get_data())['report_type']
+    report_type = (await state.get_data()['report_type'])
 
     match report_type:
-        case "write-off":
-            await write_off_layout_msg(query, state)
-        case "inventory":
-            pass
+        case "losses/product":
+            product_next(query, state)
         case _:
             pass
 
-    await query.answer()
