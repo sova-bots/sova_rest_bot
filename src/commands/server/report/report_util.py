@@ -254,21 +254,10 @@ def get_department_index(r: dict, token: str) -> int:
 
 
 def get_report_parameters_from_state_data(state_data: dict) -> tuple[str, list, str] | None:
-    report_type = state_data.get('report_type')
-    report_department = state_data.get('report_department')
-    report_period = state_data.get('report_period')
 
-    a = "report_type" not in state_data.keys()
-    b = "report_department" not in state_data.keys()
-    c = "report_period" not in state_data.keys()
-    if a or b or c:
-        return None
-
-    a = state_data["report_type"] is None
-    b = state_data["report_department"] is None
-    c = state_data["report_period"] is None
-    if a or b or c:
-        return None
+    report_type = state_data['report_type'] if 'report_type' in state_data.keys() else None
+    report_department = state_data['report_department'] if 'report_department' in state_data.keys() else None
+    report_period = state_data['report_period'] if 'report_period' in state_data.keys() else None
 
     if report_department == "report_departments_all":
         report_departments = []

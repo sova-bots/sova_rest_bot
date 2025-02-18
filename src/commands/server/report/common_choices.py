@@ -108,7 +108,15 @@ async def common_report_layout_msg(query: CallbackQuery, state: FSMContext, kb: 
     department_name = await get_dep_name(request_data.departments, query.from_user.id) 
 
     await state.set_state(None)
-    await query.message.edit_text(f"Объект: <b>{department_name}</b>\nОтчёт: <b>{local_report_types[request_data.report_type]}</b>\nПериод: <b>{report_periods[period]}</b>", reply_markup=IKM(inline_keyboard=kb))
+    await query.message.edit_text(
+        text=f"Объект: <b>{department_name}</b>\nОтчёт: <b>{local_report_types[request_data.report_type]}</b>\nПериод: <b>{period}</b>", 
+        reply_markup=IKM(inline_keyboard=kb)
+    )
 
 
+
+async def get_common_header_msg(query: CallbackQuery, state: FSMContext, department_name: str, local_periods: dict, local_report_types: dict) -> str:
+    request_data = ReportRequestData(query.from_user.id, (await state.get_data()))
+    period = local_periods[request_data.period]
+    return f"<b>{department_name}</b>\nОтчёт: <b>{local_report_types[request_data.report_type]}</b>\nПериод: <b>{period}</b>"
 
