@@ -1,8 +1,8 @@
 from types import GeneratorType
 
 import config as cf
-from src.commands.register.registration_form import RegistrationForm
-from src.data.google_sheets_worker import GoogleSheetsWorker
+from ...commands.registration.register.registration_form import RegistrationForm
+from ...data.google_sheets_worker import GoogleSheetsWorker
 
 
 class MessageColumn:

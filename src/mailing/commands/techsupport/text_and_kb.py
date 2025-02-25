@@ -1,6 +1,6 @@
 from aiogram.types import InlineKeyboardMarkup as IKM, InlineKeyboardButton as IKB
 
-from src.data.techsupport.techsupport_google_sheets_worker import TechSupportMessage
+from ...data.techsupport.techsupport_google_sheets_worker import TechSupportMessage
 
 
 await_techsupport_question = """

@@ -1,7 +1,7 @@
 from gspread.cell import Cell
 
 import config as cf
-from src.data.google_sheets_worker import GoogleSheetsWorker
+from ...data.google_sheets_worker import GoogleSheetsWorker
 
 
 class TechSupportMessage:

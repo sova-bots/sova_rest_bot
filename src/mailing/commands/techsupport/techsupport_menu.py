@@ -3,7 +3,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from aiogram.types import InlineKeyboardMarkup as IKM, InlineKeyboardButton as IKB
 
-from src.data.techsupport.techsupport_google_sheets_worker import techsupport_gsworker
+from ...data.techsupport.techsupport_google_sheets_worker import techsupport_gsworker
 
 router = Router(name=__name__)
 

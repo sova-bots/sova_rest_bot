@@ -3,7 +3,7 @@ from gspread import Client, Spreadsheet, Worksheet
 
 from types import GeneratorType
 
-from src.commands.register.registration_form import RegistrationForm
+from ..commands.registration.register.registration_form import RegistrationForm
 
 import config as cf
 
