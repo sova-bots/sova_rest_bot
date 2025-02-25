@@ -23,7 +23,6 @@ async def start_callback_handler(query: CallbackQuery, state: FSMContext) -> Non
 
 @router.message(CommandStart())
 async def command_start_handler(message: Message, state: FSMContext) -> None:
-    print(message.from_user.id)
     await start_handler(message.from_user.id, message, state)
 
 

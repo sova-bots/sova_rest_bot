@@ -1,5 +1,3 @@
-from types import GeneratorType
-
 import config as cf
 from ...commands.registration.register.registration_form import RegistrationForm
 from ...data.google_sheets_worker import GoogleSheetsWorker
@@ -21,7 +19,7 @@ class NotificationGoogleSheetsWorker(GoogleSheetsWorker):
     def __init__(self, spreadsheet_url: str, worksheet_title: str | None = None):
         super().__init__(spreadsheet_url, worksheet_title)
 
-    def get_messages(self, message_col: int, id_col: int = 4, start_row: int = 4) -> GeneratorType:
+    def get_messages(self, message_col: int, id_col: int = 4, start_row: int = 4):
         values = self.ws.get_all_values()
 
         for row in values[start_row:]:
