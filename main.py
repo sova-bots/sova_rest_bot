@@ -7,25 +7,21 @@ from aiogram.enums import ParseMode
 from aiogram.filters import Command
 from aiogram.types import Message
 
-from src.commands.server.util.db import user_tokens_db
-from src.notification.sender import NotificationSender
-from src.commands.server.util import db
+from src.analytics.db.db import user_tokens_db
+from src.mailing.notification.sender import NotificationSender
+from src.analytics.db import db
 
 import config as cf
-from src.log import logger
-from src.commands.start.start_command import router as start_command_router
-from src.commands.register.registration_command import router as register_command_router
-from src.commands.unregister.unregistration_command import router as unregister_command_router
-from src.commands.techsupport.send_techsupport_message_command import router as send_ts_message_router
-from src.commands.techsupport.show_techsupport_messages import router as show_ts_messages_router
-from src.commands.techsupport.answer_techsupport_message import router as answer_ts_message_router
-from src.commands.server.authorization.authorization import router as authorization_command_router
-from src.commands.server.report.report import router as get_report_router
-from src.commands.techsupport.techsupport_menu import router as techsupport_menu_router
-from src.commands.server.report.report_menu import router as report_menu_router
-from src.commands.server.report.report_recommendations import router as report_recomendations_router
-from src.commands.server.report.report_stores import router as report_stores_router
-from src.commands.server.report.common_choices import router as report_common_choices_router
+from src.util.log import logger
+from src.basic.commands.start_command import router as start_command_router
+from src.mailing.commands.registration.register.registration_command import router as register_command_router
+from src.mailing.commands.registration.unregister.unregistration_command import router as unregister_command_router
+from src.mailing.commands.techsupport.send_techsupport_message_command import router as send_ts_message_router
+from src.mailing.commands.techsupport.show_techsupport_messages import router as show_ts_messages_router
+from src.mailing.commands.techsupport.answer_techsupport_message import router as answer_ts_message_router
+from src.mailing.commands.techsupport.techsupport_menu import router as techsupport_menu_router
+
+from src.analytics.router import analytics_router
 
 router = Router(name=__name__)
 
@@ -37,13 +33,8 @@ routers = [
     send_ts_message_router,
     show_ts_messages_router,
     answer_ts_message_router,
-    authorization_command_router,
-    get_report_router,
     techsupport_menu_router,
-    report_menu_router,
-    report_recomendations_router,
-    report_stores_router,
-    report_common_choices_router,
+    analytics_router
 ]
 
 dp = Dispatcher()
