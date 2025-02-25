@@ -3,7 +3,7 @@ import requests
 from asyncio import get_event_loop
 
 from .db.db import user_tokens_db
-from util.log import logger
+from src.util.log import logger
 import config as cf
 
 

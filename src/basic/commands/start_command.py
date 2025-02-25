@@ -47,7 +47,7 @@ def get_markup(user_id: int, has_token: bool) -> IKM:
     if not has_token:
         btn = [IKB(text='Меню отчётов', callback_data='server_report_authorization')]
     else:
-        btn = [IKB(text='Меню отчётов', callback_data='rereport_main_menu')]
+        btn = [IKB(text='Меню отчётов', callback_data='analytics_report_begin')]
     inline_kb.append(btn)
 
     btn = [IKB(text='Меню тех-поддержки 🛠', callback_data='techsupport_menu')]
