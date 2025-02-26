@@ -3,7 +3,7 @@ from aiogram import Router
 from aiogram.types import CallbackQuery, Message
 from aiogram.fsm.context import FSMContext
 
-from .layout import next_step
+from .layout_util import next_step
 from .types.msg_data import MsgData
 from .states import AnalyticReportStates
 

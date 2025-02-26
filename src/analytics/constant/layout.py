@@ -1,4 +1,4 @@
-from ..handlers.messages import department_msg, branch_msg, type_msg, period_msg, test_msg
+from ..handlers.msg.messages import department_msg, branch_msg, type_msg, period_msg, test_msg
 
 
 layout = {
