@@ -20,16 +20,16 @@ class LogMessageType:
     ERROR: str = 'ERROR'
 
 
-def info(message: str, color: Fore = Fore.GREEN) -> None:
+def info(message: str, color: Fore = Fore.GREEN) -> None: # type: ignore
     msg(LogMessageType.INFO, message, color)
 
 
-def debug(message: str, color: Fore = Fore.MAGENTA) -> None:
+def debug(message: str, color: Fore = Fore.MAGENTA) -> None: # type: ignore
     if Defaults.DEBUG:
         msg(LogMessageType.DEBUG, message, color)
 
 
-def msg(msg_type: str, message: str, color: Fore = Fore.CYAN) -> None:
+def msg(msg_type: str, message: str, color: Fore = Fore.CYAN) -> None: # type: ignore
     now = datetime.now(tz=cf.TIMEZONE)
     text = f'{Style.DIM}{Fore.WHITE}{now.strftime(Defaults.DT_FORMAT)} {Style.NORMAL}{color}[{msg_type}] {Fore.RESET}{message}{Style.RESET_ALL}'
     print(text)
