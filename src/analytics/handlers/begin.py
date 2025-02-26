@@ -2,7 +2,8 @@ from aiogram import Router, F
 from aiogram.types import CallbackQuery
 from aiogram.fsm.context import FSMContext
 
-from .handlers import enter_step, clear_report_state_data
+from .handlers import clear_report_state_data
+from .layout import enter_step
 from .messages import MsgData
 
 router = Router(name=__name__)

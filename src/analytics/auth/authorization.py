@@ -80,7 +80,7 @@ async def authorize(message: Message, state: FSMContext):
 
     logger.info(f"Authorized {user_id=}, {token=}")
 
-    kb = IKM(inline_keyboard=[[IKB(text="В меню отчётов ↩️", callback_data="report_main_menu")]])
+    kb = IKM(inline_keyboard=[[IKB(text="В меню отчётов ↩️", callback_data="analytics_report_begin")]])
     await msg.edit_text("Успешно ✅", reply_markup=kb)
 
 

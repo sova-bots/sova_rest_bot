@@ -10,16 +10,23 @@ def init() -> None:
 
 class Defaults:
     DT_FORMAT: str = '%d.%m.%Y %H:%M:%S'
+    DEBUG = True
 
 
 class LogMessageType:
     INFO: str = 'INFO'
+    DEBUG: str = 'DEBUG'
     WARNING: str = 'WARNING'
     ERROR: str = 'ERROR'
 
 
 def info(message: str, color: Fore = Fore.GREEN) -> None:
     msg(LogMessageType.INFO, message, color)
+
+
+def debug(message: str, color: Fore = Fore.MAGENTA) -> None:
+    if Defaults.DEBUG:
+        msg(LogMessageType.DEBUG, message, color)
 
 
 def msg(msg_type: str, message: str, color: Fore = Fore.CYAN) -> None:
