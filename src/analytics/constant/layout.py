@@ -8,7 +8,7 @@ layout = {
     ],
     "revenue": [
         lambda msg_data: period_msg(msg_data, [0, 1, 2, 3, 4, 5, 6]), 
-        lambda msg_data: menu_msg(msg_data, [0, 2, 3])
+        lambda msg_data: menu_msg(msg_data, [0, 1, 2, 3])
     ],
     "write-off": [
 

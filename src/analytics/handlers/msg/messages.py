@@ -77,7 +77,7 @@ async def test_msg(msg_data: MsgData) -> None:
     
       
 # menu messages
-async def parameters_msg(msg_data: MsgData) -> None:
+async def parameters_msg(msg_data: MsgData, type_prefix: str = "", only_negative: bool = False) -> None:
     state_data = await msg_data.state.get_data()
     
     report_type = state_data.get("report:type")
@@ -88,7 +88,8 @@ async def parameters_msg(msg_data: MsgData) -> None:
     
     reports = await get_reports(
         tgid=msg_data.tgid, 
-        state_data=state_data
+        state_data=state_data,
+        type_prefix=type_prefix
     )
     
     back_kb = IKM(inline_keyboard=[[back_current_step_btn]])
@@ -98,12 +99,19 @@ async def parameters_msg(msg_data: MsgData) -> None:
         return
     
     header = await make_header(msg_data)
-    header_msg = await msg_data.msg.answer(text=header)
+
+    text_func = text_functions[type_prefix + report_type]
+    texts: list[str] = text_func(TextData(reports=reports, period=period, only_negative=only_negative))
     
-    text_func = text_functions[report_type]
-    text_msg = await msg_data.msg.answer(text=text_func(TextData(reports=reports, period=period)))
-    
-    await add_messages_to_delete(msg_data=msg_data, messages=[header_msg, text_msg])
+    if len(texts) == 1:
+        texts[0] = header + "\n\n" + texts[0]
+    else:
+        header_msg = await msg_data.msg.answer(text=header)
+        await add_messages_to_delete(msg_data=msg_data, messages=[header_msg])
+
+    for text in texts:
+        text_msg = await msg_data.msg.answer(text=text)
+        await add_messages_to_delete(msg_data=msg_data, messages=[text_msg])
     
     await msg_data.msg.answer(text="Вернуться назад?", reply_markup=back_kb)
     

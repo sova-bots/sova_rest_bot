@@ -9,8 +9,8 @@ from src.util.log import logger
 import config as cf
 
 
-async def get_reports(tgid: int, state_data: dict) -> list[dict] | None:
-    request_data_list = get_requests_datas_from_state_data(tgid, state_data)
+async def get_reports(tgid: int, state_data: dict, type_prefix: str) -> list[dict] | None:
+    request_data_list = get_requests_datas_from_state_data(tgid, state_data, type_prefix)
     responses = []
     for request_data in request_data_list:
         loop = get_event_loop()

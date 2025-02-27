@@ -51,6 +51,19 @@ async def show_recommendations_handler(query: CallbackQuery, state: FSMContext) 
     await query.answer()
 
 
+@router.callback_query(F.data == "report:show_analysis")
+async def show_recommendations_handler(query: CallbackQuery, state: FSMContext) -> None:
+    await parameters_msg(MsgData(msg=query.message, state=state, tgid=query.from_user.id), type_prefix="analysis-")
+    await query.answer()
+
+
+@router.callback_query(F.data == "report:show_negative")
+async def show_recommendations_handler(query: CallbackQuery, state: FSMContext) -> None:
+    await parameters_msg(MsgData(msg=query.message, state=state, tgid=query.from_user.id), only_negative=True)
+    await query.answer()
+
+
+
 @router.callback_query(F.data == "report:show_recommendations")
 async def show_recommendations_handler(query: CallbackQuery, state: FSMContext) -> None:
     await recommendations_msg(MsgData(msg=query.message, state=state, tgid=query.from_user.id))

@@ -19,14 +19,14 @@ class ReportRequestData:
     departments: list[str]
     
 
-def get_requests_datas_from_state_data(tgid: int, state_data: dict) -> list[ReportRequestData]:
+def get_requests_datas_from_state_data(tgid: int, state_data: dict, type_prefix: str) -> list[ReportRequestData]:
     token = user_tokens_db.get_token(tgid=str(tgid))
     
     report_type = state_data.get("report:type")
     
-    url_list = all_report_urls.get(report_type)
+    url_list = all_report_urls.get(type_prefix + report_type)
     if url_list is None:
-        raise RuntimeError("No url. Please specify url for this report type in urls.py")
+        raise RuntimeError("No url. Please specify url for \"{report_type}\" report type in urls.py")
     
     result = []
     
