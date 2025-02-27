@@ -2,10 +2,10 @@ from aiogram.types import Message, InlineKeyboardMarkup as IKM, InlineKeyboardBu
 from aiogram.fsm.context import FSMContext
 from aiogram.enums.parse_mode import ParseMode
 
-from .msg_util import set_input_state, make_kb, make_kb_report_menu, back_current_step_btn
+from .msg_util import set_input_state, make_kb, make_kb_report_menu, back_current_step_btn, add_messages_to_delete
 from ..types.msg_data import MsgData
 from .headers import make_header
-from ...api import get_report
+from ...api import get_reports
 from ...constant.variants import all_departments, all_branches, all_types, all_periods, all_menu_buttons
 from ...constant.text.recommendations import recommendations
 from ..states import AnalyticReportStates
@@ -81,33 +81,29 @@ async def parameters_msg(msg_data: MsgData) -> None:
     state_data = await msg_data.state.get_data()
     
     report_type = state_data.get("report:type")
-    if report_type is None:
-        report_type = state_data.get("report:branch")
+
     period = state_data.get("report:period")
     
     loading_msg = await msg_data.msg.edit_text(text="Загрузка ⏳")
     
-    report = await get_report(
+    reports = await get_reports(
         tgid=msg_data.tgid, 
         state_data=state_data
     )
     
     back_kb = IKM(inline_keyboard=[[back_current_step_btn]])
 
-    if report is None:
+    if None in reports:
         await loading_msg.edit_text(text="Не удалось загрузить отчёт", reply_markup=back_kb)
         return
     
-    text_func = text_functions[report_type]
+    header = await make_header(msg_data)
+    header_msg = await msg_data.msg.answer(text=header)
     
-    msg1 = await msg_data.msg.answer(text=text_func(TextData(report=report, period=period)))
-
-    # make separate function
-    messages_to_delete = state_data.get("report:messages_to_delete")
-    if messages_to_delete is None:
-        messages_to_delete = []
-    messages_to_delete.append(msg1.message_id)
-    await msg_data.state.update_data({"report:messages_to_delete": messages_to_delete})
+    text_func = text_functions[report_type]
+    text_msg = await msg_data.msg.answer(text=text_func(TextData(reports=reports, period=period)))
+    
+    await add_messages_to_delete(msg_data=msg_data, messages=[header_msg, text_msg])
     
     await msg_data.msg.answer(text="Вернуться назад?", reply_markup=back_kb)
     
@@ -118,8 +114,6 @@ async def recommendations_msg(msg_data: MsgData) -> None:
     state_data = await msg_data.state.get_data()
     
     report_type = state_data.get("report:type")
-    if report_type is None:
-        report_type = state_data.get("report:branch")
         
     back_kb = IKM(inline_keyboard=[[back_current_step_btn]])
         

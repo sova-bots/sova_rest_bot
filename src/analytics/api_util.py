@@ -19,27 +19,35 @@ class ReportRequestData:
     departments: list[str]
     
 
-def get_request_data_from_state_data(tgid: int, state_data: dict) -> ReportRequestData:
+def get_requests_datas_from_state_data(tgid: int, state_data: dict) -> list[ReportRequestData]:
     token = user_tokens_db.get_token(tgid=str(tgid))
     
     report_type = state_data.get("report:type")
-    if report_type is None:
-        report_type = state_data.get("report:branch")
     
-    url_and_group = all_report_urls.get(report_type).split('.')
-    url = url_and_group[0]
-    group = url_and_group[1] if len(url_and_group) > 1 else None
+    url_list = all_report_urls.get(report_type)
+    if url_list is None:
+        raise RuntimeError("No url. Please specify url for this report type in urls.py")
     
-    departments = state_data.get("report:department")
-    if departments == "all_departments":
-        departments = []
-    else:
-        departments = [departments]
+    result = []
     
-    period = state_data.get("report:period")
-    date_from, date_to = get_dates(period=period)
-    
-    return ReportRequestData(token, url, group, date_from.isoformat(), date_to.isoformat(), departments)
+    for url in url_list:
+        url_and_group = url.split('.')
+        
+        url = url_and_group[0]
+        group = url_and_group[1] if len(url_and_group) > 1 else None
+        
+        departments = state_data.get("report:department")
+        if departments == "all_departments":
+            departments = []
+        else:
+            departments = [departments]
+        
+        period = state_data.get("report:period")
+        date_from, date_to = get_dates(period=period)
+        
+        data = ReportRequestData(token, url, group, date_from.isoformat(), date_to.isoformat(), departments)
+        result.append(data)
+    return result
 
 
 def get_dates(period: str) -> tuple[datetime.date, datetime.date]:

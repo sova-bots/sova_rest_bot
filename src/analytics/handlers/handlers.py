@@ -35,7 +35,7 @@ async def value_input_handler(query: CallbackQuery, state: FSMContext) -> None:
     await state.update_data({key: value})
 
     if key == "report:branch":
-        await state.update_data({"report:step": -1})
+        await state.update_data({"report:type": value, "report:step": -1})
 
     await state.update_data({"report:input": None})
     await state.set_state(None)

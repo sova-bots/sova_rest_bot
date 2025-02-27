@@ -2,18 +2,21 @@ import requests
 
 from asyncio import get_event_loop
 
-from .api_util import get_dates, get_request_data_from_state_data, ReportRequestData
+from .api_util import get_dates, get_requests_datas_from_state_data, ReportRequestData
 
 from .db.db import user_tokens_db
 from src.util.log import logger
 import config as cf
 
 
-async def get_report(tgid: int, state_data: dict) -> dict | None:
-    request_data = get_request_data_from_state_data(tgid, state_data)
-    loop = get_event_loop()
-    response = await loop.run_in_executor(None, m_req_get_report, request_data.token, request_data.url, request_data.group, request_data.departments, request_data.date_from, request_data.date_to)
-    return response
+async def get_reports(tgid: int, state_data: dict) -> list[dict] | None:
+    request_data_list = get_requests_datas_from_state_data(tgid, state_data)
+    responses = []
+    for request_data in request_data_list:
+        loop = get_event_loop()
+        response = await loop.run_in_executor(None, m_req_get_report, request_data.token, request_data.url, request_data.group, request_data.departments, request_data.date_from, request_data.date_to)
+        responses.append(response)
+    return responses
 
 def m_req_get_report(token: str, url: str, group: str, departments: list[str], date_from: str, date_to: str) -> dict | None:
     data = {

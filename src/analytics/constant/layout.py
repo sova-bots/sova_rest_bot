@@ -7,15 +7,16 @@ layout = {
         branch_msg
     ],
     "revenue": [
-
+        lambda msg_data: period_msg(msg_data, [0, 1, 2, 3, 4, 5, 6]), 
+        lambda msg_data: menu_msg(msg_data, [0, 2, 3])
     ],
     "write-off": [
 
     ],
     "losses": [
-        lambda m: type_msg(m, [0, 1]), 
-        lambda m: period_msg(m, [2, 3, 5]), 
-        lambda m: menu_msg(m, [0, 2, 3])
+        lambda msg_data: type_msg(msg_data, [0, 1]), 
+        lambda msg_data: period_msg(msg_data, [2, 3, 5]), 
+        lambda msg_data: menu_msg(msg_data, [0, 2, 3])
     ],
     "food-cost": [
 
