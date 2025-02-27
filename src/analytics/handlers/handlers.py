@@ -6,7 +6,7 @@ from aiogram.fsm.context import FSMContext
 from .layout_util import next_step, repeat_current_step
 from .types.msg_data import MsgData
 from .states import AnalyticReportStates
-from .msg.messages import recommendations_msg
+from .msg.messages import recommendations_msg, parameters_msg
 
 from src.util.log import logger
 

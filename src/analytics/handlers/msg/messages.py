@@ -9,6 +9,7 @@ from ...api import get_report
 from ...constant.variants import all_departments, all_branches, all_types, all_periods, all_menu_buttons
 from ...constant.text.recommendations import recommendations
 from ..states import AnalyticReportStates
+from ...constant.text.texts import text_functions, TextData
 
 
 # msg functions
@@ -79,15 +80,38 @@ async def test_msg(msg_data: MsgData) -> None:
 async def parameters_msg(msg_data: MsgData) -> None:
     state_data = await msg_data.state.get_data()
     
+    report_type = state_data.get("report:type")
+    if report_type is None:
+        report_type = state_data.get("report:branch")
+    period = state_data.get("report:period")
     
-        
     loading_msg = await msg_data.msg.edit_text(text="Загрузка ⏳")
     
     report = await get_report(
         tgid=msg_data.tgid, 
-        url_key=report_type,
-        departments=departments
+        state_data=state_data
     )
+    
+    back_kb = IKM(inline_keyboard=[[back_current_step_btn]])
+
+    if report is None:
+        await loading_msg.edit_text(text="Не удалось загрузить отчёт", reply_markup=back_kb)
+        return
+    
+    text_func = text_functions[report_type]
+    
+    msg1 = await msg_data.msg.answer(text=text_func(TextData(report=report, period=period)))
+
+    # make separate function
+    messages_to_delete = state_data.get("report:messages_to_delete")
+    if messages_to_delete is None:
+        messages_to_delete = []
+    messages_to_delete.append(msg1.message_id)
+    await msg_data.state.update_data({"report:messages_to_delete": messages_to_delete})
+    
+    await msg_data.msg.answer(text="Вернуться назад?", reply_markup=back_kb)
+    
+    await loading_msg.delete()
 
 
 async def recommendations_msg(msg_data: MsgData) -> None:
