@@ -14,8 +14,8 @@ layout = {
     ],
     "losses": [
         lambda m: type_msg(m, [0, 1]), 
-        lambda m: period_msg(m, [0, 1, 2, 3]), 
-        lambda m: menu_msg(m, [2, 4, 5])
+        lambda m: period_msg(m, [2, 3, 5]), 
+        lambda m: menu_msg(m, [0, 2, 3])
     ],
     "food-cost": [
 
