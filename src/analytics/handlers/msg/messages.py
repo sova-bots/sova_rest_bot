@@ -2,18 +2,24 @@ from aiogram.types import Message, InlineKeyboardMarkup as IKM, InlineKeyboardBu
 from aiogram.fsm.context import FSMContext
 from aiogram.enums.parse_mode import ParseMode
 
-from .msg_util import set_input_state, make_kb, make_kb_report_menu, back_current_step_btn, add_messages_to_delete
+from .msg_util import clear_report_state_data, set_input_state, make_kb, make_kb_report_menu, back_current_step_btn, add_messages_to_delete
 from ..types.msg_data import MsgData
 from .headers import make_header
 from ...api import get_reports
 from ...constant.variants import all_departments, all_branches, all_types, all_periods, all_menu_buttons
-from ...constant.text.recommendations import recommendations
+from ..text.recommendations import recommendations
 from ..states import AnalyticReportStates
-from ...constant.text.texts import text_functions, TextData
+from ..text.texts import text_functions
+from ..types.text_data import TextData
 
 
 # msg functions
 async def department_msg(msg_data: MsgData) -> None:
+    state_data = await msg_data.state.get_data()
+    
+    if state_data.get("report:step") == 0:
+        await clear_report_state_data(msg_data.state)
+    
     await set_input_state(msg_data.state, "report:department")
 
     assert msg_data.tgid is not None, "tgid not specified"

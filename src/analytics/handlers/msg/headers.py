@@ -22,16 +22,16 @@ async def make_header(msg_data: MsgData) -> str:
     period = all_periods.get(period)
     
     if department is not None:
-        headers.append(f"<code>Объект:</code> <b>{department.split('.')[-1]}</b>")
+        headers.append(f"📍 <code>Объект:</code> <b>{department.split('.')[-1]}</b>")
         
-    if report_type is None and branch is not None:
-        headers.append(f"<code>Отчёт:</code> <b>{branch}</b>")
+    if branch is not None and state_data.get("report:type") == state_data.get("report:branch"):
+        headers.append(f"📊 <code>Отчёт:</code> <b>{branch}</b>")
         
     if report_type is not None:
-        headers.append(f"<code>Отчёт:</code> <b>{report_type}</b>")
+        headers.append(f"📊 <code>Отчёт:</code> <b>{report_type}</b>")
         
     if period is not None:
-        headers.append(f"<code>Период:</code> <b>{period}</b>")
+        headers.append(f"📅 <code>Период:</code> <b>{period}</b>")
         
     return "\n".join(headers)
     

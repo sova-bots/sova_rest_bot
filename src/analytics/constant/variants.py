@@ -22,7 +22,7 @@ all_branches = {
     "revenue": "Выручка",
     "write-off": "Потери",
     "losses": "Закупки",
-    "food-cost": "Фудкост/Наценка",
+    "foodcost": "Фудкост/Наценка",
     "turnover": "Оборачиваемость остатков",
 }
 
@@ -30,6 +30,7 @@ all_branches = {
 all_types = {
     "losses": "Закупки потери/прибыль ФАКТ",
     "loss-forecast": "Закупки потери/прибыль ПРОГНОЗ",
+    "food-cost": "Фудкост",
     "test-type": "Тестовый вид отчёта",
 }
 
@@ -38,7 +39,8 @@ all_menu_buttons = [
     IKB(text="Показатели 📊 ", callback_data="report:show_parameters"),
     IKB(text="Анализ 🔎", callback_data="report:show_analysis"),
     IKB(text="Обратите внимание 👀", callback_data="report:show_negative"),
-    IKB(text="Рекомендации 💡", callback_data="report:show_recommendations")
+    IKB(text="Обратите внимание 👀", callback_data="report:show_negative_analysis"),
+    IKB(text="Рекомендации 💡", callback_data="report:show_recommendations"),
 ]
 
 
