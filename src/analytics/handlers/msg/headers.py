@@ -31,7 +31,7 @@ async def make_header(msg_data: MsgData) -> str:
         headers.append(f"<code>Отчёт:</code> <b>{report_type}</b>")
         
     if period is not None:
-        headers.append(f"<code>Период:</code> <b>{period}<b>")
+        headers.append(f"<code>Период:</code> <b>{period}</b>")
         
     return "\n".join(headers)
     

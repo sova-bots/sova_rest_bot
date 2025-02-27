@@ -2,10 +2,12 @@ from aiogram.types import Message, InlineKeyboardMarkup as IKM, InlineKeyboardBu
 from aiogram.fsm.context import FSMContext
 from aiogram.enums.parse_mode import ParseMode
 
-from .msg_util import set_input_state, make_kb
+from .msg_util import set_input_state, make_kb, make_kb_report_menu, back_current_step_btn
 from ..types.msg_data import MsgData
 from .headers import make_header
-from ...constant.variants import all_departments, all_branches, all_types, all_periods
+from ...api import get_report
+from ...constant.variants import all_departments, all_branches, all_types, all_periods, all_menu_buttons
+from ...constant.text.recommendations import recommendations
 from ..states import AnalyticReportStates
 
 
@@ -53,6 +55,13 @@ async def period_msg(msg_data: MsgData, period_indexes: list[int]) -> None:
     await msg_data.msg.edit_text(text=text, reply_markup=kb)
 
 
+async def menu_msg(msg_data: MsgData, buttons_indexes: list[int]) -> None:
+    header = await make_header(msg_data) + "\n\n"
+    text = header + "Выберите"
+    kb = make_kb_report_menu(all_menu_buttons, buttons_indexes)
+    await msg_data.msg.edit_text(text=text, reply_markup=kb)
+
+
 async def test_msg(msg_data: MsgData) -> None:
     state_data = await msg_data.state.get_data()
 
@@ -65,6 +74,41 @@ async def test_msg(msg_data: MsgData) -> None:
 
     await msg_data.msg.edit_text(text=f"{_department=}\n\n{_type=}\n\n{_period=}")
     
+      
+# menu messages
+async def parameters_msg(msg_data: MsgData) -> None:
+    state_data = await msg_data.state.get_data()
     
+    
+        
+    loading_msg = await msg_data.msg.edit_text(text="Загрузка ⏳")
+    
+    report = await get_report(
+        tgid=msg_data.tgid, 
+        url_key=report_type,
+        departments=departments
+    )
+
+
+async def recommendations_msg(msg_data: MsgData) -> None:
+    state_data = await msg_data.state.get_data()
+    
+    report_type = state_data.get("report:type")
+    if report_type is None:
+        report_type = state_data.get("report:branch")
+        
+    back_kb = IKM(inline_keyboard=[[back_current_step_btn]])
+        
+    if report_type == "revenue":
+        await msg_data.msg.edit_text(text="в разработке", reply_markup=back_kb)
+        return
+    
+    text = "<b>Рекомендации 💡</b>\n" + recommendations.get(report_type)
+    
+    if text is None:
+        await msg_data.msg.edit_text(text="Не удалось получить рекомендации", reply_markup=back_kb)
+        return
+    
+    await msg_data.msg.edit_text(text=text, reply_markup=back_kb)
     
     

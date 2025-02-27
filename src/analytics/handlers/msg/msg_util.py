@@ -13,8 +13,20 @@ def make_kb(all_choices: dict[str, str], indexes: list[int] = []) -> IKM:
     return IKM(inline_keyboard=kb)
 
 
+def make_kb_report_menu(buttons: list[IKB], indexes: list[int] = []) -> IKM:
+    if indexes:
+        buttons = [buttons[i] for i in range(len(buttons)) if i in indexes]
+
+    kb = [[button] for button in buttons]
+    return IKM(inline_keyboard=kb)
+
+
 # state functions
 async def set_input_state(state: FSMContext, input_key: str) -> None:
     await state.set_state(AnalyticReportStates.value_input)
     await state.update_data({"report:input": input_key})
     
+       
+# common buttons
+back_current_step_btn = IKB(text="Назад ↩️", callback_data="report:back_current_step")
+
