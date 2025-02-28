@@ -8,7 +8,7 @@ from .headers import make_header
 from ...api import get_reports
 from ...constant.variants import all_departments, all_branches, all_types, all_periods, all_menu_buttons
 from ..text.recommendations import recommendations
-from ..states import AnalyticReportStates
+from ..text.revenue_texts import revenue_analysis_text
 from ..text.texts import text_functions
 from ..types.text_data import TextData
 
@@ -83,7 +83,7 @@ async def test_msg(msg_data: MsgData) -> None:
     
       
 # menu messages
-async def parameters_msg(msg_data: MsgData, type_prefix: str = "", only_negative: bool = False) -> None:
+async def parameters_msg(msg_data: MsgData, type_prefix: str = "", only_negative: bool = False, recommendations: bool = False) -> None:
     state_data = await msg_data.state.get_data()
     
     report_type = state_data.get("report:type")
@@ -107,7 +107,11 @@ async def parameters_msg(msg_data: MsgData, type_prefix: str = "", only_negative
     header = await make_header(msg_data)
 
     text_func = text_functions[type_prefix + report_type]
-    texts: list[str] = text_func(TextData(reports=reports, period=period, only_negative=only_negative))
+    text_data = TextData(reports=reports, period=period, only_negative=only_negative)
+    texts: list[str] = text_func(text_data)
+
+    if report_type == "revenue" and recommendations:
+        texts = revenue_analysis_text(text_data, msg_type="revenue_recomendations")
     
     if len(texts) == 1:
         texts[0] = header + "\n\n" + texts[0]
@@ -129,11 +133,11 @@ async def recommendations_msg(msg_data: MsgData) -> None:
     
     report_type = state_data.get("report:type")
         
-    back_kb = IKM(inline_keyboard=[[back_current_step_btn]])
-        
     if report_type == "revenue":
-        await msg_data.msg.edit_text(text="в разработке", reply_markup=back_kb)
+        await parameters_msg(msg_data, type_prefix="analysis.", only_negative=True, recommendations=True)
         return
+
+    back_kb = IKM(inline_keyboard=[[back_current_step_btn]])
     
     text = "<b>Рекомендации 💡</b>\n" + recommendations.get(report_type)
     

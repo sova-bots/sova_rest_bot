@@ -20,7 +20,7 @@ all_periods = {
 
 all_branches = {
     "revenue": "Выручка",
-    "write-off": "Потери",
+    "writeoff": "Потери",
     "losses": "Закупки",
     "foodcost": "Фудкост/Наценка",
     "turnover": "Оборачиваемость остатков",
@@ -31,6 +31,8 @@ all_types = {
     "losses": "Закупки потери/прибыль ФАКТ",
     "loss-forecast": "Закупки потери/прибыль ПРОГНОЗ",
     "food-cost": "Фудкост",
+    "inventory": "Инвентаризация",
+    "write-off": "Списания",
     "test-type": "Тестовый вид отчёта",
 }
 

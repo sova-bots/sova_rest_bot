@@ -1,3 +1,6 @@
+from ..types.text_data import TextData
+
+
 recommendations = {
     "guests": """
 <b>Рекомендации:</b>
@@ -45,8 +48,8 @@ def revenue_str_if_exists(name, value, properties, is_dynamic: bool) -> str:
     return f"<b>{properties[name][0]}:</b> {value:,.0f} {properties[name][1]} \n"
 
 
-def revenue_text(reports: list) -> list[str]:
-    reports = reports[0]["data"]
+def revenue_text(text_data: TextData) -> list[str]:
+    reports = text_data.reports[0]["data"]
 
     revenue_properties = {
         "properties1": {
@@ -88,14 +91,24 @@ def make_one_text(r: dict, report_literal: str, label: str, period: str) -> tupl
     period = period.split('-')[-1]
     
     dynamics = r[f'{report_literal}_dynamics_{period}']
-    if dynamics > 0:
+
+    if dynamics is None:
+        pass
+    elif dynamics > 0:
         dynamics = f"+{dynamics:,.0f}"
     else:
         dynamics = f"{dynamics:,.0f}"
 
-    text = f"{label}: {dynamics}%; {r[f'{report_literal}_{period}']:,.0f} / {r[f'{report_literal}']:,.0f}"
+    last_parameter = f"{r[f'{report_literal}_{period}']:,.0f}" if r[f'{report_literal}_{period}'] is not None else None
+    parameter = f"{r[f'{report_literal}']:,.0f}" if r[f'{report_literal}'] is not None else None
+    text = f"{label}: {dynamics}%; {last_parameter} / {parameter}"
 
-    return text, r[f'{report_literal}_dynamics_{period}'] >= 0
+    if r[f'{report_literal}_dynamics_{period}'] is not None:
+        positive = r[f'{report_literal}_dynamics_{period}'] >= 0
+    else:
+        positive = True
+
+    return text, positive
 
 
 def str_positive_negative(texts_positive: list[str], texts_negative: list[str], only_negative: bool) -> str:
@@ -121,20 +134,22 @@ def str_positive_negative(texts_positive: list[str], texts_negative: list[str], 
     return text
 
 
-async def revenue_analysis(reports: list, period: str, msg_type: str):
-    guests_checks_data = reports[0]
-    avg_check_data = reports[1]
-
-
-    data.report_type = "revenue"
-    data.group = "store"
+def revenue_analysis_text(text_data: TextData, msg_type: str = ""):
     
-    data.group = "department"
-    
-    data.group = "date_of_week"
+    if not msg_type and text_data.only_negative:
+        msg_type = "only_negative"
 
+    period = text_data.period
 
-    for i in range(len(guests_checks_data["data"])):
+    guests_checks_data = text_data.reports[0]
+    avg_check_data = text_data.reports[1]
+    revenue_data = text_data.reports[2]
+    revenue_stores_data = text_data.reports[3]
+    revenue_date_of_week_data = text_data.reports[4]
+
+    text_list = []
+
+    for i in range(min(len(guests_checks_data["data"]), len(avg_check_data["data"]))):
         label = guests_checks_data["data"][i]["label"]
         
         period_literal = period.split('-')[-1]
@@ -229,15 +244,6 @@ async def revenue_analysis(reports: list, period: str, msg_type: str):
         if msg_type == "revenue_recomendations" and len(date_of_week_texts_negative) > 0:
             text += "\n" + recommendations['days_of_week'] + "\n"
         
-        msg = await query.message.answer(text, reply_markup=None)
-        msgs.append(msg)
+        text_list.append(text)
 
-    await state.update_data({'messages_to_delete': msgs})
-
-    await query.message.answer("Вернуться назад?", reply_markup=kb)
-
-    await query.message.delete()
-
-
-def revenue_analysis_text(reports: list) -> list[str]:
-    pass
+    return text_list

@@ -27,11 +27,11 @@ def turnover_text(text_data: TextData) -> list[str]:
 
     report = ""
     if not text_data.only_negative or kitchen_data[dynamic_key] < 0:
-        report += f"🍳 **Кухня:** {kitchen_data[turnover_key]:.0f} дней, {kitchen_data[dynamic_key]:+.0f}%\n"
+        report += f"🍳 <b>Кухня:</b> {kitchen_data[turnover_key]:.0f} дней, {kitchen_data[dynamic_key]:+.0f}%\n"
     if not text_data.only_negative or bar_data[dynamic_key] < 0:
-        report += f"🍻 **Бар:** {bar_data[turnover_key]:.0f} дней, {bar_data[dynamic_key]:+.0f}%\n"
+        report += f"🍻 <b>Бар:</b> {bar_data[turnover_key]:.0f} дней, {bar_data[dynamic_key]:+.0f}%\n"
     if not text_data.only_negative or hozes_data[dynamic_key] < 0:
-        report += f"🧹 **Хозы:** {hozes_data[turnover_key]:.0f} дней, {hozes_data[dynamic_key]:+.0f}%\n"
+        report += f"🧹 <b>Хозы:</b> {hozes_data[turnover_key]:.0f} дней, {hozes_data[dynamic_key]:+.0f}%\n"
 
     return [report]
 
