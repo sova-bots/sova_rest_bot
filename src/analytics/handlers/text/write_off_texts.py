@@ -24,8 +24,8 @@ def inventory_text(text_data: TextData) -> list[str]:
         text_group = ""
         for report in data[index:index+3]:
             text = f"<b>{report["label"].split('.')[-1]}</b>\n"
-            add_shortage = not text_data.only_negative or (report["shortage_percent"] is not None and report["shortage_percent"] > shortage_limit)
-            add_surplus = not text_data.only_negative or (report["surplus_percent"] is not None and report["surplus_percent"] > surplus_limit)
+            add_shortage = (report["shortage_percent"] is not None) and (not text_data.only_negative or report["shortage_percent"] > shortage_limit)
+            add_surplus = (report["surplus_percent"] is not None) and (not text_data.only_negative or report["surplus_percent"] > surplus_limit)
             if add_shortage:
                 text += f"• Недостача: {safe_get(report, "shortage", comma=True)} руб; {safe_get(report, "shortage_percent")}% от с/с\n"
             if add_surplus:

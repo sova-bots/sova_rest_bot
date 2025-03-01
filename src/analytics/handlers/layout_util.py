@@ -27,7 +27,10 @@ async def enter_step(msg_data: MsgData, step: int, branch: str) -> None:
 
 async def change_step(msg_data: MsgData, delta: int) -> None:
     state_data = await msg_data.state.get_data()
-    next_step = state_data.get("report:step") + delta
+    step = state_data.get("report:step")
+    if step is None:
+        return
+    next_step = step + delta
     await enter_step(msg_data, step=next_step, branch=state_data.get("report:branch"))
 
 
