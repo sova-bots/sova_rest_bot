@@ -29,7 +29,7 @@ async def command_start_handler(message: Message, state: FSMContext) -> None:
 async def start_handler(user_id: int, message: Message, state: FSMContext) -> None:
     await state.clear()
 
-    msg = await message.answer("Загрузка... ⚙️")
+    msg = await message.answer("Загрузка... ⏳")
 
     loop = get_event_loop()
     has_token = user_tokens_db.has_tgid(user_id)
@@ -45,18 +45,15 @@ def get_markup(user_id: int, has_token: bool) -> IKM:
     inline_kb = []
 
     if not has_token:
-        btn = [IKB(text='Меню отчётов', callback_data='server_report_authorization')]
+        btn = [IKB(text='Меню отчётов 🗓', callback_data='server_report_authorization')]
     else:
-        btn = [IKB(text='Меню отчётов', callback_data='analytics_report_begin')]
+        btn = [IKB(text='Меню отчётов 🗓', callback_data='analytics_report_begin')]
     inline_kb.append(btn)
 
     btn = [IKB(text='Меню тех-поддержки 🛠', callback_data='techsupport_menu')]
     inline_kb.append(btn)
 
-    if notification_gsworker.contains_id(user_id):
-        btn = [IKB(text='Отписаться от рассылки уведомлений ❌', callback_data='unregister')]
-    else:
-        btn = [IKB(text='Подписаться на рассылку уведомлений 📩', callback_data='register')]
+    btn = [IKB(text='Меню рассылки 📬', callback_data='mailing_menu')]
     inline_kb.append(btn)
 
     return IKM(inline_keyboard=inline_kb)

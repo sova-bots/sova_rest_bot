@@ -10,7 +10,7 @@ router = Router(name=__name__)
 
 @router.callback_query(F.data == "techsupport_menu")
 async def techsupport_cq_handler(query: CallbackQuery):
-    msg = await query.message.answer("Загрузка... ⚙️")
+    msg = await query.message.answer("Загрузка... ⏳")
 
     user_id = query.from_user.id
     username = query.from_user.username
@@ -45,6 +45,9 @@ def get_markup(user_id, username) -> IKM:
         inline_kb.append(btn)
 
     btn = [IKB(text='Отправить сообщение в тех-поддержку 🛠', callback_data='send_techsupport_message')]
+    inline_kb.append(btn)
+    
+    btn = [IKB(text="В главное меню ↩️", callback_data="start")]
     inline_kb.append(btn)
 
     return IKM(inline_keyboard=inline_kb)

@@ -90,7 +90,7 @@ async def parameters_msg(msg_data: MsgData, type_prefix: str = "", only_negative
 
     period = state_data.get("report:period")
     
-    loading_msg = await msg_data.msg.edit_text(text="Загрузка ⏳")
+    loading_msg = await msg_data.msg.edit_text(text="Загрузка... ⏳")
     
     reports = await get_reports(
         tgid=msg_data.tgid, 

@@ -22,6 +22,7 @@ from src.mailing.commands.techsupport.answer_techsupport_message import router a
 from src.mailing.commands.techsupport.techsupport_menu import router as techsupport_menu_router
 
 from src.analytics.router import analytics_router
+from src.mailing.mailing_router import mailing_router
 
 router = Router(name=__name__)
 
@@ -34,7 +35,8 @@ routers = [
     show_ts_messages_router,
     answer_ts_message_router,
     techsupport_menu_router,
-    analytics_router
+    analytics_router,
+    mailing_router
 ]
 
 dp = Dispatcher()
