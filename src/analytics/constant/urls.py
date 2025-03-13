@@ -1,7 +1,7 @@
 # key - report:type, value - url.group
 all_report_urls = {
     "revenue": ["revenue"],
-    "analysis.revenue": ["guests-checks", "avg-check", "revenue.department", "revenue.store", "revenue.date_of_week"],
+    "analysis.revenue": ["guests-checks", "avg-check", "revenue.department", "revenue.store", "revenue.dish", "revenue.time", "revenue.price_segments", "revenue.date_of_week", "revenue.waiter"],
     "losses": ["losses.product"],
     "loss-forecast": ["loss-forecast.product"],
     "food-cost": ["food-cost"],
@@ -9,5 +9,7 @@ all_report_urls = {
     "turnover": ["turnover.store"],
     "analysis.turnover": ["turnover.store", "turnover.product"],
     "write-off": ["write-off.account"],
-    "inventory": ["inventory.store"]
+    "inventory": ["inventory.store"],
+    "markup": ["markup.store"],
+    "analysis.markup": ["markup.store", "markup.dish"]
 }

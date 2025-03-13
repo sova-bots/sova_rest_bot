@@ -33,6 +33,7 @@ all_types = {
     "food-cost": "Фудкост",
     "inventory": "Инвентаризация",
     "write-off": "Списания",
+    "markup": "Наценка",
     "test-type": "Тестовый вид отчёта",
 }
 

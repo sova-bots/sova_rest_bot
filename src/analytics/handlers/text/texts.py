@@ -4,6 +4,7 @@ from .loss_forecast_texts import forecast_text
 from .foodcost_texts import foodcost_text, foodcost_analysis_text
 from .turnover_texts import turnover_text, product_turnover_text
 from .write_off_texts import inventory_text, write_off_text
+from .markup_texts import make_markup_text, make_markup_analysis_text
 
 from ..types.text_data import TextData
 
@@ -26,7 +27,9 @@ text_functions = {
     "turnover": turnover_text,
     "analysis.turnover": product_turnover_text,
     "inventory": inventory_text,
-    "write-off": write_off_text
+    "write-off": write_off_text,
+    "markup": make_markup_text,
+    "analysis.markup": make_markup_analysis_text,
 }
 
 

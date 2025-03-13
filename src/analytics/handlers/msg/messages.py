@@ -113,14 +113,18 @@ async def parameters_msg(msg_data: MsgData, type_prefix: str = "", only_negative
     if report_type == "revenue" and recommendations:
         texts = revenue_analysis_text(text_data, msg_type="revenue_recomendations")
     
-    if len(texts) == 1:
+    if len(texts) == 1 and ("**" not in texts[0]): # checks if parse mode is markdown (needs rewrite)
         texts[0] = header + "\n\n" + texts[0]
     else:
         header_msg = await msg_data.msg.answer(text=header)
         await add_messages_to_delete(msg_data=msg_data, messages=[header_msg])
 
     for text in texts:
-        text_msg = await msg_data.msg.answer(text=text)
+        if "**" in text: # checks parse mode (needs rewrite)
+            parse_mode = ParseMode.MARKDOWN
+        else:
+            parse_mode = ParseMode.HTML
+        text_msg = await msg_data.msg.answer(text=text, parse_mode=parse_mode)
         await add_messages_to_delete(msg_data=msg_data, messages=[text_msg])
     
     await msg_data.msg.answer(text="Вернуться назад?", reply_markup=back_kb)
