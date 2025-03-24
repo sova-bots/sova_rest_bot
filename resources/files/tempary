@@ -1,0 +1,275 @@
+всё таки мне кажется проблема с вызовом save_time, save_subscription и тд. поскольку даже логов не: C:\Users\User\AppData\Local\Programs\Python\Python311\python.exe C:\WORK\sova_rest_bot-new_structure\main.py
+TOKEN='7857335764:AAG1inrt4SRGN7fwQqgPxINFhJ-OVRQzMt4'
+INFO:aiogram.dispatcher:Start polling
+23.03.2025 16:44:53 [INFO] bot is running!
+INFO:aiogram.dispatcher:Run polling for bot @sova_tech_test_bot id=7857335764 - 'sova_tech_bot_test'
+INFO:aiogram.event:Update id=187729296 is handled. Duration 436 ms by bot id=7857335764
+23.03.2025 16:44:57 [DEBUG] STEP: user tgid=273971615 entering: branch='enter_department', step=0
+INFO:root:State data: {'report:branch': 'enter_department', 'report:step': 0, 'report:department': None, 'report:type': None, 'report:input': 'report:department', 'report:period': None, 'report:messages_to_delete': []}
+INFO:aiogram.event:Update id=187729297 is handled. Duration 922 ms by bot id=7857335764
+23.03.2025 16:44:59 [DEBUG] STEP: user tgid=273971615 entering: branch='enter_department', step=1
+INFO:root:State data: {'report:branch': 'enter_department', 'report:step': 1, 'report:department': '85f5d298-9512-4653-adbf-9ffe33bcd3af', 'report:type': None, 'report:input': 'report:branch', 'report:period': None, 'report:messages_to_delete': []}
+INFO:aiogram.event:Update id=187729298 is handled. Duration 671 ms by bot id=7857335764
+23.03.2025 16:45:00 [DEBUG] STEP: user tgid=273971615 entering: branch='revenue', step=0
+INFO:aiogram.event:Update id=187729299 is handled. Duration 436 ms by bot id=7857335764
+23.03.2025 16:45:01 [DEBUG] STEP: user tgid=273971615 entering: branch='revenue', step=1
+INFO:aiogram.event:Update id=187729300 is handled. Duration 438 ms by bot id=7857335764
+INFO:aiogram.event:Update id=187729301 is handled. Duration 139 ms by bot id=7857335764
+INFO:root:User 273971615 selected subscription type: daily
+INFO:aiogram.event:Update id=187729302 is handled. Duration 250 ms by bot id=7857335764
+INFO:aiogram.event:Update id=187729303 is handled. Duration 93 ms by bot id=7857335764
+INFO:root:Обработчик process_time вызван.
+INFO:aiogram.event:Update id=187729304 is handled. Duration 140 ms by bot id=7857335764
+ERROR:aiogram.dispatcher:Failed to fetch updates - TelegramNetworkError: HTTP Client says - Request timeout error
+WARNING:aiogram.dispatcher:Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 7857335764)
+ERROR:aiogram.dispatcher:Failed to fetch updates - TelegramNetworkError: HTTP Client says - ClientConnectorError: Cannot connect to host api.telegram.org:443 ssl:default [Указанное сетевое имя более недоступно]
+WARNING:aiogram.dispatcher:Sleep for 1.153224 seconds and try again... (tryings = 1, bot id = 7857335764)
+ERROR:aiogram.dispatcher:Failed to fetch updates - TelegramNetworkError: HTTP Client says - ClientConnectorError: Cannot connect to host api.telegram.org:443 ssl:default [Указанное сетевое имя более недоступно]
+WARNING:aiogram.dispatcher:Sleep for 1.472306 seconds and try again... (tryings = 2, bot id = 7857335764)
+ERROR:aiogram.dispatcher:Failed to fetch updates - TelegramNetworkError: HTTP Client says - ClientConnectorError: Cannot connect to host api.telegram.org:443 ssl:default [Указанное сетевое имя более недоступно]
+WARNING:aiogram.dispatcher:Sleep for 1.894235 seconds and try again... (tryings = 3, bot id = 7857335764)
+ERROR:aiogram.dispatcher:Failed to fetch updates - TelegramNetworkError: HTTP Client says - ClientConnectorError: Cannot connect to host api.telegram.org:443 ssl:default [Указанное сетевое имя более недоступно]
+WARNING:aiogram.dispatcher:Sleep for 2.484018 seconds and try again... (tryings = 4, bot id = 7857335764)
+ERROR:aiogram.dispatcher:Failed to fetch updates - TelegramNetworkError: HTTP Client says - ClientConnectorError: Cannot connect to host api.telegram.org:443 ssl:default [Указанное сетевое имя более недоступно]
+WARNING:aiogram.dispatcher:Sleep for 3.398406 seconds and try again... (tryings = 5, bot id = 7857335764)
+ERROR:aiogram.dispatcher:Failed to fetch updates - TelegramNetworkError: HTTP Client says - ClientConnectorError: Cannot connect to host api.telegram.org:443 ssl:default [Указанное сетевое имя более недоступно]
+WARNING:aiogram.dispatcher:Sleep for 4.517327 seconds and try again... (tryings = 6, bot id = 7857335764)
+ERROR:aiogram.dispatcher:Failed to fetch updates - TelegramNetworkError: HTTP Client says - ClientConnectorError: Cannot connect to host api.telegram.org:443 ssl:default [Указанное сетевое имя более недоступно]
+WARNING:aiogram.dispatcher:Sleep for 5.003476 seconds and try again... (tryings = 7, bot id = 7857335764)
+ERROR:aiogram.dispatcher:Failed to fetch updates - TelegramNetworkError: HTTP Client says - ClientConnectorError: Cannot connect to host api.telegram.org:443 ssl:default [Указанное сетевое имя более недоступно]
+WARNING:aiogram.dispatcher:Sleep for 5.028022 seconds and try again... (tryings = 8, bot id = 7857335764)
+ERROR:aiogram.dispatcher:Failed to fetch updates - TelegramNetworkError: HTTP Client says - ClientConnectorError: Cannot connect to host api.telegram.org:443 ssl:default [Указанное сетевое имя более недоступно]
+WARNING:aiogram.dispatcher:Sleep for 5.040551 seconds and try again... (tryings = 9, bot id = 7857335764)
+ERROR:aiogram.dispatcher:Failed to fetch updates - TelegramNetworkError: HTTP Client says - ClientConnectorError: Cannot connect to host api.telegram.org:443 ssl:default [Указанное сетевое имя более недоступно]
+WARNING:aiogram.dispatcher:Sleep for 5.119697 seconds and try again... (tryings = 10, bot id = 7857335764)
+ERROR:aiogram.dispatcher:Failed to fetch updates - TelegramNetworkError: HTTP Client says - ClientConnectorError: Cannot connect to host api.telegram.org:443 ssl:default [Указанное сетевое имя более недоступно]
+WARNING:aiogram.dispatcher:Sleep for 4.860367 seconds and try again... (tryings = 11, bot id = 7857335764)
+ERROR:aiogram.dispatcher:Failed to fetch updates - TelegramNetworkError: HTTP Client says - ClientConnectorError: Cannot connect to host api.telegram.org:443 ssl:default [Указанное сетевое имя более недоступно]
+WARNING:aiogram.dispatcher:Sleep for 5.124034 seconds and try again... (tryings = 12, bot id = 7857335764)
+ @save_time_router.callback_query(F.data.in_(all_periods.keys()))
+async def choose_period(callback_query: CallbackQuery, state: FSMContext):
+    period = callback_query.data
+    await state.update_data(date_periodity=period)
+
+    data = await state.get_data()
+    user_id = callback_query.from_user.id
+    sub_type = data.get("sub_type")
+    report_type = data.get("report_type")
+    time_obj = data.get("time_obj")
+    timezone_offset = data.get("timezone_offset", 0)
+    weekday = data.get("weekday", None)
+    day_of_month = data.get("day_of_month", None)
+
+    # Вызов без передачи `db_pool`
+    await save_subscription(
+        user_id=user_id,
+        subscription_type=sub_type,
+        periodicity=sub_type,
+        time=time_obj,
+        timezone_offset=timezone_offset,
+        report_type=report_type,
+        weekday=weekday,
+        day_of_month=day_of_month,
+        date_periodity=period
+    )
+
+    await callback_query.message.answer(
+        f"Вы подписались на рассылку:\n"
+        f"- Тип отчёта: {report_type}\n"
+        f"- Периодичность: {sub_type}\n"
+        f"- Период: {all_periods[period]}\n"
+        f"- Время: {time_obj.strftime('%H:%M')}"
+    )
+
+    await state.clear()  async def save_subscription(conn, user_id, subscription_type, periodicity, time, timezone_offset, report_type, weekday,
+                            day_of_month, date_periodity):
+    logging.info(f"Данные для вставки: user_id={user_id}, subscription_type={subscription_type}, "
+                 f"periodicity={periodicity}, time={time}, timezone_offset={timezone_offset}, "
+                 f"report_type={report_type}, weekday={weekday}, day_of_month={day_of_month}, "
+                 f"date_periodity={date_periodity}")
+
+    await conn.execute('''
+        INSERT INTO subscriptions (user_id, subscription_type, periodicity, time, timezone_offset, report_type, weekday, day_of_month, date_periodity)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    ''', user_id, subscription_type, periodicity, time, timezone_offset, report_type, weekday, day_of_month,
+                       date_periodity)
+ async def save_time(message: Message, state: FSMContext):
+    time_str = message.text.strip()
+    try:
+        hour, minute = map(int, time_str.split(":"))
+        input_time = time(hour, minute)
+
+        data = await state.get_data()
+        timezone_offset = data.get("timezone_offset", 0)
+        adjusted_hour = (hour - timezone_offset) % 24
+        adjusted_time = time(adjusted_hour, minute)
+
+        user_id = message.from_user.id
+        sub_type = data.get("sub_type")
+        frequency = data.get("frequency")
+        report_type = data.get("report_type", "default_report")  # Установили значение по умолчанию
+        period = data.get("period")
+        weekday = data.get("weekday", None)
+        day_of_month = data.get("day_of_month", None)
+
+        # Вызов функции для сохранения подписки
+        await save_subscription(
+            user_id=user_id,
+            subscription_type=sub_type,
+            periodicity=sub_type,
+            time=adjusted_time,
+            timezone_offset=timezone_offset,
+            report_type=report_type,
+            weekday=weekday,
+            day_of_month=day_of_month,
+            date_periodity=period
+        )
+
+        await message.answer(f"Вы подписались на {frequency}. Время рассылки (ваше локальное): {time_str}.")
+        await state.clear()
+
+    except ValueError:
+        await message.answer("Неверный формат времени. Пожалуйста, используйте формат HH:MM.")
+
+
+
+
+
+
+
+
+# async def process_time(message: types.Message, state: FSMContext):
+#     logging.info("Обработчик process_time вызван.")
+#     time_str = message.text.strip()
+#
+#     try:
+#         # Попытка преобразования времени
+#         time_obj = datetime.strptime(time_str, '%H:%M').time()
+#         data = await state.get_data()
+#         logging.info(f"Current FSM state before process_time: {data}")  # Логируем состояние перед обработкой
+#
+#         # Извлекаем данные из состояния
+#         report_type = data.get("report:type")
+#         period = data.get("report_period")
+#         department = data.get("report_department")
+#
+#         # Проверка на наличие обязательных данных в состоянии
+#         # if not report_type:
+#         #     logging.error("Report type is missing in state.")
+#         #     await message.answer("Ошибка: тип отчёта не выбран.")
+#         #     return
+#         # if not period:
+#         #     logging.error("Period is missing in state.")
+#         #     await message.answer("Ошибка: срок отчёта не выбран.")
+#         #     return
+#         # if not department:
+#         #     logging.error("Department is missing in state.")
+#         #     await message.answer("Ошибка: подразделение не выбрано.")
+#         #     return
+#
+#         # Логируем текущие данные перед подключением к базе данных
+#         logging.info(f"Connecting to the database with user data: {data}")
+#
+#         # Подключаемся к БД
+#         try:
+#             conn = await asyncpg.connect(**DB_CONFIG)
+#             logging.info("Database connection established.")
+#         except Exception as e:
+#             logging.error(f"Failed to connect to the database: {e}")
+#             await message.answer("Ошибка: не удалось подключиться к базе данных.")
+#             return
+#
+#         try:
+#             # Сохраняем подписку в БД
+#             await save_subscription(
+#                 conn=conn,
+#                 user_id=message.from_user.id,
+#                 subscription_type=data.get("sub_type"),
+#                 periodicity=data.get("sub_type"),
+#                 time=time_obj,
+#                 timezone_offset=data.get("timezone_offset", 0),
+#                 report_type=report_type,
+#                 weekday=data.get("weekday"),
+#                 day_of_month=data.get("day_of_month"),
+#                 date_periodity=period,
+#                 department=department,
+#             )
+#             await message.answer(f"Вы успешно подписались на рассылку. Время рассылки: {time_str}.")
+#         except Exception as e:
+#             logging.error(f"Error saving subscription: {e}")
+#             await message.answer("Ошибка при сохранении подписки. Пожалуйста, попробуйте позже.")
+#         finally:
+#             await conn.close()
+#
+#         # Очищаем состояние
+#         await state.clear()
+#
+#     except ValueError:
+#         logging.error(f"Invalid time format: {time_str}")
+#         await message.answer("Неверный формат времени. Пожалуйста, используйте формат HH:MM.")
+
+
+
+
+async def save_time(message: Message, state: FSMContext):
+    time_str = message.text.strip()
+    try:
+        hour, minute = map(int, time_str.split(":"))
+        input_time = time(hour, minute)
+
+        # Получаем данные из состояния
+        data = await state.get_data()
+        logging.info(f"Данные состояния перед сохранением: {data}")
+
+        timezone_offset = data.get("timezone_offset", 0)
+        adjusted_hour = (hour - timezone_offset) % 24
+        adjusted_time = time(adjusted_hour, minute)
+
+        # Проверяем обязательные данные в состоянии
+        report_type = data.get("report_type")
+        period = data.get("period")
+        department = data.get("report_department")
+        sub_type = data.get("sub_type")
+
+        if not report_type:
+            logging.error("Не выбран тип отчета.")
+            await message.answer("Ошибка: тип отчета не выбран.")
+            return
+        if not period:
+            logging.error("Не выбран период отчета.")
+            await message.answer("Ошибка: период отчета не выбран.")
+            return
+        if not department:
+            logging.error("Не выбрано подразделение.")
+            await message.answer("Ошибка: подразделение не выбрано.")
+            return
+
+        # Открываем соединение с базой данных
+        conn = await asyncpg.connect(**DB_CONFIG)
+
+        # Сохраняем подписку
+        await save_subscription(
+            conn=conn,
+            user_id=message.from_user.id,
+            subscription_type=sub_type,
+            periodicity=sub_type,
+            time=adjusted_time,
+            timezone_offset=timezone_offset,
+            report_type=report_type,
+            weekday=data.get("weekday"),
+            day_of_month=data.get("day_of_month"),
+            date_periodity=period,
+            department=department
+        )
+
+        # Подтверждаем подписку
+        await message.answer(f"Вы подписались на {sub_type}. Время рассылки: {time_str}.")
+        await state.clear()  # Очистка состояния
+        await conn.close()  # Закрытие соединения с БД
+
+    except ValueError:
+        logging.error(f"Неверный формат времени: {time_str}")
+        await message.answer("Неверный формат времени. Пожалуйста, используйте формат HH:MM.")
+    except Exception as e:
+        logging.error(f"Ошибка при сохранении подписки: {e}")
+        await message.answer("Ошибка при сохранении подписки. Попробуйте позже.")

@@ -1,0 +1,108 @@
+{
+    "data": [
+        {
+            "label": "1.Бар Пушкинская 192",
+            "shortage": 4624,
+            "shortage_percent": 3.7,
+            "surplus": 3098,
+            "surplus_percent": 2.5,
+            "cost_price": 124383
+        },
+        {
+            "label": "1.Кухня Пушкинская 192",
+            "shortage": 19030,
+            "shortage_percent": 2.3,
+            "surplus": 18927,
+            "surplus_percent": 2.3,
+            "cost_price": 831965
+        },
+        {
+            "label": "1.Хозы Пушкинская 192",
+            "shortage": 0,
+            "shortage_percent": 0,
+            "surplus": 28,
+            "surplus_percent": 0.1,
+            "cost_price": 20246
+        },
+        {
+            "label": "2.Бар Соколова 31/118",
+            "shortage": 4976,
+            "shortage_percent": 3.4,
+            "surplus": 2653,
+            "surplus_percent": 1.8,
+            "cost_price": 145723
+        },
+        {
+            "label": "2.Кухня Соколова 31/118",
+            "shortage": 13420,
+            "shortage_percent": 1.3,
+            "surplus": 33916,
+            "surplus_percent": 3.3,
+            "cost_price": 1021339
+        },
+        {
+            "label": "2.Хозы Соколова 31/118",
+            "shortage": null,
+            "shortage_percent": null,
+            "surplus": 0,
+            "surplus_percent": 0,
+            "cost_price": 50037
+        },
+        {
+            "label": "3.Бар Красноармейская 202",
+            "shortage": 6046,
+            "shortage_percent": 6.7,
+            "surplus": 1210,
+            "surplus_percent": 1.3,
+            "cost_price": 90556
+        },
+        {
+            "label": "3.Кухня Красноармейская 202",
+            "shortage": 11492,
+            "shortage_percent": 1.8,
+            "surplus": 31635,
+            "surplus_percent": 5,
+            "cost_price": 632042
+        },
+        {
+            "label": "3.Хозы Красноармейская 202",
+            "shortage": 0,
+            "shortage_percent": 0,
+            "surplus": 60,
+            "surplus_percent": 0.2,
+            "cost_price": 25836
+        },
+        {
+            "label": "4.Бар Буденновский 44",
+            "shortage": 1040,
+            "shortage_percent": 1.3,
+            "surplus": 2759,
+            "surplus_percent": 3.4,
+            "cost_price": 81119
+        },
+        {
+            "label": "4.Кухня Буденновский 44",
+            "shortage": 7971,
+            "shortage_percent": 1.7,
+            "surplus": 25023,
+            "surplus_percent": 5.2,
+            "cost_price": 481241
+        },
+        {
+            "label": "4.Хозы Буденновский 44",
+            "shortage": null,
+            "shortage_percent": null,
+            "surplus": 6269,
+            "surplus_percent": 30.2,
+            "cost_price": 20743
+        }
+    ],
+    "sum": {
+        "label": "Всего",
+        "shortage": 68599,
+        "shortage_percent": 0,
+        "surplus": 125578,
+        "surplus_percent": 0,
+        "cost_price": 3525230
+    }
+}
