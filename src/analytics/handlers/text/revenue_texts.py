@@ -70,6 +70,7 @@ def analyze_revenue(data, period="week"):
 
     # 1. Гостевой поток и средний чек
     guests_checks = data['guests-checks']
+    avg_check = data['avg-check']
     message += (
         "<b> 1 Гостевой поток и средний чек:</b>\n\n"
     )
@@ -78,9 +79,9 @@ def analyze_revenue(data, period="week"):
     metrics = [
         {
             "label": "средний чек",
-            "value": guests_checks.get(f'avg_check_{dynamics_key}', 0),
-            "current": guests_checks.get('avg_check', 0),
-            "previous": guests_checks.get(f'avg_check_{revenue_key}', 0)
+            "value": avg_check.get(f'avg_check_{dynamics_key}', 0),
+            "current": avg_check.get('avg_check', 0),
+            "previous": avg_check.get(f'avg_check_{revenue_key}', 0)
         },
         {
             "label": "глубина чека",
@@ -107,7 +108,7 @@ def analyze_revenue(data, period="week"):
         for metric in negative_changes:
             message += (
                 f"- {metric['label']}: {metric['value']:.1f}%, "
-                f"{metric['previous']} → {metric['current']}\n"
+                f"{metric['previous']:,.0f} → {metric['current']:,.0f}\n"
             )
         message += "\n"
 
@@ -117,7 +118,7 @@ def analyze_revenue(data, period="week"):
         for metric in positive_changes:
             message += (
                 f"+ {metric['label']}: {metric['value']:.1f}%, "
-                f"{metric['previous']} → {metric['current']}\n"
+                f"{metric['previous']:,.0f} → {metric['current']:,.0f}\n"
             )
         message += "\n"
 
@@ -140,8 +141,8 @@ def analyze_revenue(data, period="week"):
     # Формируем сообщение
     message += (
         "<b>2 Выручка по направлениям:</b>\n\n"
-        f"{'+' if bar_dynamics == abs(bar_dynamics) else '-'} бар: {bar_dynamics:.1f}%, {total_bar_revenue_previous} → {total_bar_revenue_current}\n"
-        f"{'+' if kitchen_dynamics == abs(kitchen_dynamics) else '-'} кухня: {kitchen_dynamics:.1f}%, {total_kitchen_revenue_previous} → {total_kitchen_revenue_current}\n\n"
+        f"{'+' if bar_dynamics == abs(bar_dynamics) else '-'} бар: {bar_dynamics:.1f}%, {total_bar_revenue_previous:,.0f} → {total_bar_revenue_current:,.0f}\n"
+        f"{'+' if kitchen_dynamics == abs(kitchen_dynamics) else '-'} кухня: {kitchen_dynamics:.1f}%, {total_kitchen_revenue_previous:,.0f} → {total_kitchen_revenue_current:,.0f}\n\n"
     )
 
     # 3. Выручка по группам блюд
@@ -176,7 +177,7 @@ def analyze_revenue(data, period="week"):
         category_data = []
         for category, dishes in dish_categories.items():
             if dishes:
-                total_revenue_previous = sum(dish.get(revenue_key, 0) for dish in dishes)
+                total_revenue_previous = sum(dish.get(f'revenue_{revenue_key}', 0) for dish in dishes)
                 total_revenue_current = sum(dish.get('revenue', 0) for dish in dishes)
                 total_dynamics = ((
                                               total_revenue_current - total_revenue_previous) / total_revenue_previous) * 100 if total_revenue_previous != 0 else 0
@@ -199,7 +200,7 @@ def analyze_revenue(data, period="week"):
             for item in negative_changes:
                 message += (
                     f"{item['category']}: {item['dynamics']:.1f}%, "
-                    f"{item['revenue_previous']} → {item['revenue_current']}\n"
+                    f"{item['revenue_previous']:,.0f} → {item['revenue_current']:,.0f}\n"
                 )
             message += "\n"
 
@@ -209,7 +210,7 @@ def analyze_revenue(data, period="week"):
             for item in positive_changes:
                 message += (
                     f"{item['category']}: {item['dynamics']:.1f}%, "
-                    f"{item['revenue_previous']} → {item['revenue_current']}\n"
+                    f"{item['revenue_previous']:,.0f} → {item['revenue_current']:,.0f}\n"
                 )
             message += "\n"
 
@@ -223,8 +224,8 @@ def analyze_revenue(data, period="week"):
 
     for time_slot in revenue_time:
         label = time_slot['label']
-        dynamics = time_slot.get(dynamics_key, 0) or 0  # Используем 0, если динамика отсутствует
-        revenue_previous = time_slot.get(revenue_key, 0)
+        dynamics = time_slot.get(f'revenue_{dynamics_key}', 0) or 0  # Используем 0, если динамика отсутствует
+        revenue_previous = time_slot.get(f'revenue_{revenue_key}', 0)
         revenue_current = time_slot.get('revenue', 0)
 
         if dynamics < 0:
@@ -236,14 +237,14 @@ def analyze_revenue(data, period="week"):
     if negative_changes:
         message += "<i>Отрицательная динамика:</i>\n"
         for label, dynamics, revenue_previous, revenue_current in negative_changes:
-            message += f"{label}: {dynamics:.1f}%, {revenue_previous} → {revenue_current}\n"
+            message += f"{label}: {dynamics:.1f}%, {revenue_previous:,.0f} → {revenue_current:,.0f}\n"
         message += "\n"
 
     # Затем выводим положительные изменения
     if positive_changes:
         message += "<i>Положительная динамика:</i>\n"
         for label, dynamics, revenue_previous, revenue_current in positive_changes:
-            message += f"{label}: {dynamics:.1f}%, {revenue_previous} → {revenue_current}\n"
+            message += f"{label}: {dynamics:.1f}%, {revenue_previous:,.0f} → {revenue_current:,.0f}\n"
         message += "\n"
 
     # 5. Выручка по ценовым сегментам
@@ -256,8 +257,8 @@ def analyze_revenue(data, period="week"):
 
         for segment in revenue_price_segments:
             label = segment.get('label', '')
-            dynamics = segment.get(dynamics_key, 0) or 0
-            revenue_previous = segment.get(revenue_key, 0)
+            dynamics = segment.get(f'revenue_{dynamics_key}', 0) or 0
+            revenue_previous = segment.get(f'revenue_{revenue_key}', 0)
             revenue_current = segment.get('revenue', 0)
 
             if dynamics < 0:
@@ -269,14 +270,14 @@ def analyze_revenue(data, period="week"):
         if negative_changes:
             message += "<i>Отрицательная динамика:</i>\n"
             for label, dynamics, revenue_previous, revenue_current in negative_changes:
-                message += f"- {label}: {dynamics:.1f}%, {revenue_previous} → {revenue_current}\n"
+                message += f"- {label}: {dynamics:.1f}%, {revenue_previous:,.0f} → {revenue_current:,.0f}\n"
             message += "\n"
 
         # Затем выводим положительные изменения
         if positive_changes:
             message += "<i>Положительная динамика:</i>\n"
             for label, dynamics, revenue_previous, revenue_current in positive_changes:
-                message += f"+ {label}: {dynamics:.1f}%, {revenue_previous} → {revenue_current}\n"
+                message += f"+ {label}: {dynamics:.1f}%, {revenue_previous:,.0f} → {revenue_current:,.0f}\n"
             message += "\n"
     else:
         message += "Данные по ценовым сегментам отсутствуют.\n\n"
@@ -304,8 +305,8 @@ def analyze_revenue(data, period="week"):
                 day_info = next((item for item in revenue_date_of_week if item['label'] == full_day), None)
                 if day_info:
                     day_data[short_day] = {
-                        "dynamics": day_info.get(dynamics_key, 0),
-                        "revenue_previous": day_info.get(revenue_key, 0),
+                        "dynamics": day_info.get(f'revenue_{dynamics_key}', 0),
+                        "revenue_previous": day_info.get(f'revenue_{revenue_key}', 0),
                         "revenue_current": day_info.get('revenue', 0)
                     }
 
@@ -317,13 +318,13 @@ def analyze_revenue(data, period="week"):
             if negative_days:
                 message += "<i>Отрицательная динамика:</i>\n"
                 for day, data in negative_days.items():
-                    message += f"- {day}: {data['dynamics']:.1f}%, {data['revenue_previous']} → {data['revenue_current']}\n"
+                    message += f"- {day}: {data['dynamics']:.1f}%, {data['revenue_previous']:,.0f} → {data['revenue_current']:,.0f}\n"
                 message += "\n"
 
             if positive_days:
                 message += "<i>Положительная динамика:</i>\n"
                 for day, data in positive_days.items():
-                    message += f"+ {day}: {data['dynamics']:.1f}%, {data['revenue_previous']} → {data['revenue_current']}\n"
+                    message += f"+ {day}: {data['dynamics']:.1f}%, {data['revenue_previous']:,.0f} → {data['revenue_current']:,.0f}\n"
                 message += "\n"
         else:
             message += "Данные по дням недели отсутствуют или имеют неверный формат.\n\n"
@@ -335,7 +336,7 @@ def analyze_revenue(data, period="week"):
         message += "<b>7 Выручка по сотрудникам:</b>\n\n"
 
         # Потеря выручки (топ-10 сотрудников с наибольшей потерей)
-        message += "<i>7.1 Потеря выручки по сотрудникам (топ-10):</i>\n\n"
+        message += "<i>7.1 Потеря выручки по сотрудникам (топ-10):</i>\n"
         # Сортируем сотрудников по убыванию потери выручки
         loss_waiters = sorted(
             [waiter for waiter in waiters if waiter.get('revenue', 0) < 0],
@@ -345,13 +346,16 @@ def analyze_revenue(data, period="week"):
         for waiter in loss_waiters:
             message += (
                 f"{waiter['label']} {waiter['revenue']} руб\n"
-                f"| среднедневная выручка {waiter['avg_revenue']} руб\n"
-                f"| средний чек {waiter['avg_checks']} руб\n"
+                f"| среднедневная выручка {waiter['avg_revenue']:,.0f} руб\n"
+                f"| средний чек {waiter['avg_checks']:,.0f} руб\n"
                 f"| глубина чека {waiter['depth']}\n\n"
             )
 
+        if not loss_waiters:
+            message += "\t<i>-</i>\n\n"
+
         # Похвала сотрудникам (топ-10 сотрудников с наибольшей выручкой)
-        message += "<i>7.2 Похвалите сотрудников (топ-10):</i>\n\n"
+        message += "<i>7.2 Похвалите сотрудников (топ-10):</i>\n"
         # Сортируем сотрудников по убыванию выручки
         praise_waiters = sorted(
             [waiter for waiter in waiters if waiter.get('revenue', 0) > 0],
@@ -361,11 +365,14 @@ def analyze_revenue(data, period="week"):
 
         for waiter in praise_waiters:
             message += (
-                f"{waiter['label']}\n"
-                f"| среднедневная выручка {waiter['avg_revenue']} руб\n"
-                f"| средний чек {waiter['avg_checks']} руб\n"
+                f"<b><i>{waiter['label']}</i></b>\n"
+                f"| среднедневная выручка {waiter['avg_revenue']:,.0f} руб\n"
+                f"| средний чек {waiter['avg_checks']:,.0f} руб\n"
                 f"| глубина чека {waiter['depth']}\n\n"
             )
+
+        if not praise_waiters:
+            message += "\t<i>-</i>\n\n"
 
     return message
     

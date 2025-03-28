@@ -48,33 +48,33 @@ async def value_input_handler(query: CallbackQuery, state: FSMContext) -> None:
 # menu handlers
 @router.callback_query(F.data == "report:show_parameters")
 async def show_recommendations_handler(query: CallbackQuery, state: FSMContext) -> None:
-    await parameters_msg(MsgData(msg=query.message, state=state, tgid=query.from_user.id))
     await query.answer()
+    await parameters_msg(MsgData(msg=query.message, state=state, tgid=query.from_user.id))
 
 
 @router.callback_query(F.data == "report:show_analysis")
 async def show_recommendations_handler(query: CallbackQuery, state: FSMContext) -> None:
-    await parameters_msg(MsgData(msg=query.message, state=state, tgid=query.from_user.id), type_prefix="analysis.")
     await query.answer()
+    await parameters_msg(MsgData(msg=query.message, state=state, tgid=query.from_user.id), type_prefix="analysis.")
 
 
 @router.callback_query(F.data == "report:show_negative")
 async def show_recommendations_handler(query: CallbackQuery, state: FSMContext) -> None:
-    await parameters_msg(MsgData(msg=query.message, state=state, tgid=query.from_user.id), only_negative=True)
     await query.answer()
+    await parameters_msg(MsgData(msg=query.message, state=state, tgid=query.from_user.id), only_negative=True)
     
     
 @router.callback_query(F.data == "report:show_negative_analysis")
 async def show_recommendations_handler(query: CallbackQuery, state: FSMContext) -> None:
-    await parameters_msg(MsgData(msg=query.message, state=state, tgid=query.from_user.id), type_prefix="analysis.", only_negative=True)
     await query.answer()
+    await parameters_msg(MsgData(msg=query.message, state=state, tgid=query.from_user.id), type_prefix="analysis.", only_negative=True)
 
 
 
 @router.callback_query(F.data == "report:show_recommendations")
 async def show_recommendations_handler(query: CallbackQuery, state: FSMContext) -> None:
-    await recommendations_msg(MsgData(msg=query.message, state=state, tgid=query.from_user.id))
     await query.answer()
+    await recommendations_msg(MsgData(msg=query.message, state=state, tgid=query.from_user.id))
 
 
 # back buttons handlers
