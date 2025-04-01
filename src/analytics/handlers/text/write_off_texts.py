@@ -66,7 +66,7 @@ def write_off_text(text_data: TextData) -> list[str]:
         if write_off is None or write_off_dynamics is None:
             continue
 
-        if text_data.only_negative and item[dynamics_period_key] >= 0:
+        if text_data.only_negative and item[dynamics_period_key] < 0:
             continue
 
         text = f"• <b>{item["label"]}</b> {write_off} руб; {write_off_dynamics}%"
