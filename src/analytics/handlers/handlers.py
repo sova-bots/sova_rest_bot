@@ -7,6 +7,7 @@ from .layout_util import next_step, repeat_current_step, previous_step, enter_st
 from .types.msg_data import MsgData
 from .states import AnalyticReportStates
 from .msg.messages import recommendations_msg, parameters_msg
+from .types.report_format_types import ReportFormatTypes
 
 from src.util.log import logger
 
@@ -49,31 +50,35 @@ async def value_input_handler(query: CallbackQuery, state: FSMContext) -> None:
 @router.callback_query(F.data == "report:show_parameters")
 async def show_recommendations_handler(query: CallbackQuery, state: FSMContext) -> None:
     await query.answer()
+    await state.update_data({"report:format_type": ReportFormatTypes.PARAMETERS})
     await parameters_msg(MsgData(msg=query.message, state=state, tgid=query.from_user.id))
 
 
 @router.callback_query(F.data == "report:show_analysis")
 async def show_recommendations_handler(query: CallbackQuery, state: FSMContext) -> None:
     await query.answer()
+    await state.update_data({"report:format_type": ReportFormatTypes.ANALYSIS})
     await parameters_msg(MsgData(msg=query.message, state=state, tgid=query.from_user.id), type_prefix="analysis.")
 
 
 @router.callback_query(F.data == "report:show_negative")
 async def show_recommendations_handler(query: CallbackQuery, state: FSMContext) -> None:
     await query.answer()
+    await state.update_data({"report:format_type": ReportFormatTypes.ONLY_NEGATIVE})
     await parameters_msg(MsgData(msg=query.message, state=state, tgid=query.from_user.id), only_negative=True)
     
     
 @router.callback_query(F.data == "report:show_negative_analysis")
 async def show_recommendations_handler(query: CallbackQuery, state: FSMContext) -> None:
     await query.answer()
+    await state.update_data({"report:format_type": ReportFormatTypes.ANALYSIS_ONLY_NEGATIVE})
     await parameters_msg(MsgData(msg=query.message, state=state, tgid=query.from_user.id), type_prefix="analysis.", only_negative=True)
-
 
 
 @router.callback_query(F.data == "report:show_recommendations")
 async def show_recommendations_handler(query: CallbackQuery, state: FSMContext) -> None:
     await query.answer()
+    await state.update_data({"report:format_type": ReportFormatTypes.RECOMMENDATIONS})  # Вроде тут не надо, но пусть будет
     await recommendations_msg(MsgData(msg=query.message, state=state, tgid=query.from_user.id))
 
 

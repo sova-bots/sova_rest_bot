@@ -63,6 +63,9 @@ async def period_msg(msg_data: MsgData, period_indexes: list[int]) -> None:
 
 
 async def menu_msg(msg_data: MsgData, buttons_indexes: list[int]) -> None:
+    # стереть format_type в state
+    await msg_data.state.update_data({"report:format_type": None})
+
     header = await make_header(msg_data) + "\n\n"
     text = header + "Выберите"
     kb = make_kb_report_menu(all_menu_buttons, buttons_indexes)

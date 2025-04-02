@@ -9,7 +9,8 @@ async def clear_report_state_data(state: FSMContext) -> None:
         {
             "report:department": None, 
             "report:type": None, 
-            "report:period": None
+            "report:period": None,
+            "report:format_type": None,
         }
     )
     await state.set_state(None)
