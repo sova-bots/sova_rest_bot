@@ -18,7 +18,7 @@ def losses_text(data: list, period: str, only_negative: bool) -> list[str]:
         reverse=True
     )[:10]
 
-    for i in (len(price_increase)):
+    for i in range(len(price_increase)):
         item = price_increase[i]
         report += f"{i}. {item['label']} {item[price_key_previous]:,.0f} руб / {item[price_key_current]:,.0f} руб / {item[loss_key]:,.0f} руб\n"
 

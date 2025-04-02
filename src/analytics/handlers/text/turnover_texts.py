@@ -68,6 +68,6 @@ def product_turnover_text(text_data: TextData) -> list[str]:
         formatted_price = f"{remainder_end:,}".replace(",", " ")
         report_lines.append(f"{len(report_lines) + 1}. {item['label']}: {formatted_price} руб, {turnover} дней")
             
-    report = turnover_text(text_data)[0] + "\n" + "\n".join(report_lines)
+    report = turnover_text(text_data)[0] + "\nТОП-10 товаров по сумме остатка на конец периода:\n" + "\n".join(report_lines)
 
     return [report]
