@@ -1,6 +1,7 @@
 class ReportFormatTypes:
-    PARAMETERS = "parameters"
-    ANALYSIS = "analysis"
-    ONLY_NEGATIVE = "only_negative"
-    ANALYSIS_ONLY_NEGATIVE = "analysis_only_negative"
-    RECOMMENDATIONS = "recommendations"
+    PARAMETERS = "parameters"                          # показатели
+    ANALYSIS = "analysis"                              # анализ
+    ONLY_NEGATIVE = "only_negative"                    # обратите внимание (показатели)
+    ANALYSIS_ONLY_NEGATIVE = "analysis_only_negative"  # обратите внимание (анализ)
+    RECOMMENDATIONS = "recommendations"                # рекомендации
+    
