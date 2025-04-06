@@ -20,7 +20,7 @@ def losses_text(data: list, period: str, only_negative: bool) -> list[str]:
 
     for i in range(len(price_increase)):
         item = price_increase[i]
-        report += f"{i}. {item['label']} {item[price_key_previous]:,.0f} руб / {item[price_key_current]:,.0f} руб / {item[loss_key]:,.0f} руб\n"
+        report += f"{i+1}. {item['label']} {item[price_key_previous]:,.0f} руб / {item[price_key_current]:,.0f} руб / {item[loss_key]:,.0f} руб\n"
 
     if not only_negative:
         report += "\n<b>Снижение закупочных цен:</b>\n"
@@ -34,10 +34,10 @@ def losses_text(data: list, period: str, only_negative: bool) -> list[str]:
 
         for i in range(len(price_decrease)):
             item = price_decrease[i]
-            report += f"{i}. {item['label']} {item[price_key_previous]:,.0f} руб / {item[price_key_current]:,.0f} руб / {item[loss_key]:,.0f} руб\n"
+            report += f"{i+1}. {item['label']} {item[price_key_previous]:,.0f} руб / {item[price_key_current]:,.0f} руб / {item[loss_key]:,.0f} руб\n"
 
     total_loss = data["sum"][loss_key]
         
     report += f"\n<b>Общая сумма потерь/прибыли за период:</b> {total_loss:,.0f} руб"
 
-    return [report.replace("-", "\\-").replace(".", "\\.")]
+    return [report]

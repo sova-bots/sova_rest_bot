@@ -25,7 +25,7 @@ def turnover_text(text_data: TextData) -> list[str]:
     bar_data = next((item for item in data["data"] if "Бар" in item["label"]), None)
     hozes_data = next((item for item in data["data"] if "Хозы" in item["label"]), None)
 
-    report = ""
+    report = "<b>Оборачиваемость остатков:</b>\n"
     if not text_data.only_negative or kitchen_data[dynamic_key] > 0:
         report += f"🍳 <b>Кухня:</b> {kitchen_data[turnover_key]:.0f} дней, {kitchen_data[dynamic_key]:+.0f}%\n"
     if not text_data.only_negative or bar_data[dynamic_key] > 0:

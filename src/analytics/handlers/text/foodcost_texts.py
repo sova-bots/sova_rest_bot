@@ -43,6 +43,8 @@ def foodcost_analysis_text(text_data: TextData) -> list[str]:
     
     period_key = period_mapping[text_data.period]
     
+    report += "\n"
+
     if not text_data.only_negative:
         report += "\n📉 ТОП 5 позиций по снижению фудкоста:\n"
         decreasing = [
@@ -50,9 +52,11 @@ def foodcost_analysis_text(text_data: TextData) -> list[str]:
             for item in dish_data["data"] if item.get(period_key) is not None and item[period_key] <= 0
         ]
         decreasing.sort(key=lambda x: x[1] - x[2])
+        cnt = 1
         for name, old, new in decreasing[:5]:
-            report += f"• {name}: {old}% → {new}%\n"
-            
+            report += f"{cnt}. {name}: {old}% → {new}%\n"
+            cnt += 1
+
         if not decreasing:
             report += "Нет данных по снижению фудкоста.\n"
 
@@ -62,8 +66,10 @@ def foodcost_analysis_text(text_data: TextData) -> list[str]:
         for item in dish_data["data"] if item.get(period_key) is not None and item[period_key] > 0
     ]
     increasing.sort(key=lambda x: x[2] - x[1], reverse=True)
+    cnt = 1
     for name, old, new in increasing[:5]:
-        report += f"• {name}: {old}% → {new}%\n"
+        report += f"{cnt}. {name}: {old}% → {new}%\n"
+        cnt += 1
 
     if not increasing:
         report += "Нет данных о росте фудкоста.\n"

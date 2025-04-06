@@ -114,7 +114,7 @@ async def parameters_msg(msg_data: MsgData, type_prefix: str = "", only_negative
     texts: list[str] = text_func(text_data)
 
     if report_type == "revenue" and recommendations:
-        texts = revenue_analysis_text(text_data, msg_type="revenue_recomendations")
+        texts = revenue_analysis_text(text_data, recommendations=True)
     
     if len(texts) == 1 and ("**" not in texts[0]): # checks if parse mode is markdown (needs rewrite)
         texts[0] = header + "\n\n" + texts[0]

@@ -35,18 +35,28 @@ def forecast_text(text_data: TextData) -> list[str]:
 
     total_loss = data["sum"].get("forecast", 0)
 
+    price_increase_texts = []
+    for name, old, new, loss in increasing_prices[:10]:
+        price_increase_texts.append(f"{len(price_increase_texts) + 1}. {name} {old} руб / {new} руб / {loss} руб")
+
+    price_decrease_texts = []
+    for name, old, new, loss in decreasing_prices[:10]:
+        price_decrease_texts.append(f"{len(price_decrease_texts) + 1}. {name} {old} руб / {new} руб / {loss} руб")
+
     report = f"""
 🔥 <b>Рост закупочных цен:</b>
 <b><i>цена старая / цена новая / прогноз потерь за период</i></b>
+
 🔝 ТОП 10:
-""" + "\n".join([f"• {name} {old} руб / {new} руб / {loss} руб" for name, old, new, loss in increasing_prices[:10]])
+""" + "\n".join(price_increase_texts) + "\n"
 
     if not text_data.only_negative:
         report += """
 📉 <b>Снижение закупочных цен:</b>
 <b><i>цена старая / цена новая / прогноз потерь за период</i></b>
+
 🔝 ТОП 10:
-""" + "\n".join([f"• {name} {old} руб / {new} руб / {loss} руб" for name, old, new, loss in decreasing_prices[:10]]) + f"""
+""" + "\n".join(price_decrease_texts) + f"""
 
 💰 <b>Общая сумма потерь/прибыли за период:</b> {round(total_loss, 2)} руб
 """

@@ -8,6 +8,7 @@ user_tokens.db
 TODO.md
 SOVA-rest.drawio
 pyrightconfig.json
-*.DS_store
+*.DS_Store
+src/analytis/.DS_Store
 __pycache__/
 *.py[cod]
