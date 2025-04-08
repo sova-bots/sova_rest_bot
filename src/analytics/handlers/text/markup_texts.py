@@ -53,7 +53,7 @@ def generate_markup_store_report(data, period="month", only_negative=False):
     # Перевод периода на русский
     period_ru = PERIOD_TRANSLATION.get(period, "месяц")
 
-    report = f"📊 **Наценка по складам (за {period_ru}):**\n"
+    report = f"<b>Наценка:</b>\n\n"
 
     # Ключ для динамики
     dynamics_key = f"markup_dynamics_{period}"
@@ -71,18 +71,18 @@ def generate_markup_store_report(data, period="month", only_negative=False):
             continue
 
         if dynamics < 0:
-            negative_changes.append(f"**{label}:** {markup}%, изменение: {dynamics}%")
+            negative_changes.append(f"{label}: {markup}%, изменение: {dynamics}%")
         else:
-            positive_changes.append(f"**{label}:** {markup}%, изменение: {dynamics}%")
+            positive_changes.append(f"{label}: {markup}%, изменение: {dynamics}%")
 
     # Вывод отрицательных изменений
     if negative_changes:
-        report += "📉 **Снижение наценки:**\n"
+        report += "📉 <b>Снижение наценки:</b>\n"
         report += "\n".join(negative_changes) + "\n"
 
     # Вывод положительных изменений (если не указан only_negative)
     if not only_negative and positive_changes:
-        report += "📈 **Рост наценки:**\n"
+        report += "📈 <b>Рост наценки:</b>\n"
         report += "\n".join(positive_changes) + "\n"
 
     return report
@@ -92,7 +92,7 @@ def generate_markup_dish_report(data, period="month", only_negative=False):
     # Перевод периода на русский
     period_ru = PERIOD_TRANSLATION.get(period, "месяц")
 
-    report = f"📊 **ТОП 5 позиций по наценке (за {period_ru}):**\n"
+    report = f"📊 <b>ТОП 5 позиций по наценке (за {period_ru}):</b>\n\n"
 
     # Ключ для динамики
     dynamics_key = f"markup_dynamics_{period}"
@@ -114,18 +114,18 @@ def generate_markup_dish_report(data, period="month", only_negative=False):
             continue
 
         if dynamics < 0:
-            negative_changes.append(f"**{label}:** {markup}%, изменение: {dynamics}%")
+            negative_changes.append(f"{label}: {markup}%, изменение: {dynamics}%")
         else:
-            positive_changes.append(f"**{label}:** {markup}%, изменение: {dynamics}%")
+            positive_changes.append(f"{label}: {markup}%, изменение: {dynamics}%")
 
     # Вывод отрицательных изменений
     if negative_changes:
-        report += "📉 **Снижение наценки:**\n"
+        report += "📉 <b>Снижение наценки:</b>\n"
         report += "\n".join(negative_changes) + "\n"
 
     # Вывод положительных изменений (если не указан only_negative)
     if not only_negative and positive_changes:
-        report += "📈 **Рост наценки:**\n"
+        report += "📈 <b>Рост наценки:</b>\n"
         report += "\n".join(positive_changes) + "\n"
 
     return report

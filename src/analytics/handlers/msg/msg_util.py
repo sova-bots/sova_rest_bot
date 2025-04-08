@@ -17,12 +17,18 @@ async def clear_report_state_data(state: FSMContext) -> None:
 
 
 # util
-def make_kb(all_choices: dict[str, str], indexes: list[int] = []) -> IKM:
+def make_kb(all_choices: dict[str, str], indexes: list[int] = [], back_btn: bool = True) -> IKM:
     if indexes:
         items = list(all_choices.items())
         all_choices = {items[i][0]: items[i][1] for i in range(len(items)) if i in indexes}
 
-    kb = [[IKB(text=_name, callback_data=_id)] for _id, _name in all_choices.items()]
+    if None in all_choices:
+        return None
+
+    kb = (
+        [[IKB(text=_name, callback_data=_id)] for _id, _name in all_choices.items()] + 
+        ([[null_btn, back_previous_step_btn, null_btn]] if back_btn else [[null_btn, null_btn, null_btn]])
+    )
     
     return IKM(inline_keyboard=kb)
 
@@ -31,7 +37,7 @@ def make_kb_report_menu(buttons: list[IKB], indexes: list[int] = []) -> IKM:
     if indexes:
         buttons = [buttons[i] for i in range(len(buttons)) if i in indexes]
 
-    kb = [[button] for button in buttons] + [[null_btn, back_to_enter_department_btn, null_btn]]
+    kb = [[button] for button in buttons] + [[null_btn, back_previous_step_btn, null_btn]]
     return IKM(inline_keyboard=kb)
 
 

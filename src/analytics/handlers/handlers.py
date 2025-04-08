@@ -28,6 +28,31 @@ async def clear_report_state_data(state: FSMContext) -> None:
     await state.set_state(None)
 
 
+# back buttons handlers
+@router.callback_query(F.data == "report:back_current_step")
+async def back_current_step_handler(query: CallbackQuery, state: FSMContext) -> None:
+    await repeat_current_step(MsgData(msg=query.message, state=state, tgid=query.from_user.id))
+    await query.answer()
+    
+
+@router.callback_query(F.data == "report:back_previous_step")
+async def back_previous_step_handler(query: CallbackQuery, state: FSMContext) -> None:
+    await previous_step(MsgData(msg=query.message, state=state, tgid=query.from_user.id))
+    await query.answer()
+
+
+@router.callback_query(F.data == "report:back_to_enter_department")
+async def back_to_enter_department_handler(query: CallbackQuery, state: FSMContext) -> None:
+    await enter_step((MsgData(msg=query.message, state=state, tgid=query.from_user.id)), step=0, branch="enter_department")
+    await query.answer()
+
+
+@router.callback_query(F.data == "report:null")
+async def null_handler(query: CallbackQuery, state: FSMContext) -> None:
+    await query.answer()
+
+
+# value input
 @router.callback_query(AnalyticReportStates.value_input)
 async def value_input_handler(query: CallbackQuery, state: FSMContext) -> None:
     state_data = await state.get_data()
@@ -81,26 +106,3 @@ async def show_recommendations_handler(query: CallbackQuery, state: FSMContext) 
     await state.update_data({"report:format_type": ReportFormatTypes.RECOMMENDATIONS})  # Вроде тут не надо, но пусть будет
     await recommendations_msg(MsgData(msg=query.message, state=state, tgid=query.from_user.id))
 
-
-# back buttons handlers
-@router.callback_query(F.data == "report:back_current_step")
-async def back_current_step_handler(query: CallbackQuery, state: FSMContext) -> None:
-    await repeat_current_step(MsgData(msg=query.message, state=state, tgid=query.from_user.id))
-    await query.answer()
-    
-
-@router.callback_query(F.data == "report:back_previous_step")
-async def back_previous_step_handler(query: CallbackQuery, state: FSMContext) -> None:
-    await previous_step(MsgData(msg=query.message, state=state, tgid=query.from_user.id))
-    await query.answer()
-
-
-@router.callback_query(F.data == "report:back_to_enter_department")
-async def back_to_enter_department_handler(query: CallbackQuery, state: FSMContext) -> None:
-    await enter_step((MsgData(msg=query.message, state=state, tgid=query.from_user.id)), step=0, branch="enter_department")
-    await query.answer()
-
-
-@router.callback_query(F.data == "report:null")
-async def null_handler(query: CallbackQuery, state: FSMContext) -> None:
-    await query.answer()

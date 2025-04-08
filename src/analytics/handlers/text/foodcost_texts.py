@@ -28,10 +28,10 @@ def foodcost_text(text_data: TextData) -> list[str]:
     bar_dynamic = cost_data["sum"].get(period_key, None)
 
     # Форматирование динамики
-    kitchen_dynamic_text = f", {kitchen_dynamic}%" if kitchen_dynamic not in [None, 0] else ""
-    bar_dynamic_text = f", {bar_dynamic}%" if bar_dynamic not in [None, 0] else ""
+    kitchen_dynamic_text = f", {kitchen_dynamic:,.1f}%" if kitchen_dynamic not in [None, 0] else ""
+    bar_dynamic_text = f", {bar_dynamic:,.1f}%" if bar_dynamic not in [None, 0] else ""
 
-    report = f"""<b>Кухня:</b> {kitchen_cost}%{kitchen_dynamic_text}\n<b>Бар:</b> {bar_cost}%{bar_dynamic_text}"""
+    report = f"""<b>Кухня:</b> {kitchen_cost:,.1f}%{kitchen_dynamic_text}\n<b>Бар:</b> {bar_cost:,.1f}%{bar_dynamic_text}"""
     return [report]
 
 
@@ -54,7 +54,7 @@ def foodcost_analysis_text(text_data: TextData) -> list[str]:
         decreasing.sort(key=lambda x: x[1] - x[2])
         cnt = 1
         for name, old, new in decreasing[:5]:
-            report += f"{cnt}. {name}: {old}% → {new}%\n"
+            report += f"{cnt}. {name}: {old:,.1f}% → {new:,.1f}%\n"
             cnt += 1
 
         if not decreasing:
@@ -68,7 +68,7 @@ def foodcost_analysis_text(text_data: TextData) -> list[str]:
     increasing.sort(key=lambda x: x[2] - x[1], reverse=True)
     cnt = 1
     for name, old, new in increasing[:5]:
-        report += f"{cnt}. {name}: {old}% → {new}%\n"
+        report += f"{cnt}. {name}: {old:,.1f}% → {new:,.1f}%\n"
         cnt += 1
 
     if not increasing:

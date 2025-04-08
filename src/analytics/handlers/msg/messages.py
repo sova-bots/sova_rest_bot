@@ -27,7 +27,7 @@ async def department_msg(msg_data: MsgData) -> None:
 
     header = await make_header(msg_data) + "\n\n"
     text = header + "Выберите подразделение"
-    kb = make_kb(departments)
+    kb = make_kb(departments, back_btn=False)
     await msg_data.msg.edit_text(text=text, reply_markup=kb)
 
 
@@ -115,18 +115,25 @@ async def parameters_msg(msg_data: MsgData, type_prefix: str = "", only_negative
 
     if report_type == "revenue" and recommendations:
         texts = revenue_analysis_text(text_data, recommendations=True)
-    
+
     if len(texts) == 1 and ("**" not in texts[0]): # checks if parse mode is markdown (needs rewrite)
         texts[0] = header + "\n\n" + texts[0]
     else:
         header_msg = await msg_data.msg.answer(text=header)
         await add_messages_to_delete(msg_data=msg_data, messages=[header_msg])
 
+    if not texts:
+        text = "Ещё нет данных"
+        text_msg = await msg_data.msg.answer(text=text, parse_mode=parse_mode)
+        await add_messages_to_delete(msg_data=msg_data, messages=[text_msg])
+
     for text in texts:
         if "**" in text: # checks parse mode (needs rewrite)
             parse_mode = ParseMode.MARKDOWN
         else:
             parse_mode = ParseMode.HTML
+        if not text.replace("\n", ""):  # проверка, пустой ли текст
+            text = "Ещё нет данных"
         text_msg = await msg_data.msg.answer(text=text, parse_mode=parse_mode)
         await add_messages_to_delete(msg_data=msg_data, messages=[text_msg])
     

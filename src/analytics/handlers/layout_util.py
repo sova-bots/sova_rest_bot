@@ -31,7 +31,14 @@ async def change_step(msg_data: MsgData, delta: int) -> None:
     if step is None:
         return
     next_step = step + delta
-    await enter_step(msg_data, step=next_step, branch=state_data.get("report:branch"))
+    next_branch = state_data.get("report:branch")
+
+    # если выходит из ветки, назначить ветку "enter_department"
+    if next_step < 0:
+        next_step = len(layout["enter_department"]) - 1
+        next_branch = "enter_department"
+
+    await enter_step(msg_data, step=next_step, branch=next_branch)
 
 
 async def next_step(msg_data: MsgData) -> None:
