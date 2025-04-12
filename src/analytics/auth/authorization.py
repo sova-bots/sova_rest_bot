@@ -2,7 +2,7 @@ import requests
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import CallbackQuery
 from aiogram.types import InlineKeyboardMarkup as IKM, InlineKeyboardButton as IKB
 from aiogram.types import Message
 
@@ -52,8 +52,6 @@ async def authorize(message: Message, state: FSMContext):
     login = (await state.get_data()).get('server_report_login')
     password = message.text
 
-    logger.info(f"Пользователь {user_id} ввёл логин: {login}, пароль: {password}")  # Логируем введённые данные
-
     msg = await message.answer("Загрузка... ⚙️")
 
     req = requests.post(
@@ -82,8 +80,27 @@ async def authorize(message: Message, state: FSMContext):
 
     logger.info(f"Authorized {user_id=}, {token=}")
 
-    kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="В меню отчётов ↩️", callback_data="analytics_report_begin")]])
+    kb = IKM(inline_keyboard=[[IKB(text="В меню отчётов ↩️", callback_data="analytics_report_begin")]])
     await msg.edit_text("Успешно ✅", reply_markup=kb)
+
+
+# @router.message(Command('server_authorize'))
+# async def authorize_command(msg: Message):
+#     await msg.answer("Command: authorize")
+#
+#     loading_msg = await msg.answer("...")
+#
+#
+#
+#
+#
+#     user_tokens_db.insert_user(
+#         tgid=str(msg.from_user.id),
+#         token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwic2x1ZyI6IlJPR0FMSUsiLCJpYXQiOjE3MzMzMjYzNjksImV4cCI6MTczMzQxMjc2OX0.5ttqvCo7itrS5t_6Cvzp6RRiA0AyaXuWbEHY2ZgQlT4"
+#     )
+#
+#     await loading_msg.edit_text("Response: ok")
+
 
 
 

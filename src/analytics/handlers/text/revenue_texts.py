@@ -2,7 +2,7 @@ from ..types.text_data import TextData
 
 
 revenue_recommendations = {
-    "guests-checks": """
+    "guests": """
 <b>Рекомендации</b> 
 
 Что можно сделать для увеличения количества гостей:
@@ -16,7 +16,9 @@ revenue_recommendations = {
 4. Привлечение новых гостей (рекламные кампании и PR, коллаборации с партнерами, участие во внешних мероприятиях и др.).
 
 5. Обновление интерьера, рестайлинг, обновление/изменение концепции.
-
+""",
+    "checks": """
+<b>Рекомендации</b>
 
 Что можно сделать для увеличения среднего чека и глубины чека:
 
@@ -105,6 +107,7 @@ def load_data_from_files(text_data: TextData):
         'revenue-date_of_week': revenue_date_of_week,
         'revenue-waiter': revenue_waiter,
         'revenue-price_segments': revenue_price_segments,
+        "check-depth": reports[9]['sum']
     }
 
     return data
@@ -116,16 +119,19 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
         "week": {
             "revenue_key": "week",
             "dynamics_key": "dynamics_week",
+            "dynamic_key": "dynamic_week",
             "label": "неделю"
         },
         "month": {
             "revenue_key": "month",
             "dynamics_key": "dynamics_month",
+            "dynamic_key": "dynamic_month",
             "label": "месяц"
         },
         "year": {
             "revenue_key": "year",
             "dynamics_key": "dynamics_year",
+            "dynamic_key": "dynamic_year",
             "label": "год"
         }
     }
@@ -135,6 +141,7 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
 
     revenue_key = period_keys[period]["revenue_key"]
     dynamics_key = period_keys[period]["dynamics_key"]
+    dynamic_key = period_keys[period]["dynamic_key"]
     period_label = period_keys[period]["label"]
 
     # Заголовок отчёта с указанием периода
@@ -145,8 +152,57 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
     # 1. Гостевой поток и средний чек
     guests_checks = data['guests-checks']
     avg_check = data['avg-check']
+    check_depth = data['check-depth']
     message += (
-        "<b> 1 Гостевой поток и средний чек:</b>\n"
+        "<b> 1 Гостевой поток:</b>\n"
+    )
+
+    # Собираем данные по динамике
+    metrics = [
+        {
+            "label": "гостепоток",
+            "value": guests_checks.get(f'guests_{dynamics_key}', 0),
+            "current": guests_checks.get('guests', 0),
+            "previous": guests_checks.get(f'guests_{revenue_key}', 0)
+        },
+    ]
+
+    # Разделяем на отрицательные и положительные изменения
+    negative_changes = [m for m in metrics if m['value'] < 0]
+    positive_changes = [m for m in metrics if m['value'] >= 0]
+
+    # Вывести "всё в ворядке" если нет отрицательных динамик
+    if only_negative and not negative_changes:
+        message += "Всё в порядке 👍\n"
+    message += "\n"
+
+    # Сначала выводим отрицательные изменения
+    if negative_changes:
+        message += "<i>Отрицательная динамика:</i>\n"
+        for metric in negative_changes:
+            message += (
+                f"- {metric['label']}: {metric['value']:.1f}%, "
+                f"{metric['previous']:,.0f} → {metric['current']:,.0f}\n"
+            )
+        message += "\n"
+
+    # Затем выводим положительные изменения
+    if positive_changes and not only_negative:
+        message += "<i>Положительная динамика:</i>\n"
+        for metric in positive_changes:
+            message += (
+                f"+ {metric['label']}: {metric['value']:.1f}%, "
+                f"{metric['previous']:,.0f} → {metric['current']:,.0f}\n"
+            )
+        message += "\n"
+
+    # Выводим рекомендации если есть
+    if recommendations and negative_changes:
+        message += revenue_recommendations["guests"] + "\n"
+
+    # средний чек
+    message += (
+        "<b> Cредний чек:</b>\n"
     )
 
     # Собираем данные по динамике
@@ -159,9 +215,9 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
         },
         {
             "label": "глубина чека",
-            "value": guests_checks.get(f'depth_{dynamics_key}', 0),
-            "current": guests_checks.get('depth', 0),
-            "previous": guests_checks.get(f'depth_{revenue_key}', 0)
+            "value": check_depth.get(f'depth_{dynamic_key}', 0),
+            "current": check_depth.get('depth', 0),
+            "previous": check_depth.get(f'depth_{revenue_key}', 0)
         },
         {
             "label": "количество чеков",
@@ -202,7 +258,7 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
 
     # Выводим рекомендации если есть
     if recommendations and negative_changes:
-        message += revenue_recommendations["guests-checks"] + "\n"
+        message += revenue_recommendations["checks"] + "\n"
 
     # 2. Выручка по направлениям (бар и кухня)
     revenue_store = data['revenue-store']
