@@ -1,0 +1,126 @@
+{
+    "data": [
+        {
+            "label": "Вилка, шт",
+            "expense_day": 51613,
+            "turnover_in_days_dynamic_week": -12,
+            "turnover_in_days_dynamic_month": 20,
+            "turnover_in_days_dynamic_year": null,
+            "turnover_in_days_week": 46,
+            "turnover_in_days_month": 14,
+            "turnover_in_days_year": null,
+            "remainder_end": 1800000
+        },
+        {
+            "label": "Говядина, кг",
+            "expense_day": 24194,
+            "turnover_in_days_dynamic_week": -15,
+            "turnover_in_days_dynamic_month": 0,
+            "turnover_in_days_dynamic_year": null,
+            "turnover_in_days_week": 46,
+            "turnover_in_days_month": 31,
+            "turnover_in_days_year": null,
+            "remainder_end": 750000
+        },
+        {
+            "label": "Кофемашина, шт",
+            "expense_day": 16129,
+            "turnover_in_days_dynamic_week": -31,
+            "turnover_in_days_dynamic_month": null,
+            "turnover_in_days_dynamic_year": null,
+            "turnover_in_days_week": 62,
+            "turnover_in_days_month": null,
+            "turnover_in_days_year": null,
+            "remainder_end": 500000
+        },
+        {
+            "label": "Куриное бедро, кг",
+            "expense_day": 9677,
+            "turnover_in_days_dynamic_week": -20,
+            "turnover_in_days_dynamic_month": 8,
+            "turnover_in_days_dynamic_year": null,
+            "turnover_in_days_week": 59,
+            "turnover_in_days_month": 31,
+            "turnover_in_days_year": null,
+            "remainder_end": 380000
+        },
+        {
+            "label": "Индейка, кг",
+            "expense_day": 9677,
+            "turnover_in_days_dynamic_week": -31,
+            "turnover_in_days_dynamic_month": null,
+            "turnover_in_days_dynamic_year": null,
+            "turnover_in_days_week": 62,
+            "turnover_in_days_month": null,
+            "turnover_in_days_year": null,
+            "remainder_end": 300000
+        },
+        {
+            "label": "Творог, кг",
+            "expense_day": 4194,
+            "turnover_in_days_dynamic_week": null,
+            "turnover_in_days_dynamic_month": null,
+            "turnover_in_days_dynamic_year": null,
+            "turnover_in_days_week": null,
+            "turnover_in_days_month": null,
+            "turnover_in_days_year": null,
+            "remainder_end": 130000
+        },
+        {
+            "label": "Кофе натуральный Бразилия,кг",
+            "expense_day": 25927,
+            "turnover_in_days_dynamic_week": 2,
+            "turnover_in_days_dynamic_month": 3,
+            "turnover_in_days_dynamic_year": -4,
+            "turnover_in_days_week": 3,
+            "turnover_in_days_month": 2,
+            "turnover_in_days_year": 9,
+            "remainder_end": 129242
+        },
+        {
+            "label": "Куриное филе, кг",
+            "expense_day": 39496,
+            "turnover_in_days_dynamic_week": 1,
+            "turnover_in_days_dynamic_month": 1,
+            "turnover_in_days_dynamic_year": 0,
+            "turnover_in_days_week": 2,
+            "turnover_in_days_month": 2,
+            "turnover_in_days_year": 3,
+            "remainder_end": 105943
+        },
+        {
+            "label": "Чайник стеклянный, шт",
+            "expense_day": 592,
+            "turnover_in_days_dynamic_week": 0,
+            "turnover_in_days_dynamic_month": null,
+            "turnover_in_days_dynamic_year": null,
+            "turnover_in_days_week": 166,
+            "turnover_in_days_month": null,
+            "turnover_in_days_year": null,
+            "remainder_end": 98252
+        },
+        {
+            "label": "Тарелка 215 мм с вертикальным бортом, шт",
+            "expense_day": 3164,
+            "turnover_in_days_dynamic_week": 0,
+            "turnover_in_days_dynamic_month": null,
+            "turnover_in_days_dynamic_year": null,
+            "turnover_in_days_week": 28,
+            "turnover_in_days_month": null,
+            "turnover_in_days_year": null,
+            "remainder_end": 89105
+        }
+    ],
+    "sum": {
+        "label": "Всего",
+        "expense_day": 184663,
+        "turnover_in_days": null,
+        "turnover_in_days_dynamic_week": null,
+        "turnover_in_days_dynamic_month": null,
+        "turnover_in_days_dynamic_year": null,
+        "turnover_in_days_week": 474,
+        "turnover_in_days_month": 80,
+        "turnover_in_days_year": 12,
+        "remainder_end": 4282542
+    }
+}

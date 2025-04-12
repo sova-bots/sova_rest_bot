@@ -1,0 +1,160 @@
+{
+    "data": [
+        {
+            "label": "1.Кухня",
+            "expense_day": 4240,
+            "turnover_in_days": 47,
+            "turnover_in_days_dynamic_week": 2,
+            "turnover_in_days_dynamic_month": 17,
+            "turnover_in_days_dynamic_year": 23,
+            "turnover_in_days_week": 44.74476467853733,
+            "turnover_in_days_month": 29.76698138437632,
+            "turnover_in_days_year": 24.547572246241018,
+            "remainder_end": 199556
+        },
+        {
+            "label": "1.Кухня",
+            "expense_day": 28500,
+            "turnover_in_days": 17,
+            "turnover_in_days_dynamic_week": 3,
+            "turnover_in_days_dynamic_month": 5,
+            "turnover_in_days_dynamic_year": 4,
+            "turnover_in_days_week": 14.049237740873856,
+            "turnover_in_days_month": 11.285369175724613,
+            "turnover_in_days_year": 12.724879465136995,
+            "remainder_end": 473447
+        },
+        {
+            "label": "1.Хозы",
+            "expense_day": 5040,
+            "turnover_in_days": 42,
+            "turnover_in_days_dynamic_week": -18,
+            "turnover_in_days_dynamic_month": -36,
+            "turnover_in_days_dynamic_year": -9,
+            "turnover_in_days_week": 60.22502553216088,
+            "turnover_in_days_month": 77.77933837845467,
+            "turnover_in_days_year": 51.171914755901916,
+            "remainder_end": 211510
+        },
+        {
+            "label": "2.Кухня",
+            "expense_day": 4946,
+            "turnover_in_days": 39,
+            "turnover_in_days_dynamic_week": 3,
+            "turnover_in_days_dynamic_month": 13,
+            "turnover_in_days_dynamic_year": 7,
+            "turnover_in_days_week": 35.65900151573399,
+            "turnover_in_days_month": 25.503748774445437,
+            "turnover_in_days_year": 31.85076795132272,
+            "remainder_end": 190832
+        },
+        {
+            "label": "2.Кухня",
+            "expense_day": 37132,
+            "turnover_in_days": 17,
+            "turnover_in_days_dynamic_week": 6,
+            "turnover_in_days_dynamic_month": 8,
+            "turnover_in_days_dynamic_year": 6,
+            "turnover_in_days_week": 11.351658428835034,
+            "turnover_in_days_month": 9.615830625586732,
+            "turnover_in_days_year": 10.896639920733069,
+            "remainder_end": 641628
+        },
+        {
+            "label": "2.Хозы",
+            "expense_day": 8555,
+            "turnover_in_days": 22,
+            "turnover_in_days_dynamic_week": -12,
+            "turnover_in_days_dynamic_month": 1,
+            "turnover_in_days_dynamic_year": -15,
+            "turnover_in_days_week": 34.47361158584064,
+            "turnover_in_days_month": 21.670900522819863,
+            "turnover_in_days_year": 37.74704579686467,
+            "remainder_end": 190694
+        },
+        {
+            "label": "3.Кухня",
+            "expense_day": 3414,
+            "turnover_in_days": 45,
+            "turnover_in_days_dynamic_week": 7,
+            "turnover_in_days_dynamic_month": 10,
+            "turnover_in_days_dynamic_year": -10,
+            "turnover_in_days_week": 38.103717526120185,
+            "turnover_in_days_month": 34.79057398226241,
+            "turnover_in_days_year": 54.411534417868076,
+            "remainder_end": 152586
+        },
+        {
+            "label": "3.Кухня",
+            "expense_day": 23115,
+            "turnover_in_days": 16,
+            "turnover_in_days_dynamic_week": 5,
+            "turnover_in_days_dynamic_month": 8,
+            "turnover_in_days_dynamic_year": 4,
+            "turnover_in_days_week": 11.118411330695265,
+            "turnover_in_days_month": 7.475949351800673,
+            "turnover_in_days_year": 11.948306942167056,
+            "remainder_end": 362927
+        },
+        {
+            "label": "3.Хозы",
+            "expense_day": 4117,
+            "turnover_in_days": 38,
+            "turnover_in_days_dynamic_week": 3,
+            "turnover_in_days_dynamic_month": -2,
+            "turnover_in_days_dynamic_year": -11,
+            "turnover_in_days_week": 34.11454655913437,
+            "turnover_in_days_month": 39.8643141443893,
+            "turnover_in_days_year": 48.259387932110116,
+            "remainder_end": 154767
+        },
+        {
+            "label": "4.Кухня",
+            "expense_day": 2595,
+            "turnover_in_days": 32,
+            "turnover_in_days_dynamic_week": 2,
+            "turnover_in_days_dynamic_month": 14,
+            "turnover_in_days_dynamic_year": null,
+            "turnover_in_days_week": 30.133756319113914,
+            "turnover_in_days_month": 17.69135016536596,
+            "turnover_in_days_year": null,
+            "remainder_end": 82905
+        },
+        {
+            "label": "4.Кухня",
+            "expense_day": 16886,
+            "turnover_in_days": 15,
+            "turnover_in_days_dynamic_week": 0,
+            "turnover_in_days_dynamic_month": 4,
+            "turnover_in_days_dynamic_year": null,
+            "turnover_in_days_week": 14.279557062286596,
+            "turnover_in_days_month": 10.236475662901643,
+            "turnover_in_days_year": null,
+            "remainder_end": 246575
+        },
+        {
+            "label": "4.Хозы",
+            "expense_day": 2626,
+            "turnover_in_days": 33,
+            "turnover_in_days_dynamic_week": 1,
+            "turnover_in_days_dynamic_month": 10,
+            "turnover_in_days_dynamic_year": null,
+            "turnover_in_days_week": 32.253046806289134,
+            "turnover_in_days_month": 22.786788057932885,
+            "turnover_in_days_year": null,
+            "remainder_end": 87216
+        }
+    ],
+    "sum": {
+        "label": "Всего",
+        "expense_day": 141166,
+        "turnover_in_days": 363,
+        "turnover_in_days_dynamic_week": 2.493664914378769,
+        "turnover_in_days_dynamic_month": 54.53237977393951,
+        "turnover_in_days_dynamic_year": 79.44195057165439,
+        "turnover_in_days_week": 360.50633508562123,
+        "turnover_in_days_month": 308.4676202260605,
+        "turnover_in_days_year": 283.5580494283456,
+        "remainder_end": 2994643
+    }
+}

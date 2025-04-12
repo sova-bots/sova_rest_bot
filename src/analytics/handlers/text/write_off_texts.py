@@ -9,16 +9,20 @@ def safe_get(data: dict, key: str, placeholder: str = "<i>нет данных</i
     if value is None:
         return placeholder
 
-    if comma and str(value).isdigit():
-        return f"{value:,}"
+    if comma and isinstance(value, (int, float)):  # Улучшаем проверку на числовые значения
+        return f"{value:,.2f}"  # Форматируем число с двумя знаками после запятой
 
-    return value
+    return str(value)
+
 
 
 def inventory_text(text_data: TextData) -> list[str]:
     data = text_data.reports[0]["data"]
 
     texts = []
+    # Заголовок для инвентаризации
+    texts.append("<b>Инвентаризация: Недостача и излишки</b>\n")
+
     for index in range(0, len(data), 3):
         text_group = ""
         for report in data[index:index + 3]:
@@ -33,13 +37,13 @@ def inventory_text(text_data: TextData) -> list[str]:
             if add_shortage:
                 shortage = safe_get(report, 'shortage', '0')  # Сумма недостачи
                 shortage_percent = safe_get(report, 'shortage_percent', '0')  # Процент недостачи
-                text += f"• Недостача: {shortage} руб; {shortage_percent}% от от с/с\n"
+                text += f"• Недостача: {shortage} руб; {shortage_percent}% от с/с\n"
 
             # Вычисление и добавление данных об избытке
             if add_surplus:
                 surplus = safe_get(report, 'surplus', '0')  # Сумма излишка
                 surplus_percent = safe_get(report, 'surplus_percent', '0')  # Процент излишка
-                text += f"• Избыток: {surplus} руб; {surplus_percent}% от от с/с\n"
+                text += f"• Излишки: {surplus} руб; {surplus_percent}% от с/с\n"
 
             # Если были добавлены данные о недостаче или избытке, добавляем текст
             if add_surplus or add_shortage:
@@ -54,6 +58,7 @@ def inventory_text(text_data: TextData) -> list[str]:
     return texts
 
 
+
 def write_off_text(text_data: TextData) -> list[str]:
     report = text_data.reports[0]["data"]
 
@@ -66,7 +71,7 @@ def write_off_text(text_data: TextData) -> list[str]:
         "last-year": "write_off_dynamics_year",
     }
 
-    dynamics_period_key = period_mappings[text_data.period]
+    dynamics_period_key = period_mappings.get(text_data.period, "write_off_dynamics_week")
 
     texts = [[]]
     count = 15
@@ -94,7 +99,6 @@ def write_off_text(text_data: TextData) -> list[str]:
     return ["\n\n".join(txt) for txt in texts]
 
 
-
 # from ..types.text_data import TextData
 
 
@@ -106,10 +110,10 @@ def write_off_text(text_data: TextData) -> list[str]:
 #     value = data.get(key)
 #     if value is None:
 #         return placeholder
-    
+
 #     if comma and str(value).isdigit():
 #         return f"{value:,}"
-    
+
 #     return value
 
 
@@ -159,7 +163,7 @@ def write_off_text(text_data: TextData) -> list[str]:
 #     for item in report:
 #         write_off = f"{item["write_off"]:,}" if item["write_off"] is not None else None
 #         write_off_dynamics = f"{item[dynamics_period_key]:.0f}" if item[dynamics_period_key] is not None else None
-        
+
 #         if write_off is None or write_off_dynamics is None:
 #             continue
 
@@ -176,4 +180,3 @@ def write_off_text(text_data: TextData) -> list[str]:
 #             cnt = 0
 
 #     return ["\n\n".join(txt) for txt in texts]
-
