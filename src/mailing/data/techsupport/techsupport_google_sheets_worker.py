@@ -36,11 +36,11 @@ class TSList:
 
 class Columns:
     id_: int = 0
-    question: int = 1
+    question: int = 2
     answer: int = 2
-    photo_id: int = 3
-    client_id: int = 4
-    admin_id: int = 5
+    photo_id: int = 4
+    client_id: int = 5
+    admin_id: int = 6
 
 
 class Const:
