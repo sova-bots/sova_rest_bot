@@ -11,17 +11,17 @@ periodicity_kb = types.InlineKeyboardMarkup(inline_keyboard=[
 
 
 timezone_kb = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text="MSK-1", callback_data="tz_-1"), InlineKeyboardButton(text="MSK", callback_data="tz_0")],
-    [InlineKeyboardButton(text="MSK+1", callback_data="tz_1"),
-     InlineKeyboardButton(text="MSK+2", callback_data="tz_2")],
-    [InlineKeyboardButton(text="MSK+2", callback_data="tz_2"),
-     InlineKeyboardButton(text="MSK+3", callback_data="tz_3")],
-    [InlineKeyboardButton(text="MSK+4", callback_data="tz_4"),
-     InlineKeyboardButton(text="MSK+5", callback_data="tz_5")],
-    [InlineKeyboardButton(text="MSK+6", callback_data="tz_6"),
-     InlineKeyboardButton(text="MSK+7", callback_data="tz_7")],
-    [InlineKeyboardButton(text="MSK+8", callback_data="tz_8"),
-     InlineKeyboardButton(text="MSK+9", callback_data="tz_9")],
+    [InlineKeyboardButton(text="МСК-1", callback_data="tz_-1"), InlineKeyboardButton(text="МСК", callback_data="tz_0")],
+    [InlineKeyboardButton(text="МСК+1", callback_data="tz_1"),
+     InlineKeyboardButton(text="МСК+2", callback_data="tz_2")],
+    [InlineKeyboardButton(text="МСК+2", callback_data="tz_2"),
+     InlineKeyboardButton(text="МСК+3", callback_data="tz_3")],
+    [InlineKeyboardButton(text="МСК+4", callback_data="tz_4"),
+     InlineKeyboardButton(text="МСК+5", callback_data="tz_5")],
+    [InlineKeyboardButton(text="МСК+6", callback_data="tz_6"),
+     InlineKeyboardButton(text="МСК+7", callback_data="tz_7")],
+    [InlineKeyboardButton(text="МСК+8", callback_data="tz_8"),
+     InlineKeyboardButton(text="МСК+9", callback_data="tz_9")],
 
 ])
 
@@ -151,3 +151,10 @@ periods_kb = InlineKeyboardMarkup(
         for key, name in all_periods.items()
     ]
 )
+
+def get_main_menu_keyboard():
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="🔙 Вернуться в главное меню", callback_data="main_menu")]
+        ]
+    )

@@ -159,7 +159,7 @@ async def choose_timezone(callback_query: CallbackQuery, state: FSMContext):
     else:
         # Для ежедневной и по будням подписки сразу запрашиваем время
         await state.set_state(SubscriptionState.choosing_time)
-        await callback_query.message.answer("Теперь введите время рассылки в формате HH:MM.")
+        await callback_query.message.answer("Теперь введите время рассылки в формате ЧЧ:ММ.")
 
 
 @save_time_router.message(SubscriptionState.choosing_time)
@@ -187,7 +187,7 @@ async def choose_time(message: Message, state: FSMContext):
         await state.set_state(SubscriptionState.choosing_period)
 
     except ValueError:
-        await message.answer("Неверный формат времени. Пожалуйста, используйте формат HH:MM.")
+        await message.answer("Неверный формат времени. Пожалуйста, используйте формат ЧЧ:ММ.")
 
 
 @save_time_router.callback_query(F.data.startswith("day_"))
@@ -198,7 +198,7 @@ async def choose_weekday(callback_query: CallbackQuery, state: FSMContext):
     logging.info(f"Selected weekday: {weekday}")
 
     await state.set_state(SubscriptionState.choosing_time)
-    await callback_query.message.answer("Теперь введите время рассылки в формате HH:MM.")
+    await callback_query.message.answer("Теперь введите время рассылки в формате ЧЧ:ММ.")
 
 
 @save_time_router.message(SubscriptionState.choosing_day)
@@ -217,7 +217,7 @@ async def choose_weekday(message: Message, state: FSMContext):
     logging.info(f"Selected weekday: {day_text} ({days_of_week[day_text]})")
 
     # Запрашиваем у пользователя время
-    await message.answer("Теперь введите время рассылки в формате HH:MM.")
+    await message.answer("Теперь введите время рассылки в формате ЧЧ:ММ.")
     await state.set_state(SubscriptionState.choosing_time)
 
 
@@ -233,14 +233,14 @@ async def choose_weekday_or_day(message: Message, state: FSMContext):
                 raise ValueError("В неделе только дни с 0 (понедельник) до 6 (воскресенье).")
             await state.update_data(weekday=value)
             logging.info(f"Updated data with weekday={value}. State: {await state.get_data()}")
-            await message.answer("Теперь выберите время рассылки в формате HH:MM.")
+            await message.answer("Теперь выберите время рассылки в формате ЧЧ:ММ.")
             await state.set_state(SubscriptionState.choosing_time)
         elif "monthly" in data:  # Если выбрана ежемесячная подписка
             if value < 1 or value > 31:
                 raise ValueError("В месяце только числа с 1 по 31.")
             await state.update_data(day_of_month=value)
             logging.info(f"Updated data with day_of_month={value}. State: {await state.get_data()}")
-            await message.answer("Теперь выберите время рассылки в формате HH:MM.")
+            await message.answer("Теперь выберите время рассылки в формате ЧЧ:ММ.")
             await state.set_state(SubscriptionState.choosing_time)
     except ValueError as e:
         await message.answer(str(e))
@@ -256,7 +256,7 @@ async def choose_day_of_month(message: Message, state: FSMContext):
         if 1 <= day <= 31:  # Проверка корректности числа
             await state.update_data(day_of_month=day)
             await state.set_state(SubscriptionState.choosing_time)  # Переходим к выбору времени
-            await message.answer("Теперь введите время рассылки в формате HH:MM.")
+            await message.answer("Теперь введите время рассылки в формате ЧЧ:ММ.")
             logging.info(f"User {message.from_user.id} successfully set day of month to {day}.")
         else:
             await message.answer("Введите корректное число от 1 до 31.")
@@ -351,7 +351,7 @@ async def save_time(message: Message, state: FSMContext):
         await state.clear()
 
     except ValueError:
-        await message.answer("Неверный формат времени. Пожалуйста, используйте формат HH:MM.")
+        await message.answer("Неверный формат времени. Пожалуйста, используйте формат ЧЧ:ММ.")
 
 
 
@@ -425,30 +425,41 @@ async def unsubscribe(callback_query: CallbackQuery):
 
     # Убираем лишние символы, если время включает секунды
     if len(time_str) > 5:
-        time_str = time_str[:5]  # Берем только первые 5 символов (HH:MM)
+        time_str = time_str[:5]  # Берем только первые 5 символов (ЧЧ:ММ)
 
     try:
         # Преобразуем строку времени в объект time
-        time_obj = datetime.strptime(time_str, '%H:%M').time()  # Используем формат без секунд
+        time_obj = datetime.strptime(time_str, '%H:%M').time()
     except ValueError:
-        await callback_query.message.answer(f"Некорректное время для подписки: {time_str}. Ожидаемый формат - HH:MM.")
+        await callback_query.message.answer(f"Некорректное время для подписки: {time_str}. Ожидаемый формат - ЧЧ:ММ.")
         return
+
+    # Перевод типа подписки
+    type_translation = {
+        "daily": "ежедневно",
+        "weekly": "еженедельно",
+        "monthly": "ежемесячно",
+        "workdays": "по будням",
+    }
+    subscription_type_ru = type_translation.get(subscription_type, subscription_type)  # если нет перевода — оставляем как есть
 
     # Удаляем подписку из базы данных
     conn = await asyncpg.connect(**DB_CONFIG)
     try:
-        # Запрос, который использует объект time, а не строку
-        await conn.execute(''' 
+        await conn.execute('''
             DELETE FROM subscriptions 
             WHERE user_id = $1 AND subscription_type = $2 AND time = $3
         ''', callback_query.from_user.id, subscription_type, time_obj)
 
-        await callback_query.message.answer(f"Вы успешно отменили подписку на {subscription_type} в {time_str}.")
+        await callback_query.message.answer(
+            f"Вы успешно отменили подписку ({subscription_type_ru}) в {time_str}."
+        )
     except Exception as e:
         logging.error(f"Ошибка при удалении подписки: {e}")
         await callback_query.message.answer("Произошла ошибка при удалении подписки. Попробуйте позже.")
     finally:
         await conn.close()
+
 
 
 # Обработчик нажатия на кнопку подписки
@@ -567,7 +578,7 @@ async def process_timezone(message: Message, state: FSMContext):
 
         await state.update_data(offset=offset)
         await message.answer(
-            f"Вы указали разницу с Москвой: {offset:+.1f} часов.\nТеперь введите время в формате HH:MM.")
+            f"Вы указали разницу с Москвой: {offset:+.1f} часов.\nТеперь введите время в формате ЧЧ:ММ.")
         await state.set_state(TimeInputState.waiting_for_time)
     except ValueError:
         await message.answer("Некорректный ввод. Введите число от -12 до +12 (например, +3 или -4).")
@@ -579,7 +590,7 @@ async def process_time(message: Message, state: FSMContext):
 
     # Убираем лишние символы, если время включает секунды
     if len(time_str) > 5:
-        time_str = time_str[:5]  # Берем только первые 5 символов (HH:MM)
+        time_str = time_str[:5]  # Берем только первые 5 символов (ЧЧ:ММ)
 
     try:
         # Преобразуем строку времени в объект time
@@ -608,7 +619,7 @@ async def process_time(message: Message, state: FSMContext):
         await state.clear()  # Завершаем состояние
 
     except ValueError:
-        await message.answer("Некорректный формат времени. Пожалуйста, используйте формат HH:MM.")
+        await message.answer("Некорректный формат времени. Пожалуйста, используйте формат ЧЧ:ММ.")
 
 
 # Обработчик для ввода времени
@@ -618,7 +629,7 @@ async def process_time(message: Message, state: FSMContext):
 
     # Убираем лишние символы, если время включает секунды
     if len(time_str) > 5:
-        time_str = time_str[:5]  # Берем только первые 5 символов (HH:MM)
+        time_str = time_str[:5]  # Берем только первые 5 символов (ЧЧ:ММ)
 
     try:
         # Преобразуем строку времени в объект time
@@ -629,7 +640,7 @@ async def process_time(message: Message, state: FSMContext):
 
     except ValueError:
         # В случае ошибки
-        await message.answer(f"Некорректное время для подписки: {time_str}. Ожидаемый формат - HH:MM.")
+        await message.answer(f"Некорректное время для подписки: {time_str}. Ожидаемый формат - ЧЧ:ММ.")
 
 
 async def save_subscription(
@@ -657,5 +668,4 @@ async def save_subscription(
             user_id, subscription_type, periodicity, weekday, day_of_month,
             time, timezone_offset, report_type, token, date_periodity
         )
-
 

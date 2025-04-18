@@ -24,10 +24,12 @@ from src.mailing.commands.techsupport.techsupport_menu import router as techsupp
 from src.analytics.router import analytics_router
 from src.mailing.mailing_router import mailing_router
 
-from src.mailing.commands.registration.notifications.check_time import subscription_router, scheduler, start_scheduler, schedule_all_subscriptions
+from src.mailing.commands.registration.notifications.check_time import scheduler, schedule_all_subscriptions, \
+    start_scheduler, subscription_router
 from src.mailing.commands.registration.notifications.sub_mail import save_time_router
 
-# Подключаем роутеры
+
+
 router = Router(name=__name__)
 
 routers = [
@@ -45,27 +47,25 @@ routers = [
     subscription_router
 ]
 
-# Инициализация диспетчера
 dp = Dispatcher()
 
 @router.message(Command("test"))
 async def test_command(message: Message):
-    await message.answer("sleep 5")
+    await message   .answer("sleep 5")
     await asyncio.sleep(5)
     await message.answer("sleep end")
 
-# Функция для подключения роутеров
+
 async def include_routers(dp: Dispatcher) -> None:
     for router in routers:
         dp.include_router(router)
 
 async def on_start(bot: Bot):
     logging.info("Бот запускается...")
-    # Подключаем планировщик и загружаем все подписки
     await schedule_all_subscriptions(bot)
-    start_scheduler()  # Запуск планировщика
+    start_scheduler()  # Запуск планиировщика
 
-# Главная асинхронная функция
+
 async def main() -> None:
     bot = Bot(token=cf.TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     storage = MemoryStorage()
@@ -73,13 +73,10 @@ async def main() -> None:
 
     await bot.delete_webhook()
 
-    # Подключаем все роутеры
     await include_routers(dp)
 
-    # Запускаем планировщик
     await on_start(bot)  # Включаем планировщик и загружаем подписки
 
-    # Если включены уведомления, запускаем отправку уведомлений
     if cf.notifications:
         sender = NotificationSender(bot)
         sender.start()
@@ -88,7 +85,6 @@ async def main() -> None:
         logger.info('Бот запущен!')
         await dp.start_polling(bot)
     except (CancelledError, KeyboardInterrupt, SystemExit):
-        # Остановка бота и планировщика при исключении
         dp.shutdown()
 
         if cf.notifications:
@@ -101,5 +97,4 @@ async def main() -> None:
         logger.info('Бот остановлен.')
 
 if __name__ == '__main__':
-    # Запускаем главную функцию
     asyncio.run(main())
