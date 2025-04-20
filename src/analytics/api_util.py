@@ -8,6 +8,8 @@ from .db.db import user_tokens_db
 import config as cf
 from src.util.log import logger
 
+from .handlers.types.report_all_departments_types import ReportAllDepartmentTypes
+
 
 @dataclass
 class ReportRequestData:
@@ -37,7 +39,7 @@ def get_requests_datas_from_state_data(tgid: int, state_data: dict, type_prefix:
         group = url_and_group[1] if len(url_and_group) > 1 else None
         
         departments = state_data.get("report:department")
-        if departments == "all_departments":
+        if departments in [ReportAllDepartmentTypes.ALL_DEPARTMENTS_INDIVIDUALLY, ReportAllDepartmentTypes.SUM_DEPARTMENTS_TOTALLY]:
             departments = []
         else:
             departments = [departments]

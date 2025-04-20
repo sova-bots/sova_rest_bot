@@ -9,8 +9,12 @@ from src.util.log import logger
 import config as cf
 
 
-async def get_reports(tgid: int, state_data: dict, type_prefix: str) -> list[dict] | None:
+async def get_reports_from_state(tgid: int, state_data: dict, type_prefix: str) -> list[dict] | None:
     request_data_list = get_requests_datas_from_state_data(tgid, state_data, type_prefix)
+    return await get_reports(request_data_list)
+
+
+async def get_reports(request_data_list: list[ReportRequestData]) -> list[dict] | None:
     responses = []
     for request_data in request_data_list:
         loop = get_event_loop()
@@ -60,6 +64,6 @@ def m_req_get_departments(token: str) -> dict:
     if req.status_code != 200:
         logger.msg("ERROR", f"Could not get departments: {token=}")
         return []
-    return req.json()['departments'] + [{"id": "all_departments", "name": "Вся сеть"}]
+    return req.json()['departments']
 
 

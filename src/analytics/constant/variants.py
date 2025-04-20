@@ -1,10 +1,16 @@
 from aiogram.types import InlineKeyboardButton as IKB
 
 from ..api import get_departments
+from ..handlers.types.report_all_departments_types import ReportAllDepartmentTypes
 
 
 async def all_departments(tgid: int) -> dict:
-    return await get_departments(tgid)
+    departments: dict = await get_departments(tgid)
+    departments.update({
+        ReportAllDepartmentTypes.ALL_DEPARTMENTS_INDIVIDUALLY: "Вся сеть (по объектам отдельно)",
+        ReportAllDepartmentTypes.SUM_DEPARTMENTS_TOTALLY: "Вся сеть (итого по объектам)"
+    })
+    return departments
 
 
 all_periods = {

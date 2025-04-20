@@ -6,7 +6,10 @@ from ...constant.variants import all_departments, all_branches, all_types, all_p
 # make header
 async def make_header(msg_data: MsgData) -> str:
     state_data = await msg_data.state.get_data()
+    return await make_header_from_state(state_data, msg_data.tgid)
     
+
+async def make_header_from_state(state_data: dict, tgid: int) -> str:
     headers = []
     
     department = state_data.get("report:department")
@@ -14,9 +17,9 @@ async def make_header(msg_data: MsgData) -> str:
     report_type = state_data.get("report:type")
     period = state_data.get("report:period")
     
-    assert msg_data.tgid is not None, "tgid is not specified"
+    assert tgid is not None, "tgid is not specified"
     
-    department = (await all_departments(msg_data.tgid)).get(department)
+    department = (await all_departments(tgid)).get(department)
     branch = all_branches.get(branch)
     report_type = all_types.get(report_type)
     period = all_periods.get(period)
