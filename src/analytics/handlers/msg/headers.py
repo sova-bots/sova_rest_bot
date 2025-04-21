@@ -34,18 +34,26 @@ async def make_header(msg_data: MsgData) -> str:
     # Определяем название формата
     format_type_name = None
 
+
     # Если это рекомендации
     if showing_recommendations:
         format_type_name = "Рекомендации 💡"
+        logger.info("[make_header] Format type is recommendations")
+
     # Если формат выбран
     elif format_type_key:
-        # Удаляем префикс "report:show_" если он есть
-        clean_format_key = format_type_key.replace("report:show_", "")
-        format_type_name = menu_button_translations.get(clean_format_key)
+        clean_key = format_type_key
+        if format_type_key.startswith("report:show_"):
+            clean_key = format_type_key.replace("report:show_", "")
+        format_type_name = menu_button_translations.get(clean_key)
+
+        logger.info(f"[make_header] Clean format key: {clean_key}")
+        logger.info(f"[make_header] Format type name from translation: {format_type_name}")
 
     # Если формат не определен
     if not format_type_name:
         format_type_name = "Не указан формат"
+        logger.info("[make_header] Format type is not defined")
 
     # Собираем заголовок
     if department_name:
@@ -60,5 +68,38 @@ async def make_header(msg_data: MsgData) -> str:
         headers.append(f"📅 <code>Период:</code> <b>{period_name}</b>")
 
     logger.info(f"[make_header] Final header: {headers}")
+
+    logger.info(f"[make_header] Raw format_type_key: {format_type_key}")
+
+
+    return "\n".join(headers)
+
+
+async def make_header_from_state(state_data: dict, tgid: int) -> str:
+    headers = []
+
+    department = state_data.get("report:department")
+    branch = state_data.get("report:branch")
+    report_type = state_data.get("report:type")
+    period = state_data.get("report:period")
+
+    assert tgid is not None, "tgid is not specified"
+
+    department = (await all_departments(tgid)).get(department)
+    branch = all_branches.get(branch)
+    report_type = all_types.get(report_type)
+    period = all_periods.get(period)
+
+    if department is not None:
+        headers.append(f"📍 <code>Объект:</code> <b>{department.split('.')[-1]}</b>")
+
+    if branch is not None and state_data.get("report:type") == state_data.get("report:branch"):
+        headers.append(f"📊 <code>Отчёт:</code> <b>{branch}</b>")
+
+    if report_type is not None:
+        headers.append(f"📊 <code>Отчёт:</code> <b>{report_type}</b>")
+
+    if period is not None:
+        headers.append(f"📅 <code>Период:</code> <b>{period}</b>")
 
     return "\n".join(headers)

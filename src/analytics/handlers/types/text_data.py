@@ -5,4 +5,5 @@ from dataclasses import dataclass
 class TextData:
     reports: list
     period: str
+    department: str
     only_negative: bool = False

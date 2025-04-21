@@ -38,7 +38,7 @@ def foodcost_text(text_data: TextData) -> list[str]:
     bar_dynamic_text = f", {bar_dynamic:+.1f}%" if bar_dynamic not in [None, 0] else ""
 
     report = (
-        f"фудкост в % / {dynamic_label}\n\n"
+        f"<b>фудкост в % / {dynamic_label}</b>\n\n"
         f"🥩 <b>Кухня:</b> {kitchen_cost}%{kitchen_dynamic_text}\n"
         f"🍷 <b>Бар:</b> {bar_cost}%{bar_dynamic_text}"
     )

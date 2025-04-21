@@ -82,54 +82,47 @@ def get_user_tokens_db() -> UserTokensDB | None:
 
 
 async def get_report_hint_text(tg_id: int, report_type: str, report_format: str) -> dict | None:
-    """Получение текста подсказки и ссылки для отчета из БД"""
+    """
+    Получение текста подсказки и ссылки для отчета из БД.
+    Приоритет: точное совпадение -> универсальный формат ('all_format').
+    """
     try:
         conn = await asyncpg.connect(**DB_CONFIG)
 
         query = """
         SELECT rdl.description, ul.link
-        FROM report_data_link rdl
-        JOIN user_links ul
+        FROM user_links ul
+        LEFT JOIN report_data_link rdl
             ON rdl.report_type = ul.report_type
-           AND rdl.report_format = ul.report_format
+           AND (
+                rdl.report_format = ul.report_format
+             OR rdl.report_format = 'all_format'
+            )
         WHERE ul.tg_id = $1
           AND ul.report_type = $2
-          AND (
-              ul.report_format = $3 OR
-              rdl.report_format = 'all_format'
-          )
+          AND ul.report_format = $3
+        ORDER BY 
+            CASE WHEN rdl.report_format = ul.report_format THEN 1
+                 WHEN rdl.report_format = 'all_format' THEN 2
+                 ELSE 3
+            END
         LIMIT 1;
         """
 
+        logging.info(f"[get_report_hint_text] Поиск по: tg_id={tg_id}, report_type={report_type}, report_format={report_format}")
         row = await conn.fetchrow(query, tg_id, report_type, report_format)
 
         if row:
             return {"description": row["description"], "url": row["link"]}
-
-        # Если не нашли по точному совпадению, пробуем 'all_format'
-        query_all_format = """
-        SELECT rdl.description, ul.link
-        FROM report_data_link rdl
-        JOIN user_links ul
-            ON rdl.report_type = ul.report_type
-        WHERE ul.tg_id = $1
-          AND ul.report_type = $2
-          AND rdl.report_format = 'all_format'
-        LIMIT 1;
-        """
-        logging.info(f"Поиск подсказки для: tg_id={tg_id}, report_type={report_type}, format={report_format}")
-
-        row = await conn.fetchrow(query_all_format, tg_id, report_type)
-        if row:
-            return {"description": row["description"], "url": row["link"]}
-
-        return None
+        else:
+            logging.warning(f"[get_report_hint_text] Ничего не найдено по tg_id={tg_id}, report_type={report_type}, format={report_format}")
+            return None
 
     except PostgresError as e:
-        logging.error(f"Ошибка БД при получении подсказки: {e}")
+        logging.error(f"[get_report_hint_text] Ошибка БД: {e}")
         return None
     except Exception as e:
-        logging.error(f"Неожиданная ошибка: {e}")
+        logging.error(f"[get_report_hint_text] Неожиданная ошибка: {e}")
         return None
     finally:
         if 'conn' in locals():

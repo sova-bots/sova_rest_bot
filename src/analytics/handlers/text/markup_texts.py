@@ -48,12 +48,12 @@ def make_markup_analysis_text(text_data: TextData):
     return ["\n\n".join([store_report, dish_report])]
 
 
-
 def generate_markup_store_report(data, period="month", only_negative=False):
     # Перевод периода на русский
     period_ru = PERIOD_TRANSLATION.get(period, "месяц")
 
-    report = f"<b>Наценка:</b>\n\n"
+    # Добавляем жирное форматирование для титульника
+    report = f"<b>Наценка за {period_ru}:</b>\n\n"
 
     # Ключ для динамики
     dynamics_key = f"markup_dynamics_{period}"
@@ -77,10 +77,12 @@ def generate_markup_store_report(data, period="month", only_negative=False):
 
     # Вывод отрицательных изменений
     if negative_changes:
+        report += "<b>📉 Снижение наценки:</b>\n"  # Жирный заголовок для снижения
         report += "\n".join(negative_changes) + "\n"
 
     # Вывод положительных изменений (если не указан only_negative)
     if not only_negative and positive_changes:
+        report += "<b>📈 Рост наценки:</b>\n"  # Жирный заголовок для роста
         report += "\n".join(positive_changes) + "\n"
 
     return report
@@ -90,7 +92,8 @@ def generate_markup_dish_report(data, period="month", only_negative=False):
     # Перевод периода на русский
     period_ru = PERIOD_TRANSLATION.get(period, "месяц")
 
-    report = f"📊 <b>ТОП 5 позиций по наценке (за {period_ru}):</b>\n\n"
+    # Заголовок с динамикой для титульника
+    report = f"<b>ТОП 5 позиций по наценке (за {period_ru}):</b>\n\n"
 
     # Ключ для динамики
     dynamics_key = f"markup_dynamics_{period}"
@@ -112,20 +115,18 @@ def generate_markup_dish_report(data, period="month", only_negative=False):
             continue
 
         if dynamics < 0:
-            negative_changes.append(f"{label}: {markup}%, изменение: {dynamics}%")
+            negative_changes.append(f"{len(negative_changes) + 1}. {label}: {markup}%, изменение: {dynamics}%")
         else:
-            positive_changes.append(f"{label}: {markup}%, изменение: {dynamics}%")
+            positive_changes.append(f"{len(positive_changes) + 1}. {label}: {markup}%, изменение: {dynamics}%")
 
     # Вывод отрицательных изменений
     if negative_changes:
-        report += "📉 <b>Снижение наценки:</b>\n"
+        report += "<b>📉 Снижение наценки:</b>\n"  # Жирный заголовок для снижения
         report += "\n".join(negative_changes) + "\n"
 
     # Вывод положительных изменений (если не указан only_negative)
     if not only_negative and positive_changes:
-        report += "📈 <b>Рост наценки:</b>\n"
+        report += "<b>📈 Рост наценки:</b>\n"  # Жирный заголовок для роста
         report += "\n".join(positive_changes) + "\n"
 
     return report
-
-
