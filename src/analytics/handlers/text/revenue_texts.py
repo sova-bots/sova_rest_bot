@@ -172,8 +172,8 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
     ]
 
     # Разделяем на отрицательные и положительные изменения
-    negative_changes = [m for m in metrics if m['value'] < 0]
-    positive_changes = [m for m in metrics if m['value'] >= 0]
+    negative_changes = [m for m in metrics if m['value'] is not None and m['value'] < 0]
+    positive_changes = [m for m in metrics if m['value'] is not None and m['value'] >= 0]
 
     # Вывести "всё в ворядке" если нет отрицательных динамик
     if only_negative and not negative_changes:

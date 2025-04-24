@@ -254,7 +254,10 @@ async def recommendations_msg(msg_data: MsgData) -> None:
         await parameters_msg(msg_data, type_prefix="analysis.", only_negative=True, recommendations=True)
         return
 
-    back_kb = IKM(inline_keyboard=[[back_current_step_btn]])
+    back_kb = IKM(inline_keyboard=[
+        [subscribe_to_mailing_btn],
+        [back_current_step_btn]
+    ])
 
     # Формируем текст с рекомендациями
     text = recommendations.get(report_type)
@@ -273,4 +276,6 @@ async def recommendations_msg(msg_data: MsgData) -> None:
         f"[report_hint] tgid={msg_data.tgid}, report_type={report_type}, report_format={report_format}, hint={report_hint}")
 
     # Отправляем сообщение с шапкой и рекомендациями
+
     await msg_data.msg.edit_text(text=header + "\n" + text, reply_markup=back_kb)
+

@@ -10,7 +10,7 @@ import asyncpg
 import re
 from typing import Optional
 import config as cf
-from src.analytics.api import get_reports
+from src.analytics.api import get_reports, get_reports_from_state
 from src.analytics.constant.urls import all_report_urls
 from src.analytics.db.db import get_report_hint_text
 from src.analytics.handlers.text.recommendations import recommendations
@@ -70,7 +70,7 @@ async def generate_report(
     elif is_recommendations and report_type == "revenue":
         used_prefix = "recommendations."
 
-    reports = await get_reports(tgid=tgid, state_data=state_data, type_prefix=used_prefix)
+    reports = await get_reports_from_state(tgid=tgid, state_data=state_data, type_prefix=used_prefix)
 
     if None in reports:
         raise ValueError("Не удалось загрузить данные для отчёта.")
@@ -81,12 +81,8 @@ async def generate_report(
     if not text_func:
         raise ValueError(f"Нет функции обработки текста для отчёта '{report_type}' с префиксом '{used_prefix}'")
 
-    # Формируем данные для текста
-    text_data = TextData(
-        reports=reports,
-        period=period,
-        only_negative=is_analysis and "only_negative" in format_type
-    )
+    text_data = TextData(reports=reports, period=period, department=department,
+                         only_negative=is_analysis and "only_negative" in format_type)
 
     # Генерируем текст
     texts = text_func(text_data)
@@ -188,7 +184,7 @@ async def send_report(
         # === Обработка формата рекомендаций ===
         if format_type == "recommendations":
             if report_type == "revenue":
-                reports = await get_reports(tgid=user_id, state_data=state_data, type_prefix="analysis.")
+                reports = await get_reports_from_state(tgid=user_id, state_data=state_data, type_prefix="analysis.")
                 if None in reports:
                     await bot.send_message(
                         user_id,
@@ -198,7 +194,7 @@ async def send_report(
                     )
                     return
 
-                text_data = TextData(reports=reports, period=date_periodity, only_negative=True)
+                text_data = TextData(reports=reports, period=date_periodity, department=department, only_negative=True)
                 texts = revenue_analysis_text(text_data, recommendations=True)
 
                 if not texts:
