@@ -30,10 +30,10 @@ MONTHLY_DAY = '8'
 DB_CONFIG = {
     'user': 'postgres',
     'password': '0000',
-    'database': 'sova-rest-bot',
+    'database': '',
     'host': '84.201.189.176',
     'port': '5432'
 }
 
-DB_LINK = "postgresql://postgres:0000@84.201.189.176:5432/sova-rest-bot"
+DB_LINK = ""
 
