@@ -1,7 +1,6 @@
 from ..types.text_data import TextData
 from ..types.report_all_departments_types import ReportAllDepartmentTypes
 
-
 revenue_recommendations = {
     "guests": """
 <b>Рекомендации</b> 
@@ -80,7 +79,7 @@ revenue_recommendations = {
 
 def load_data_from_files(text_data: TextData):
     reports = text_data.reports
-    
+
     # Загружаем данные из файлов
     guests_checks = reports[0]['sum']
 
@@ -108,7 +107,7 @@ def load_data_from_files(text_data: TextData):
         'revenue-date_of_week': revenue_date_of_week,
         'revenue-waiter': revenue_waiter,
         'revenue-price_segments': revenue_price_segments,
-        "check-depth": reports[9]['sum']
+        "check-depth": reports[8]['sum']
     }
 
     return data
@@ -117,23 +116,26 @@ def load_data_from_files(text_data: TextData):
 def analyze_revenue(data, period="week", only_negative: bool = False, recommendations: bool = False):
     # Определяем ключи для выбранного периода
     period_keys = {
-        "week": {
+               "week": {
             "revenue_key": "week",
             "dynamics_key": "dynamics_week",
             "dynamic_key": "dynamic_week",
-            "label": "неделю"
+            "label": "неделю",
+            "dynamics_label": "динамика недели"
         },
         "month": {
             "revenue_key": "month",
             "dynamics_key": "dynamics_month",
             "dynamic_key": "dynamic_month",
-            "label": "месяц"
+            "label": "месяц",
+            "dynamics_label": "динамика месяца"
         },
         "year": {
             "revenue_key": "year",
             "dynamics_key": "dynamics_year",
             "dynamic_key": "dynamic_year",
-            "label": "год"
+            "label": "год",
+            "dynamics_label": "динамика года"
         }
     }
 
@@ -144,6 +146,7 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
     dynamics_key = period_keys[period]["dynamics_key"]
     dynamic_key = period_keys[period]["dynamic_key"]
     period_label = period_keys[period]["label"]
+    dynamics_label = period_keys[period]["dynamics_label"]
 
     # Заголовок отчёта с указанием периода
     message = (
@@ -155,7 +158,7 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
     avg_check = data['avg-check']
     check_depth = data['check-depth']
     message += (
-        "<b> 1 Гостевой поток:</b>\n"
+        f"<b> 1 Гостевой поток и средний чек ({dynamics_label}):</b>\n"
     )
 
     # Собираем данные по динамике
@@ -203,7 +206,7 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
 
     # средний чек
     message += (
-        "<b> Cредний чек:</b>\n"
+        f"<b> Cредний чек ({dynamics_label}):</b>\n"
     )
 
     # Собираем данные по динамике
@@ -269,7 +272,8 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
     total_bar_revenue_previous = sum(item[f'revenue_{revenue_key}'] for item in revenue_store if "Бар" in item['label'])
 
     total_kitchen_revenue_current = sum(item['revenue'] for item in revenue_store if "Кухня" in item['label'])
-    total_kitchen_revenue_previous = sum(item[f'revenue_{revenue_key}'] for item in revenue_store if "Кухня" in item['label'])
+    total_kitchen_revenue_previous = sum(
+        item[f'revenue_{revenue_key}'] for item in revenue_store if "Кухня" in item['label'])
 
     # Рассчитываем динамику изменения выручки (в процентах)
     bar_dynamics = ((
@@ -278,7 +282,7 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
                                 total_kitchen_revenue_current - total_kitchen_revenue_previous) / total_kitchen_revenue_previous) * 100 if total_kitchen_revenue_previous != 0 else 0
 
     # Формируем сообщение
-    message += "<b>2 Выручка по направлениям:</b>\n"
+    message += f"<b>2 Выручка по направлениям ({dynamics_label}):</b>\n"
 
     store_has_negative = bar_dynamics != abs(bar_dynamics) or kitchen_dynamics != abs(kitchen_dynamics)
 
@@ -286,18 +290,18 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
     if only_negative and not store_has_negative:
         message += "Всё в порядке 👍\n"
     message += "\n"
-    
+
     # проверка
     if bar_dynamics != abs(bar_dynamics) or not only_negative:
         message += f"{'+' if bar_dynamics == abs(bar_dynamics) else '-'} бар: {bar_dynamics:.1f}%, {total_bar_revenue_previous:,.0f} → {total_bar_revenue_current:,.0f}\n"
-        
+
     if kitchen_dynamics != abs(kitchen_dynamics) or not only_negative:
         message += f"{'+' if kitchen_dynamics == abs(kitchen_dynamics) else '-'} кухня: {kitchen_dynamics:.1f}%, {total_kitchen_revenue_previous:,.0f} → {total_kitchen_revenue_current:,.0f}\n\n"
 
     # 3. Выручка по группам блюд
     revenue_dish = data['revenue-dish']
     if revenue_dish:
-        message += "<b>3 Выручка по группам блюд:</b>\n"
+        message += f"<b>3 Выручка по группам блюд ({dynamics_label}):</b>\n"
 
         # Словарь для категорий блюд
         dish_categories = {
@@ -329,7 +333,7 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
                 total_revenue_previous = sum(dish.get(f'revenue_{revenue_key}', 0) for dish in dishes)
                 total_revenue_current = sum(dish.get('revenue', 0) for dish in dishes)
                 total_dynamics = ((
-                                              total_revenue_current - total_revenue_previous) / total_revenue_previous) * 100 if total_revenue_previous != 0 else 0
+                                          total_revenue_current - total_revenue_previous) / total_revenue_previous) * 100 if total_revenue_previous != 0 else 0
 
                 category_data.append({
                     "category": category,
@@ -337,7 +341,6 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
                     "revenue_previous": total_revenue_previous,
                     "revenue_current": total_revenue_current
                 })
-
 
         # Сортируем категории по динамике (сначала отрицательные, затем положительные)
         negative_changes = [item for item in category_data if item['dynamics'] < 0]
@@ -374,7 +377,7 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
 
     # 4. Выручка по времени посещения
     revenue_time = data['revenue-time']
-    message += "<b>4 Выручка по времени посещения:</b>\n"
+    message += f"<b>4 Выручка по времени посещения ({dynamics_label}):</b>\n"
 
     # Сортируем данные по динамике (сначала отрицательные, затем положительные)
     negative_changes = []
@@ -416,12 +419,11 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
 
     # 5. Выручка по ценовым сегментам
     revenue_price_segments = data.get('revenue-price_segments', [])
-    message += "<b>5 Выручка по ценовым сегментам:</b>\n"
+    message += f"<b>5 Выручка по ценовым сегментам ({dynamics_label}):</b>\n"
 
     if revenue_price_segments:
         negative_changes = []
         positive_changes = []
-
 
         for segment in revenue_price_segments:
             label = segment.get('label', '')
@@ -460,10 +462,9 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
     else:
         message += "Данные по ценовым сегментам отсутствуют.\n\n"
 
-
     # 6. Выручка по дням недели
     revenue_date_of_week = data['revenue-date_of_week']
-    message += "<b>6 Выручка по дням недели:</b>\n"
+    message += f"<b>6 Выручка по дням недели ({dynamics_label}):</b>\n"
 
     if isinstance(revenue_date_of_week, list):
         # Сортируем дни по динамике (сначала отрицательные, затем положительные)
@@ -513,7 +514,7 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
         # Выводим рекомендации если есть
         if recommendations and negative_days:
             message += revenue_recommendations["day_of_week"] + "\n"
-        
+
     else:
         message += "Данные по дням недели отсутствуют или имеют неверный формат.\n\n"
 
@@ -522,7 +523,7 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
     revenue_waiter = data['revenue-waiter']
     if revenue_waiter and 'data' in revenue_waiter:
         waiters = revenue_waiter['data']
-        message += "<b>7 Выручка по сотрудникам:</b>\n\n"
+        message += f"<b>7 Выручка по сотрудникам ({dynamics_label}):</b>\n\n"
 
         # Потеря выручки (топ-10 сотрудников с наибольшей потерей)
         message += "<i>7.1 Потеря выручки по сотрудникам (топ-10):</i>\n"
@@ -569,7 +570,6 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
             message += revenue_recommendations["waiter"] + "\n"
 
     return message
-    
 
 
 def revenue_analysis_text(text_data: TextData, recommendations: bool = False) -> list[str]:
@@ -592,18 +592,17 @@ def revenue_analysis_text(text_data: TextData, recommendations: bool = False) ->
     return parts
 
 
-
 def revenue_str_if_exists(name, value, properties, is_dynamic: bool) -> str:
     if name not in properties.keys() or value is None:
         return ""
-    
+
     if is_dynamic:
         if value > 0:
             sign = "+"
         else:
             sign = ""
         return f"<b>{properties[name][0]}:</b> {sign}{value:,.0f} % \n"
-    
+
     return f"<b>{properties[name][0]}:</b> {value:,.0f} {properties[name][1]} \n"
 
 
@@ -636,7 +635,7 @@ def revenue_text(text_data: TextData) -> list[str]:
         if is_one:
             text = ""
         else:
-            text = f"<code>{report.get("label")}</code>\n\n"
+            text = f"<code>{report.get('label')}</code>\n\n"
 
         for prop_type, props in revenue_properties.items():
             for k, v in report.items():
@@ -652,10 +651,9 @@ def f_dynamic(n: int) -> str:
         return f"+{n:,.0f}"
     return f"{n:,.0f}"
 
-
 # def make_one_text(r: dict, report_literal: str, label: str, period: str) -> tuple[str, bool]:
 #     period = period.split('-')[-1]
-    
+
 #     dynamics = r[f'{report_literal}_dynamics_{period}']
 
 #     if dynamics is None:
@@ -682,26 +680,26 @@ def f_dynamic(n: int) -> str:
 
 #     if not only_negative:
 #         text += "\"-\" "
-        
+
 #     for t in texts_negative:
 #         if t != texts_negative[0] and not only_negative:
 #             text += "\t\t\t\t"
 #         text += t + "\n"
-    
+
 #     if only_negative:
 #         return text
-    
+
 #     text += "\"+\" "
 #     for t in texts_positive:
 #         if t != texts_positive[0]:
 #             text += "\t\t\t\t"
 #         text += t + "\n"
-        
+
 #     return text
 
 
 # def revenue_analysis_text(text_data: TextData, msg_type: str = ""):
-    
+
 #     if not msg_type and text_data.only_negative:
 #         msg_type = "only_negative"
 
@@ -717,44 +715,44 @@ def f_dynamic(n: int) -> str:
 
 #     for i in range(min(len(guests_checks_data["data"]), len(avg_check_data["data"]))):
 #         label = guests_checks_data["data"][i]["label"]
-        
+
 #         period_literal = period.split('-')[-1]
-        
+
 #         only_negative = msg_type == "only_negative" or msg_type == "revenue_recomendations"
-        
+
 #         text = f"<i>{label}</i>\n\n"
-        
+
 #         guests_text, guests_positive = make_one_text(guests_checks_data["data"][i], "guests", "гостепоток", period)
 #         avg_check_text, avg_check_positive = make_one_text(avg_check_data["data"][i], "avg_check", "средний чек", period)
 #         checks_text, checks_positive = make_one_text(guests_checks_data["data"][i], "checks", "количество чеков", period)
 
 #         check_texts_positive = []
 #         check_texts_negative = []
-        
+
 #         if guests_positive:
 #             check_texts_positive.append(guests_text)
 #         else:
 #             check_texts_negative.append(guests_text)
-        
+
 #         if avg_check_positive:
 #             check_texts_positive.append(avg_check_text)
 #         else:
 #             check_texts_negative.append(avg_check_text)
-            
+
 #         if checks_positive:
 #             check_texts_positive.append(checks_text)
 #         else:
 #             check_texts_negative.append(checks_text)
-        
+
 #         if msg_type != "revenue_recomendations":
 #             text += "1. <b>Гостепоток и средний чек:</b>\n"
 #             text += str_positive_negative(check_texts_positive, check_texts_negative, only_negative)
-        
+
 #         if msg_type == "revenue_recomendations" and not guests_positive:
 #             text += f"1. <b>Гостепоток:</b>\n"
 #             text += guests_text + "\n"
 #             text += "\n" + recommendations['guests']
-        
+
 #         if msg_type == "revenue_recomendations" and not avg_check_positive:
 #             text += f"1. <b>Средний чек:</b>\n"
 #             text += avg_check_text + "\n"
@@ -762,54 +760,54 @@ def f_dynamic(n: int) -> str:
 #             text += "\n" + recommendations['avg_check']
 
 #         text += "\n\n2. <b>Выручка по направлениям:</b>\n"
-        
+
 #         store_texts_positive = []
 #         store_texts_negative = []
-        
+
 #         revenue_current = revenue_data["data"][i]["revenue"]
 #         revenue_last_period = revenue_data["data"][i][f"revenue_{period_literal}"]
-        
+
 #         for store_data in revenue_stores_data["data"]:
 #             store_label = store_data['label']
-            
+
 #             store_revenue_dynamic = store_data[f"revenue_dynamics_{period_literal}"]
 #             store_revenue_dynamic = store_revenue_dynamic if store_revenue_dynamic is not None else "<i>нет данных</i>"
-            
+
 #             store_text = f"{store_label}: {f_dynamic(store_revenue_dynamic)}, {f_dynamic(store_data["revenue"] / revenue_last_period * 100)}% / {f_dynamic(store_data["revenue"] / revenue_current * 100)}%"
-            
+
 #             if isinstance(store_revenue_dynamic, int) and store_revenue_dynamic >= 0:
 #                 store_texts_positive.append(store_text)
 #             else:
 #                 store_texts_negative.append(store_text)
-        
+
 #         text += str_positive_negative(store_texts_positive, store_texts_negative, only_negative)
-        
+
 #         if msg_type == "revenue_recomendations" and len(store_texts_negative) > 0:
 #             text += "\n" + recommendations['stores'] + "\n"
-        
+
 #         text += "\n\n6. <b>Выручка по дням недели:</b>\n"
-            
+
 #         date_of_week_texts_positive = []
 #         date_of_week_texts_negative = []
-        
+
 #         for date_of_week_data in revenue_date_of_week_data['data']:
 #             weekdays = {"Понедельник": "пн", "Вторник": "вт", "Среда": "ср", "Четверг": "чт", "Пятница": "пт", "Суббота": "сб", "Воскресенье": "вс"}
-            
+
 #             date_of_week_dynamics = date_of_week_data[f"revenue_dynamics_{period_literal}"]
 #             date_of_week_dynamics = date_of_week_dynamics if date_of_week_dynamics is not None else "<i>нет данных</i>"
-            
+
 #             date_of_week_text = f"{weekdays[date_of_week_data['label']]}: {date_of_week_dynamics}%"
-            
+
 #             if isinstance(date_of_week_dynamics, int) and date_of_week_dynamics >= 0:
 #                 date_of_week_texts_positive.append(date_of_week_text)
 #             else:
 #                 date_of_week_texts_negative.append(date_of_week_text)
-        
+
 #         text += str_positive_negative(date_of_week_texts_positive, date_of_week_texts_negative, only_negative)
-        
+
 #         if msg_type == "revenue_recomendations" and len(date_of_week_texts_negative) > 0:
 #             text += "\n" + recommendations['days_of_week'] + "\n"
-        
+
 #         text_list.append(text)
 
 #     return text_list

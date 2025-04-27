@@ -11,8 +11,7 @@ router = Router(name=__name__)
 
 
 class RegistrationStates(StatesGroup):
-    subdomain_input = State()
-    login_input = State()
+    login_input = State()  # Убрали subdomain_input
     password_input = State()
 
 
@@ -24,8 +23,7 @@ async def unregistration_callback_handler(query: CallbackQuery) -> None:
 
 @router.message(Command('unregister'))
 async def unregistration_command_handler(message: Message) -> None:
-    msg_text = \
-    '''
+    msg_text = '''
 <b>Выход из системы</b>
 Вы уверены, что хотите отписаться от рассылки уведомлений?
 '''

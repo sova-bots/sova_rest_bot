@@ -41,6 +41,8 @@ all_types = {
     "write-off": "Списания",
     "markup": "Наценка",
     "test-type": "Тестовый вид отчёта",
+    "revenue": "Выручка",
+    "turnover": "Оборачиваемость остатков"
 }
 
 
@@ -51,6 +53,24 @@ all_menu_buttons = [
     IKB(text="Обратите внимание 👀", callback_data="report:show_negative_analysis"),
     IKB(text="Рекомендации 💡", callback_data="report:show_recommendations"),
 ]
+
+
+menu_button_translations = {
+    "parameters": "Показатели 📊",
+    "analysis": "Анализ 🔎",
+    "negative": "Обратите внимание 👀",
+    "negative_analysis": "Обратите внимание 👀",
+    "analysis_only_negative": "Обратите внимание 👀",
+    "only_negative": "Обратите внимание 👀",
+    "recommendations": "Рекомендации 💡"
+}
+
+all_time_periods = {
+    "daily": "Ежедневно",
+    "workdays": "По будням",
+    "weekly": "Еженедельно",
+    "monthly": "Ежемесячно"
+}
 
 
 
