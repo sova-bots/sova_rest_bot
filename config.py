@@ -7,7 +7,6 @@ load_dotenv(dotenv_path='.env')
 
 
 TOKEN = getenv('BOT_TOKEN')
-print(f'{TOKEN=}')
 
 notifications = False
 
@@ -26,3 +25,15 @@ SENDING_TIME = {'DAY': '22:26', 'WEEK': '12:00', 'MONTH': '10:30'}
 WORKING_DAYS = '0-4'  # 0-monday, 1-tuesday, etc...
 WEEKLY_DAY = 'tue'
 MONTHLY_DAY = '8'
+
+
+DB_CONFIG = {
+    'user': 'postgres',
+    'password': '0000',
+    'database': 'sova-rest-bot',
+    'host': '84.201.189.176',
+    'port': '5432'
+}
+
+DB_LINK = "postgresql://postgres:0000@84.201.189.176:5432/sova-rest-bot"
+

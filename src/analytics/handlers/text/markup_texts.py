@@ -48,12 +48,12 @@ def make_markup_analysis_text(text_data: TextData):
     return ["\n\n".join([store_report, dish_report])]
 
 
-
 def generate_markup_store_report(data, period="month", only_negative=False):
     # Перевод периода на русский
     period_ru = PERIOD_TRANSLATION.get(period, "месяц")
 
-    report = f"<b>Наценка:</b>\n\n"
+    # Добавляем жирное форматирование для титульника
+    report = f"<b>Наценка за {period_ru}:</b>\n\n"
 
     # Ключ для динамики
     dynamics_key = f"markup_dynamics_{period}"
@@ -77,10 +77,12 @@ def generate_markup_store_report(data, period="month", only_negative=False):
 
     # Вывод отрицательных изменений
     if negative_changes:
+        report += "<b>📉 Снижение наценки:</b>\n"  # Жирный заголовок для снижения
         report += "\n".join(negative_changes) + "\n"
 
     # Вывод положительных изменений (если не указан only_negative)
     if not only_negative and positive_changes:
+        report += "<b>📈 Рост наценки:</b>\n"  # Жирный заголовок для роста
         report += "\n".join(positive_changes) + "\n"
 
     return report
@@ -90,7 +92,8 @@ def generate_markup_dish_report(data, period="month", only_negative=False):
     # Перевод периода на русский
     period_ru = PERIOD_TRANSLATION.get(period, "месяц")
 
-    report = f"📊 <b>ТОП 5 позиций по наценке (за {period_ru}):</b>\n\n"
+    # Заголовок с динамикой для титульника
+    report = f"<b>ТОП 5 позиций по наценке (за {period_ru}):</b>\n\n"
 
     # Ключ для динамики
     dynamics_key = f"markup_dynamics_{period}"
@@ -118,49 +121,12 @@ def generate_markup_dish_report(data, period="month", only_negative=False):
 
     # Вывод отрицательных изменений
     if negative_changes:
-        report += "📉 <b>Снижение наценки:</b>\n"
+        report += "<b>📉 Снижение наценки:</b>\n"  # Жирный заголовок для снижения
         report += "\n".join(negative_changes) + "\n"
 
     # Вывод положительных изменений (если не указан only_negative)
     if not only_negative and positive_changes:
-        report += "📈 <b>Рост наценки:</b>\n"
+        report += "<b>📈 Рост наценки:</b>\n"  # Жирный заголовок для роста
         report += "\n".join(positive_changes) + "\n"
 
     return report
-
-
-# async def send_markup_report(message: Message, period="month", only_negative=False):
-#     # Загрузка данных из файлов
-#     with open("markup-store_example.json", "r", encoding="utf-8") as file:
-#         store_data = json.load(file)
-
-#     with open("markup-dish_example.json", "r", encoding="utf-8") as file:
-#         dish_data = json.load(file)
-
-#     # Генерация отчётов
-#     store_report = generate_markup_store_report(store_data, period, only_negative)
-#     dish_report = generate_markup_dish_report(dish_data, period, only_negative)
-
-#     # Отправка отчётов в Telegram
-#     await message.answer(store_report)
-#     await message.answer(dish_report)
-
-
-# # Команда /markup
-# @dp.message(Command("markup"))
-# async def handle_markup_command(message: Message):
-#     args = message.text.split()
-#     period = "month"  # По умолчанию отчёт за месяц
-#     only_negative = False
-
-#     # Обработка аргументов
-#     if len(args) > 1:
-#         if args[1] in ["week", "month", "year"]:
-#             period = args[1]
-#         elif args[1] == "negative":
-#             only_negative = True
-
-#     if len(args) > 2 and args[2] == "negative":
-#         only_negative = True
-
-#     await send_markup_report(message, period, only_negative)

@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from asyncio.exceptions import CancelledError
 
 from aiogram import Bot, Dispatcher, Router
@@ -6,13 +7,12 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters import Command
 from aiogram.types import Message
-
-from src.analytics.db.db import user_tokens_db
-from src.mailing.notification.sender import NotificationSender
-from src.analytics.db import db
+from aiogram.fsm.storage.memory import MemoryStorage
 
 import config as cf
 from src.util.log import logger
+from src.mailing.notification.sender import NotificationSender
+
 from src.basic.commands.start_command import router as start_command_router
 from src.mailing.commands.registration.register.registration_command import router as register_command_router
 from src.mailing.commands.registration.unregister.unregistration_command import router as unregister_command_router
@@ -23,6 +23,12 @@ from src.mailing.commands.techsupport.techsupport_menu import router as techsupp
 
 from src.analytics.router import analytics_router
 from src.mailing.mailing_router import mailing_router
+
+from src.mailing.commands.registration.notifications.check_time import scheduler, schedule_all_subscriptions, \
+    start_scheduler, subscription_router
+from src.mailing.commands.registration.notifications.sub_mail import save_time_router
+
+
 
 router = Router(name=__name__)
 
@@ -36,35 +42,47 @@ routers = [
     answer_ts_message_router,
     techsupport_menu_router,
     analytics_router,
-    mailing_router
+    mailing_router,
+    save_time_router,
+    subscription_router
 ]
 
 dp = Dispatcher()
 
-
 @router.message(Command("test"))
 async def test_command(message: Message):
-    await message.answer("sleep 5")
+    await message   .answer("sleep 5")
     await asyncio.sleep(5)
     await message.answer("sleep end")
 
 
-async def include_routers() -> None:
+async def include_routers(dp: Dispatcher) -> None:
     for router in routers:
         dp.include_router(router)
+
+async def on_start(bot: Bot):
+    logging.info("Бот запускается...")
+    await schedule_all_subscriptions(bot)
+    start_scheduler()  # Запуск планиировщика
 
 
 async def main() -> None:
     bot = Bot(token=cf.TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+    storage = MemoryStorage()
+    dp = Dispatcher(storage=storage)
+
     await bot.delete_webhook()
-    await include_routers()
+
+    await include_routers(dp)
+
+    await on_start(bot)  # Включаем планировщик и загружаем подписки
 
     if cf.notifications:
         sender = NotificationSender(bot)
         sender.start()
 
     try:
-        logger.info('bot is running!')
+        logger.info('Бот запущен!')
         await dp.start_polling(bot)
     except (CancelledError, KeyboardInterrupt, SystemExit):
         dp.shutdown()
@@ -72,10 +90,11 @@ async def main() -> None:
         if cf.notifications:
             sender.stop()
 
-        user_tokens_db.close()
+        # Останавливаем планировщик
+        scheduler.shutdown()
+        logging.info("Планировщик остановлен.")
 
-        logger.info('stopping')
-
+        logger.info('Бот остановлен.')
 
 if __name__ == '__main__':
     asyncio.run(main())
