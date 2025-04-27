@@ -20,7 +20,7 @@ def text_func_example(text_data: TextData) -> str:
 text_functions = {
     "revenue": revenue_text,
     "analysis.revenue": revenue_analysis_text,
-    "losses": lambda text_data: losses_text(text_data.reports, text_data.period, text_data.only_negative),
+    "losses": lambda text_data: losses_text(text_data.reports, text_data.period, text_data.only_negative), 
     "loss-forecast": forecast_text,
     "food-cost": foodcost_text,
     "analysis.food-cost": foodcost_analysis_text,
@@ -31,7 +31,6 @@ text_functions = {
     "markup": make_markup_text,
     "analysis.markup": make_markup_analysis_text,
 }
-
 
 
 

@@ -6,6 +6,9 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 from aiogram.types import InlineKeyboardMarkup as IKM, InlineKeyboardButton as IKB
 
+from src.mailing.data.notification.notification_google_sheets_worker import notification_gsworker
+from src.mailing.data.techsupport.techsupport_google_sheets_worker import techsupport_gsworker
+from src.basic.commands.start_keyboards import get_start_registration_markup, get_start_unregistration_markup
 
 from src.analytics.db.db import user_tokens_db
 
@@ -50,7 +53,7 @@ def get_markup(user_id: int, has_token: bool) -> IKM:
     btn = [IKB(text='Меню тех-поддержки 🛠', callback_data='techsupport_menu')]
     inline_kb.append(btn)
 
-    btn = [IKB(text='Текущие подписки 📬', callback_data='show_subscriptions')]
+    btn = [IKB(text='Меню рассылки 📬', callback_data='mailing_menu')]
     inline_kb.append(btn)
 
     return IKM(inline_keyboard=inline_kb)
