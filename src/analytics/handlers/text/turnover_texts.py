@@ -1,4 +1,5 @@
 from ..types.text_data import TextData
+from ..types.report_all_departments_types import ReportAllDepartmentTypes
 
 from pprint import pprint
 
@@ -7,6 +8,11 @@ from ..types.text_data import TextData
 
 
 def turnover_text(text_data: TextData) -> list[str]:
+    # прверка если итого
+    if text_data.department == ReportAllDepartmentTypes.SUM_DEPARTMENTS_TOTALLY:
+        return ["Отчёт в разработке"]
+
+
     period = text_data.period
     data = text_data.reports[0]
 
@@ -50,6 +56,10 @@ def turnover_text(text_data: TextData) -> list[str]:
 
 
 def product_turnover_text(text_data: TextData) -> list[str]:
+    # прверка если итого
+    if text_data.department == ReportAllDepartmentTypes.SUM_DEPARTMENTS_TOTALLY:
+        return ["Отчёт в разработке"]
+
     data = text_data.reports[1]
     period = text_data.period
 

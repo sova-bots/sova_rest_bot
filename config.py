@@ -30,10 +30,10 @@ MONTHLY_DAY = '8'
 DB_CONFIG = {
     'user': 'postgres',
     'password': '0000',
-    'database': '',
+    'database': 'sova-rest-bot',
     'host': '84.201.189.176',
     'port': '5432'
 }
 
-DB_LINK = ""
+DB_LINK = getenv('DB_LINK')
 
