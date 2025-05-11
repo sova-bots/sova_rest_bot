@@ -53,11 +53,16 @@ def m_req_get_report(token: str, url: str, group: str, departments: list[str], d
     return req.json()
 
 
-async def get_departments(tgid: int) -> dict:
+async def get_departments(tgid: int, stop_list: list[str] = []) -> dict:
     token = user_tokens_db.get_token(tgid=str(tgid))
     loop = get_event_loop()
     departments = await loop.run_in_executor(None, m_req_get_departments, token)
     departments_remapped = {dep["id"]: dep["name"] for dep in departments}
+
+    # стоп лист
+    for id_ in stop_list:
+        removed = departments_remapped.pop(id_, None)  # если не найдёт id_ в ключах departments_remapped, то вернёт None
+
     return departments_remapped
 
 
@@ -70,4 +75,3 @@ def m_req_get_departments(token: str) -> dict:
         logger.msg("ERROR", f"Could not get departments: {token=}")
         return []
     return req.json()['departments']
-

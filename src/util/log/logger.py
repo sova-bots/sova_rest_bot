@@ -24,6 +24,14 @@ def info(message: str, color: Fore = Fore.GREEN) -> None: # type: ignore
     msg(LogMessageType.INFO, message, color)
 
 
+def warning(message: str, color: Fore = Fore.YELLOW) -> None: # type: ignore
+    msg(LogMessageType.WARNING, message, color)
+
+
+def error(message: str, color: Fore = Fore.RED) -> None: # type: ignore
+    msg(LogMessageType.ERROR, message, color)
+
+
 def debug(message: str, color: Fore = Fore.MAGENTA) -> None: # type: ignore
     if Defaults.DEBUG:
         msg(LogMessageType.DEBUG, message, color)

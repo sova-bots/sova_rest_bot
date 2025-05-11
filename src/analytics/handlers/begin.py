@@ -13,7 +13,15 @@ router = Router(name=__name__)
 async def analytics_begin_handler(query: CallbackQuery, state: FSMContext) -> None:
     await clear_report_state_data(state)
 
-    await enter_step(msg_data=MsgData(msg=query.message, state=state, tgid=query.from_user.id), branch="enter_department", step=0)
+    await enter_step(
+        msg_data=MsgData(
+            msg=query.message, 
+            state=state, 
+            tgid=query.from_user.id
+            ), 
+        branch="enter_department", 
+        step=0
+    )
 
     await query.answer()
 
