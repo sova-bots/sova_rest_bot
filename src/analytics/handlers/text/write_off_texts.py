@@ -19,6 +19,10 @@ def safe_get(data: dict, key: str, placeholder: str = "<i>нет данных</i
 def inventory_text(text_data: TextData) -> list[str]:
     data = text_data.reports[0]["data"]
 
+    # проверка, если нет данных
+    if len(data) == 0:
+        return ["Нет данных"]
+
     # прверка если итого
     if text_data.department == ReportAllDepartmentTypes.SUM_DEPARTMENTS_TOTALLY:
         data = [text_data.reports[0]["sum"]]
@@ -130,5 +134,3 @@ def write_off_text(text_data: TextData) -> list[str]:
     header = f"📉 <b>Списания / динамика {period_label}</b>\n"
 
     return [header + "\n".join(block) for block in texts if block]
-
-
