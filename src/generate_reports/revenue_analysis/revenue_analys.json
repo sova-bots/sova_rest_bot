@@ -1,0 +1,66 @@
+[
+  {
+    "data": [
+      {
+        "label": "1.Рогалик Пушкинская 192",
+        "revenue": 1179927,
+        "revenue_week": 1429139,
+        "revenue_month": 1240047,
+        "revenue_year": 1300389,
+        "revenue_dynamics_week": -17,
+        "revenue_dynamics_month": -5,
+        "revenue_dynamics_year": -9,
+        "revenue_forecast": 5225393
+      },
+      {
+        "label": "2.Рогалик Соколова 31/118",
+        "revenue": 1118141,
+        "revenue_week": 1323570,
+        "revenue_month": 1190695,
+        "revenue_year": 1107881,
+        "revenue_dynamics_week": -16,
+        "revenue_dynamics_month": -6,
+        "revenue_dynamics_year": 1,
+        "revenue_forecast": 4951769
+      },
+      {
+        "label": "3.Рогалик Красноармейская 202",
+        "revenue": 298872,
+        "revenue_week": 614020,
+        "revenue_month": 537669,
+        "revenue_year": 554814,
+        "revenue_dynamics_week": -51,
+        "revenue_dynamics_month": -44,
+        "revenue_dynamics_year": -46,
+        "revenue_forecast": 1323574
+      },
+      {
+        "label": "4. Рогалик Буденновский 44",
+        "revenue": 543803,
+        "revenue_week": 647890,
+        "revenue_month": 589891,
+        "revenue_year": 248241,
+        "revenue_dynamics_week": -16,
+        "revenue_dynamics_month": -8,
+        "revenue_dynamics_year": 119,
+        "revenue_forecast": 2408270
+      }
+    ],
+    "sum": {
+      "label": "Всего",
+      "revenue": 3140743,
+      "revenue_week": 4014619,
+      "revenue_month": 3558302,
+      "revenue_year": 3211325,
+      "revenue_dynamics_week": -22,
+      "revenue_dynamics_month": -12,
+      "revenue_dynamics_year": -2,
+      "revenue_forecast": 13909006,
+      "share_of_revenue": null,
+      "avg_revenue": null,
+      "avg_checks": null,
+      "depth": null,
+      "potential": null
+    }
+  }
+]

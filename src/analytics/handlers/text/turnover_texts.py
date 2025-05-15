@@ -1,12 +1,11 @@
 from ..types.text_data import TextData
-
-from pprint import pprint
-
-
-from ..types.text_data import TextData
+from ..types.report_all_departments_types import ReportAllDepartmentTypes
 
 
 def turnover_text(text_data: TextData) -> list[str]:
+    if text_data.department == ReportAllDepartmentTypes.SUM_DEPARTMENTS_TOTALLY:
+        return ["Отчёт в разработке"]
+
     period = text_data.period
     data = text_data.reports[0]
 
@@ -24,32 +23,35 @@ def turnover_text(text_data: TextData) -> list[str]:
 
     turnover_key, dynamic_key = period_mapping[period]
 
-    # Определяем тип динамики
-    dynamic_label = ""
     if "week" in period:
         dynamic_label = "динамика неделя"
     elif "month" in period:
         dynamic_label = "динамика месяц"
     elif "year" in period:
         dynamic_label = "динамика год"
+    else:
+        dynamic_label = ""
 
     kitchen_data = next((item for item in data["data"] if "Кухня" in item["label"]), None)
     bar_data = next((item for item in data["data"] if "Бар" in item["label"]), None)
     hozes_data = next((item for item in data["data"] if "Хозы" in item["label"]), None)
 
-    report = f"Оборачиваемость остатков:\n\nостатки на конец периода в днях / {dynamic_label}\n\n"
+    report = f"<b>остатки на конец периода в днях / {dynamic_label}</b>\n\n"
 
     if kitchen_data:
-        report += f"🥩 <b>Кухня:</b> {kitchen_data[turnover_key]:.0f} дней, {kitchen_data[dynamic_key]:+.0f}%\n"
+        report += f"🥩 <b>Кухня:</b> {kitchen_data[turnover_key]:.0f} дней, {kitchen_data[dynamic_key]:+d}%\n"
     if bar_data:
-        report += f"🍷 <b>Бар:</b> {bar_data[turnover_key]:.0f} дней, {bar_data[dynamic_key]:+.0f}%\n"
+        report += f"🍷 <b>Бар:</b> {bar_data[turnover_key]:.0f} дней, {bar_data[dynamic_key]:+d}%\n"
     if hozes_data:
-        report += f"🧹 <b>Хозы:</b> {hozes_data[turnover_key]:.0f} дней, {hozes_data[dynamic_key]:+.0f}%\n"
+        report += f"🧹 <b>Хозы:</b> {hozes_data[turnover_key]:.0f} дней, {hozes_data[dynamic_key]:+d}%\n"
 
     return [report]
 
 
 def product_turnover_text(text_data: TextData) -> list[str]:
+    if text_data.department == ReportAllDepartmentTypes.SUM_DEPARTMENTS_TOTALLY:
+        return ["Отчёт в разработке"]
+
     data = text_data.reports[1]
     period = text_data.period
 
@@ -72,14 +74,12 @@ def product_turnover_text(text_data: TextData) -> list[str]:
         turnover = item.get(turnover_key)
         remainder_end = item.get("remainder_end")
 
-        if turnover is None:
-            turnover = "<i>нет данных</i>"
-        if remainder_end is None:
-            remainder_end = "<i>нет данных</i>"
-        # Форматируем цену с разделителем тысяч
-        formatted_price = f"{remainder_end:,}".replace(",", " ")
-        report_lines.append(f"{item['label']}: {formatted_price} руб, {turnover} дней")
+        turnover_str = f"{turnover} дней" if turnover is not None else "<i>нет данных дней</i>"
+        remainder_str = f"{remainder_end:,}".replace(",", " ") if remainder_end is not None else "<i>нет данных</i>"
 
-    report = turnover_text(text_data)[0] + "\n" + "\n• ".join(report_lines)
+        report_lines.append(f"• {item['label']}: {remainder_str} руб, {turnover_str}")
 
-    return [report]
+    main_report = turnover_text(text_data)[0]
+    full_report = main_report.strip() + "\n\n" + "\n".join(report_lines)
+
+    return [full_report]

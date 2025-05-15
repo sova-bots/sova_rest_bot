@@ -158,3 +158,12 @@ def get_main_menu_keyboard():
             [InlineKeyboardButton(text="🔙 Вернуться в главное меню", callback_data="main_menu")]
         ]
     )
+
+
+report_end_kb = InlineKeyboardMarkup(inline_keyboard=[
+    [
+        InlineKeyboardButton(text="Прислать PDF отчёт 📈", callback_data="report:send_pdf_report"),
+        InlineKeyboardButton(text="Прислать EXCEL отчёт 📊", callback_data="report:send_excel_report"),
+        InlineKeyboardButton(text="🔙 Вернуться в главное меню", callback_data="main_menu")
+    ]
+])

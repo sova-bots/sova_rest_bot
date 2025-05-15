@@ -61,4 +61,12 @@ back_previous_step_btn = IKB(text="⬅️", callback_data="report:back_previous_
 back_to_enter_department_btn = IKB(text="⬅️", callback_data="report:back_to_enter_department")
 null_btn = IKB(text="➖", callback_data="report:null")
 subscribe_to_mailing_btn = IKB(text="Подписаться на рассылку 📥", callback_data="report:subscribe_to_mailing")
+send_pdf_report_btn = IKB(text="Прислать PDF отчёт 📈", callback_data="report:send_pdf_report")
+send_excel_report_btn = IKB(text="Прислать EXCEL отчёт 📊", callback_data="report:send_excel_report")
 back_to_main_menu_btn = IKB(text="⬅️ В главное меню", callback_data="report:back_to_main_menu")
+
+# Правильное формирование клавиатуры
+send_file_buttons_kb = IKM(inline_keyboard=[
+    [send_pdf_report_btn, send_excel_report_btn],  # Первый ряд
+    [back_to_main_menu_btn]   # Второй ряд
+])

@@ -1,4 +1,5 @@
 from ..types.text_data import TextData
+from ..types.report_all_departments_types import ReportAllDepartmentTypes
 
 shortage_limit = 2.0
 surplus_limit = 3.0
@@ -17,6 +18,16 @@ def safe_get(data: dict, key: str, placeholder: str = "<i>нет данных</i
 
 def inventory_text(text_data: TextData) -> list[str]:
     data = text_data.reports[0]["data"]
+
+    # проверка, если нет данных
+    if len(data) == 0:
+        return ["Нет данных"]
+
+    # прверка если итого
+    if text_data.department == ReportAllDepartmentTypes.SUM_DEPARTMENTS_TOTALLY:
+        data = [text_data.reports[0]["sum"]]
+        data[0]["shortage_percent"] = round(data[0]["shortage"] / data[0]["cost_price"] * 1000) / 10
+        data[0]["surplus_percent"] = round(data[0]["surplus"] / data[0]["cost_price"] * 1000) / 10
 
     texts = []
     for index in range(0, len(data), 3):
@@ -123,5 +134,3 @@ def write_off_text(text_data: TextData) -> list[str]:
     header = f"📉 <b>Списания / динамика {period_label}</b>\n"
 
     return [header + "\n".join(block) for block in texts if block]
-
-

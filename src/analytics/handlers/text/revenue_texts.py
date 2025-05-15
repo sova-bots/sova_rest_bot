@@ -1,9 +1,11 @@
 from ..types.text_data import TextData
 from ..types.report_all_departments_types import ReportAllDepartmentTypes
 
+from src.util.log import logger
+
 revenue_recommendations = {
     "guests": """
-<b>Рекомендации</b> 
+<b>Рекомендации</b>
 
 Что можно сделать для увеличения количества гостей:
 
@@ -40,7 +42,7 @@ revenue_recommendations = {
 
 3. Контроль скорости отдачи блюд.
 
-4. Контроль полноты ассортимента и отсутствия стоп-листа. 
+4. Контроль полноты ассортимента и отсутствия стоп-листа.
     """,
 
     "time": """
@@ -172,8 +174,8 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
     ]
 
     # Разделяем на отрицательные и положительные изменения
-    negative_changes = [m for m in metrics if m['value'] is not None and m['value'] < 0]
-    positive_changes = [m for m in metrics if m['value'] is not None and m['value'] >= 0]
+    negative_changes = [m for m in metrics if m['value'] < 0]
+    positive_changes = [m for m in metrics if m['value'] >= 0]
 
     # Вывести "всё в ворядке" если нет отрицательных динамик
     if only_negative and not negative_changes:
@@ -246,7 +248,7 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
         for metric in negative_changes:
             message += (
                 f"- {metric['label']}: {metric['value']:.1f}%, "
-                f"{metric['previous']:,.0f} → {metric['current']:,.0f}\n"
+                f"{metric['previous']:,.0f} → {int(metric['current']):,.0f}\n"  # вообще int() не должно быть, но с сервера приходит str
             )
         message += "\n"
 
@@ -256,7 +258,7 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
         for metric in positive_changes:
             message += (
                 f"+ {metric['label']}: {metric['value']:.1f}%, "
-                f"{metric['previous']:,.0f} → {metric['current']:,.0f}\n"
+                f"{int(metric['previous']):,.0f} → {int(metric['current']):,.0f}\n"
             )
         message += "\n"
 

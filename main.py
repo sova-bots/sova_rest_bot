@@ -28,7 +28,9 @@ from src.mailing.commands.registration.notifications.check_time import scheduler
     start_scheduler, subscription_router
 from src.mailing.commands.registration.notifications.sub_mail import save_time_router
 
+from src.generate_reports.sending_pdf_excel_reports import file_report_router
 
+from src.analytics.db.db import get_all_stop_departments, get_access_list_data
 
 router = Router(name=__name__)
 
@@ -44,7 +46,8 @@ routers = [
     analytics_router,
     mailing_router,
     save_time_router,
-    subscription_router
+    subscription_router,
+    file_report_router
 ]
 
 dp = Dispatcher()
@@ -62,9 +65,24 @@ async def include_routers(dp: Dispatcher) -> None:
 
 async def on_start(bot: Bot):
     logging.info("Бот запускается...")
-    await schedule_all_subscriptions(bot)
-    start_scheduler()  # Запуск планиировщика
 
+    # Получаем и логируем stop-departments
+    departments = await get_all_stop_departments()
+    if departments:
+        logging.info(f"[on_start] STOP-Departments: {departments}")
+    else:
+        logging.warning("[on_start] STOP-Departments не найдены или произошла ошибка.")
+
+    # Получаем и логируем access-list
+    access_data = await get_access_list_data()
+    if access_data:
+        for item in access_data:
+            logging.info(f"[on_start] Access: tg_id={item['tg_id']}, slug={item['slug']}, id_departments={item['id_departments']}")
+    else:
+        logging.warning("[on_start] Access-List не найден или произошла ошибка.")
+
+    await schedule_all_subscriptions(bot)
+    start_scheduler()
 
 async def main() -> None:
     bot = Bot(token=cf.TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))

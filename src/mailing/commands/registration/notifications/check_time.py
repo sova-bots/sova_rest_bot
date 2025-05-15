@@ -1,7 +1,8 @@
 import logging
 from aiogram import Router, Bot, F
 from aiogram.fsm.context import FSMContext
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from aiogram.types import CallbackQuery, InlineKeyboardMarkup as IKM, InlineKeyboardButton as IKB
+
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from datetime import time
@@ -10,16 +11,18 @@ import asyncpg
 import re
 from typing import Optional
 import config as cf
+
 from src.analytics.api import get_reports, get_reports_from_state
 from src.analytics.constant.urls import all_report_urls
 from src.analytics.db.db import get_report_hint_text
+from src.analytics.handlers.msg.msg_util import back_current_step_btn
 from src.analytics.handlers.text.recommendations import recommendations
 from src.analytics.handlers.text.revenue_texts import revenue_analysis_text, revenue_recommendations
 from src.analytics.handlers.text.texts import text_functions
 from src.analytics.handlers.types.text_data import TextData
 from src.analytics.constant.variants import all_departments, all_branches, all_types, all_periods
 from src.basic.commands.start_command import start_handler
-from src.mailing.commands.registration.notifications.keyboards import get_main_menu_keyboard
+from src.mailing.commands.registration.notifications.keyboards import get_main_menu_keyboard, report_end_kb
 
 # Инициализация планировщика
 scheduler = AsyncIOScheduler(timezone=pytz.timezone("Europe/Moscow"))
@@ -222,8 +225,8 @@ async def send_report(
 
                 await bot.send_message(
                     user_id,
-                    "Рекомендации успешно отправлены. Вы можете вернуться в главное меню:",
-                    reply_markup=get_main_menu_keyboard()
+                    "Рекомендации успешно отправлены. Вы можете запросить отчет в другом формате или вернуться в главное меню:",
+                    reply_markup=report_end_kb
                 )
 
                 logging.info(f"Рекомендации по revenue отчёту успешно отправлены пользователю {user_id}.")
@@ -235,8 +238,7 @@ async def send_report(
                     await bot.send_message(
                         user_id,
                         header + "<b>Рекомендации:</b>\n" + recommendations_text,
-                        parse_mode="HTML",
-                        reply_markup=get_main_menu_keyboard()
+                        parse_mode="HTML"
                     )
 
                     # Добавляем сообщение со ссылкой
@@ -244,6 +246,12 @@ async def send_report(
                     if report_hint:
                         hint_text = f"<b>🔗 Подробнее:</b> <a href='{report_hint['url']}'>{report_hint['description']}</a>"
                         await bot.send_message(user_id, hint_text, parse_mode="HTML")
+
+                    await bot.send_message(
+                        user_id,
+                        "Вы можете запросить отчет в другом формате или вернуться в главное меню:",
+                        reply_markup=report_end_kb
+                    )
 
                     logging.info(f"Рекомендации по отчёту {report_type} успешно отправлены пользователю {user_id}.")
                     return
@@ -277,10 +285,11 @@ async def send_report(
             hint_text = f"<b>🔗 Подробнее:</b> <a href='{report_hint['url']}'>{report_hint['description']}</a>"
             await bot.send_message(user_id, hint_text, parse_mode="HTML")
 
+
         await bot.send_message(
             user_id,
-            "Отчёт успешно сформирован. Вы можете вернуться в главное меню:",
-            reply_markup=get_main_menu_keyboard()
+            "Отчёт успешно сформирован. Вы можете запросить его в другом формате или вернуться в главное меню:",
+            reply_markup=report_end_kb
         )
 
         logging.info(f"Отчёт {report_type} успешно отправлен пользователю {user_id}.")

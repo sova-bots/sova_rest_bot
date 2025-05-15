@@ -127,3 +127,61 @@ async def get_report_hint_text(tg_id: int, report_type: str, report_format: str)
     finally:
         if 'conn' in locals():
             await conn.close()
+
+
+async def get_all_stop_departments() -> list[str] | None:
+    """
+    Получение всех department_id (тип TEXT) из таблицы stop_list_clients_divisions.
+    """
+    try:
+        conn = await asyncpg.connect(**DB_CONFIG)
+
+        query = """
+        SELECT DISTINCT department_id FROM stop_list_clients_divisions;
+        """
+        rows = await conn.fetch(query)
+
+        return [row['department_id'] for row in rows]
+
+    except PostgresError as e:
+        logging.error(f"[get_all_stop_departments] Ошибка БД: {e}")
+        return None
+    except Exception as e:
+        logging.error(f"[get_all_stop_departments] Неожиданная ошибка: {e}")
+        return None
+    finally:
+        if 'conn' in locals():
+            await conn.close()
+
+
+async def get_access_list_data() -> list[dict[str, str | list[str]]] | None:
+    """
+    Получение tg_id, slug и id_departments из таблицы access_list.
+    """
+    try:
+        conn = await asyncpg.connect(**DB_CONFIG)
+
+        query = """
+        SELECT tg_id, slug, id_departments FROM access_list;
+        """
+        rows = await conn.fetch(query)
+
+        result = []
+        for row in rows:
+            result.append({
+                'tg_id': row['tg_id'],
+                'slug': row['slug'],
+                'id_departments': row['id_departments']  # Это будет список str, если колонка действительно text[]
+            })
+
+        return result
+
+    except PostgresError as e:
+        logging.error(f"[get_access_list_data] Ошибка БД: {e}")
+        return None
+    except Exception as e:
+        logging.error(f"[get_access_list_data] Неожиданная ошибка: {e}")
+        return None
+    finally:
+        if 'conn' in locals():
+            await conn.close()

@@ -1,200 +1,245 @@
 import logging
-from io import BytesIO
-import seaborn as sns
 import json
-import matplotlib.pyplot as plt
-from aiogram import F
-from aiogram import Router
+from io import BytesIO
+from aiogram import F, Router
 from aiogram.types import CallbackQuery, BufferedInputFile
-from reportlab.lib.pagesizes import A4
-from reportlab.lib import colors
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Image
-from reportlab.lib.units import inch
-
+from fpdf import FPDF
+import matplotlib.pyplot as plt
+import seaborn as sns
+from PIL import Image
+import os
+from typing import Dict, List
 
 analys_revenue_pdf_router = Router()
 
 
-def create_combined_graph(data):
-    # Extract information from JSON
-    labels = [store["label"] for store in data["data"]]
-    revenue_week = [store["revenue_week"] for store in data["data"]]
-    revenue_month = [store["revenue_month"] for store in data["data"]]
-    revenue_year = [store["revenue_year"] for store in data["data"]]
+def format_currency(value: int) -> str:
+    return f"{value:,}".replace(",", " ") + " ₽"
 
-    # Define custom colors
-    week_color = (255 / 255, 226 / 255, 13 / 255)  # RGB (255,226,13) -> Yellow
-    month_color = (214 / 255, 154 / 255, 129 / 255)  # RGB (214,154,129) -> Light Brown
-    year_color = (197 / 255, 227 / 255, 132 / 255)  # RGB (197,227,132) -> Light Green
 
-    # Create a combined figure with 3 rows
-    fig = plt.figure(figsize=(16, 18))  # Общий размер фигуры
-    gs = fig.add_gridspec(3, 2, height_ratios=[1, 1, 1])  # 3 строки, 2 столбца
+def format_percentage(value: int) -> str:
+    return f"{value}%"
 
-    # Первый ряд: столбчатая диаграмма
-    ax0 = fig.add_subplot(gs[0, :])  # Первая строка, весь столбец
-    bar_width = 0.25  # Ширина столбцов
-    index = range(len(labels))
 
-    ax0.bar([i - bar_width for i in index], revenue_week, width=bar_width, label="Выручка за неделю",
-            color=week_color)
-    ax0.bar([i for i in index], revenue_month, width=bar_width, label="Выручка за месяц", color=month_color)
-    ax0.bar([i + bar_width for i in index], revenue_year, width=bar_width, label="Выручка за год",
-            color=year_color)
-    ax0.set_xticks(index)
-    ax0.set_xticklabels(labels, rotation=45, ha="right")
-    ax0.set_xlabel("Магазины")
-    ax0.set_ylabel("Выручка")
-    ax0.set_title("Анализ выручки по периодам (Столбчатая диаграмма)")
-    ax0.legend()
-    ax0.grid(True, axis='y')
+def create_dynamics_graph(data: Dict) -> BytesIO:
+    fig = plt.figure(figsize=(8, 4))
 
-    # Второй и третий ряды: круговые диаграммы
-    num_stores = len(data["data"])
-    stores_per_row = 2  # 2 магазина в ряду, чтобы они не сливались
+    periods = ['Неделя', 'Месяц', 'Год']
+    values = [
+        data['sum']['revenue_dynamics_week'],
+        data['sum']['revenue_dynamics_month'],
+        data['sum']['revenue_dynamics_year']
+    ]
+    colors = ['#FFD700' if x >= 0 else '#FF6347' for x in values]
+    bars = plt.bar(periods, values, color=colors)
 
-    for i, store in enumerate(data["data"]):
-        sizes = [store["revenue_week"], store["revenue_month"], store["revenue_year"]]
-        labels_pie = ["Выручка за неделю", "Выручка за месяц", "Выручка за год"]
+    for bar in bars:
+        height = bar.get_height()
+        plt.text(bar.get_x() + bar.get_width() / 2., height,
+                 f'{height}%', ha='center', va='bottom', fontsize=10)
 
-        # Определяем, в каком ряду и столбце будет диаграмма
-        row = (i // stores_per_row) + 1  # Второй или третий ряд
-        col = i % stores_per_row  # Столбец в пределах ряда
+    plt.title('Динамика выручки (ИТОГ)', fontsize=12)
+    plt.ylabel('Изменение (%)', fontsize=10)
+    plt.tick_params(axis='both', which='major', labelsize=10)
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
 
-        # Создаем подграфик для круговой диаграммы
-        ax = fig.add_subplot(gs[row, col])  # Разделяем на два столбца
-        ax.pie(sizes, labels=labels_pie, autopct='%1.1f%%', startangle=90,
-               colors=[week_color, month_color, year_color])
-        ax.set_title(f"{store['label']}")
-        ax.axis('equal')  # Чтобы круговая диаграмма была круглой
-
-    # Убираем пустые подграфики, если количество магазинов нечетное
-    if num_stores % stores_per_row != 0:
-        fig.delaxes(fig.add_subplot(gs[2, 1]))  # Удаляем пустой подграфик
-
-    fig.suptitle("Анализ выручки по периодам", fontsize=16)
-    plt.tight_layout(rect=[0, 0, 1, 0.96])  # Регулируем отступы
-
-    # Сохраняем график в BytesIO
     img_bytes = BytesIO()
-    plt.savefig(img_bytes, format='png')
+    plt.savefig(img_bytes, format='png', bbox_inches='tight', dpi=150)
     plt.close()
-
     img_bytes.seek(0)
+
     return img_bytes
 
-def create_pdf_with_table_and_graphs(data, graph_bytes):
+
+def create_pdf_report(data: Dict) -> BytesIO:
+    pdf = FPDF(orientation='L')
+    pdf.add_page()
+
     try:
-        pdfmetrics.registerFont(TTFont('DejaVuSans', r"C:\WORK\sova_rest_bot\sova_rest_bot-master\src\basic\revenue_analysis\DejaVuSans.ttf"))
-        print("Шрифт FreeSerif успешно зарегистрирован!")
+        font_path = os.path.join(os.path.dirname(__file__), 'DejaVuSans.ttf')
+        pdf.add_font('DejaVu', '', font_path, uni=True)
+        pdf.add_font('DejaVu', 'B', font_path, uni=True)
+        font_name = 'DejaVu'
     except Exception as e:
-        print(f"Ошибка при регистрации шрифта: {e}")
+        logging.warning(f"DejaVuSans не найден, используем Arial: {e}")
+        pdf.set_font("Arial", '', 12)
+        font_name = 'Arial'
 
-    """Создаёт PDF с таблицей, графиками и заголовком."""
-    # Создаём PDF-документ
-    pdf_buffer = BytesIO()
-    doc = SimpleDocTemplate(pdf_buffer, pagesize=A4)
-    elements = []
+    # Цвета для динамики
+    POSITIVE_COLOR = (197, 226, 132)  # Зеленый
+    NEGATIVE_COLOR = (211, 154, 128)  # Красный
+    HEADER_COLOR = (220, 220, 220)  # Серый для заголовков
 
-    # Заголовок документа
-    styles = getSampleStyleSheet()
-    styles['Title'].fontName = 'DejaVuSans'  # Используем встроенный шрифт Helvetica
-    title = Paragraph("АНАЛИЗ ВЫРУЧКИ", styles['Title'])
-    elements.append(title)
+    pdf.set_font(font_name, 'B', 16)
+    pdf.cell(0, 10, txt="ОТЧЁТ ПО ВЫРУЧКЕ", ln=True, align='C')
 
-    # Создаём таблицу
-    table_data = [
-        ["Магазин", "Выручка за неделю", "Выручка за месяц", "Выручка за год"]
-    ]
-    for store in data["data"]:
-        table_data.append([
-            store["label"],
-            f"{store['revenue_week']:,}",
-            f"{store['revenue_month']:,}",
-            f"{store['revenue_year']:,}"
-        ])
+    pdf.set_font(font_name, '', 12)
+    pdf.cell(0, 8, txt=f"Текущая выручка: {format_currency(data['sum']['revenue'])}", ln=True)
+    pdf.cell(0, 8, txt=f"Прогноз: {format_currency(data['sum']['revenue_forecast'])}", ln=True)
+    pdf.ln(8)
 
-    # Создаём объект таблицы
-    table = Table(table_data, colWidths=[2 * inch, 1.5 * inch, 1.5 * inch, 1.5 * inch])  # Уменьшаем ширину столбцов
-    table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),  # Заголовок таблицы
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  # Выравнивание по центру
-        ('FONTNAME', (0, 0), (-1, -1), 'DejaVuSans'),  # Задаем шрифт для всей таблицы!
-        ('FONTSIZE', (0, 0), (-1, -1), 8),  # Размер шрифта
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),  # Отступ снизу для заголовка
-        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),  # Цвет фона строк
-        ('GRID', (0, 0), (-1, -1), 1, colors.black)  # Сетка таблицы
-    ]))
-    elements.append(table)
+    graph_bytes = create_dynamics_graph(data)
+    graph_path = 'temp_dynamics.png'
+    with open(graph_path, 'wb') as f:
+        f.write(graph_bytes.getvalue())
 
-    # Добавляем график
-    graph_image = Image(graph_bytes, width=6 * inch, height=7 * inch)
-    elements.append(graph_image)
+    pdf.image(graph_path, x=10, y=pdf.get_y(), w=120)
+    pdf.ln(65)
 
-    # Собираем PDF
-    doc.build(elements)
-    pdf_buffer.seek(0)
-    return pdf_buffer
+    pdf.set_font(font_name, 'B', 12)
+    pdf.cell(0, 8, txt="Сравнительный анализ", ln=True, align='C')
+
+    col_widths = [90, 45, 35, 35, 35, 45]
+    headers = ["Магазин", "Выручка", "Неделя", "Месяц", "Год", "Прогноз"]
+
+    # Заголовки таблицы
+    pdf.set_font(font_name, 'B', 10)
+    pdf.set_fill_color(*HEADER_COLOR)
+    for i, header in enumerate(headers):
+        pdf.cell(col_widths[i], 10, header, border=1, align='C', fill=True)
+    pdf.ln()
+
+    # Данные таблицы
+    pdf.set_font(font_name, '', 10)
+    for store in data['data']:
+        label = store['label'].replace("Рогалик", "").strip()
+        if len(label) > 40:
+            label = label[:37] + "..."
+
+        # Название магазина (без заливки)
+        pdf.set_fill_color(255, 255, 255)  # Белый фон
+        pdf.cell(col_widths[0], 8, label, border=1, align='C')
+
+        # Выручка (без заливки)
+        pdf.cell(col_widths[1], 8, format_currency(store['revenue']), border=1, align='C')
+
+        # Динамика за неделю
+        week_dynamics = store['revenue_dynamics_week']
+        fill_color = POSITIVE_COLOR if week_dynamics >= 0 else NEGATIVE_COLOR
+        pdf.set_fill_color(*fill_color)
+        pdf.cell(col_widths[2], 8, format_percentage(week_dynamics), border=1, align='C', fill=True)
+
+        # Динамика за месяц
+        month_dynamics = store['revenue_dynamics_month']
+        fill_color = POSITIVE_COLOR if month_dynamics >= 0 else NEGATIVE_COLOR
+        pdf.set_fill_color(*fill_color)
+        pdf.cell(col_widths[3], 8, format_percentage(month_dynamics), border=1, align='C', fill=True)
+
+        # Динамика за год
+        year_dynamics = store['revenue_dynamics_year']
+        fill_color = POSITIVE_COLOR if year_dynamics >= 0 else NEGATIVE_COLOR
+        pdf.set_fill_color(*fill_color)
+        pdf.cell(col_widths[4], 8, format_percentage(year_dynamics), border=1, align='C', fill=True)
+
+        # Прогноз (без заливки)
+        pdf.set_fill_color(255, 255, 255)
+        pdf.cell(col_widths[5], 8, format_currency(store['revenue_forecast']), border=1, align='C')
+
+        pdf.ln()
+
+    # Итоговая строка
+    pdf.set_font(font_name, 'B', 10)
+    pdf.set_fill_color(*HEADER_COLOR)
+    pdf.cell(col_widths[0], 8, data['sum']['label'], border=1, align='C', fill=True)
+    pdf.cell(col_widths[1], 8, format_currency(data['sum']['revenue']), border=1, align='C', fill=True)
+
+    # Динамика за неделю (итог)
+    week_total = data['sum']['revenue_dynamics_week']
+    fill_color = POSITIVE_COLOR if week_total >= 0 else NEGATIVE_COLOR
+    pdf.set_fill_color(*fill_color)
+    pdf.cell(col_widths[2], 8, format_percentage(week_total), border=1, align='C', fill=True)
+
+    # Динамика за месяц (итог)
+    month_total = data['sum']['revenue_dynamics_month']
+    fill_color = POSITIVE_COLOR if month_total >= 0 else NEGATIVE_COLOR
+    pdf.set_fill_color(*fill_color)
+    pdf.cell(col_widths[3], 8, format_percentage(month_total), border=1, align='C', fill=True)
+
+    # Динамика за год (итог)
+    year_total = data['sum']['revenue_dynamics_year']
+    fill_color = POSITIVE_COLOR if year_total >= 0 else NEGATIVE_COLOR
+    pdf.set_fill_color(*fill_color)
+    pdf.cell(col_widths[4], 8, format_percentage(year_total), border=1, align='C', fill=True)
+
+    # Прогноз (итог)
+    pdf.set_fill_color(*HEADER_COLOR)
+    pdf.cell(col_widths[5], 8, format_currency(data['sum']['revenue_forecast']), border=1, align='C', fill=True)
+
+    pdf.ln()
+
+    pdf_output = BytesIO()
+    pdf_output.write(pdf.output(dest='S').encode('latin1'))
+    pdf_output.seek(0)
+
+    if os.path.exists(graph_path):
+        os.remove(graph_path)
+
+    return pdf_output
 
 
-def load_revenue_data(filepath: str) -> dict:
-    """Загружает данные из JSON-файла."""
+def load_revenue_data(filepath: str) -> Dict:
     try:
         with open(filepath, 'r', encoding='utf-8') as file:
-            return json.load(file)
+            data = json.load(file)
+            if isinstance(data, list) and len(data) > 0:
+                return data[0]  # Берем первый словарь из списка
+            elif isinstance(data, dict):
+                return data
+            else:
+                logging.error("Некорректный формат JSON: не словарь и не список словарей.")
+                return {}
     except Exception as e:
         logging.error(f"Ошибка при чтении файла {filepath}: {e}")
         return {}
 
 
+
 @analys_revenue_pdf_router.callback_query(F.data == "revenue_analysis_pdf")
 async def handle_format_pdf(callback_query: CallbackQuery):
-    """Обработчик для кнопки 'Сформировать PDF отчёт'."""
-    # Отвечаем на callback_query, чтобы убрать "часики" у кнопки
     await callback_query.answer("Формирую PDF отчёт...")
 
-    # Извлекаем тип отчёта из callback_data
-    report_type = callback_query.data.split("_")[-1]
-
-    # Загрузка данных из JSON-файла
-    filepath = r"C:\WORK\sova_rest_bot\sova_rest_bot-master\files\jsons_for_reports\revenue analys.json"
+    filepath = r"revenue_analys.json"
     revenue_data = load_revenue_data(filepath)
 
     if not revenue_data:
         await callback_query.message.answer("Ошибка при загрузке данных для отчёта.")
         return
 
-    # Генерация графика
     try:
-        graph_bytes = create_combined_graph(revenue_data)
-    except Exception as e:
-        logging.error(f"Ошибка при создании графика: {e}")
-        await callback_query.message.answer("Ошибка при создании графика для отчёта.")
-        return
-
-    # Создание PDF
-    try:
-        pdf_buffer = create_pdf_with_table_and_graphs(revenue_data, graph_bytes)
+        pdf_buffer = create_pdf_report(revenue_data)
     except Exception as e:
         logging.error(f"Ошибка при создании PDF: {e}")
         await callback_query.message.answer("Ошибка при создании PDF-отчёта.")
         return
 
-    # Отправка PDF пользователю
     try:
-        # Создаём объект BufferedInputFile для отправки PDF
-        input_file = BufferedInputFile(pdf_buffer.getvalue(), filename=f"revenue_analysis_{report_type}.pdf")
-
-        # Отправляем документ пользователю
-        await callback_query.message.answer_document(
-            input_file,
-            caption=f"Ваш отчёт по анализу выручки (тип: {report_type}):"
-        )
+        input_file = BufferedInputFile(pdf_buffer.getvalue(), filename="revenue_analysis.pdf")
+        await callback_query.message.answer_document(input_file, caption="Ваш отчёт по анализу выручки:")
     except Exception as e:
         logging.error(f"Ошибка при отправке PDF: {e}")
         await callback_query.message.answer("Ошибка при отправке отчёта.")
 
+
+def main_generate_revenue_pdf(filepath: str) -> BytesIO | None:
+    revenue_data = load_revenue_data(filepath)
+    if not revenue_data:
+        print("Ошибка при загрузке данных для отчёта.")
+        return None
+
+    try:
+        pdf_buffer = create_pdf_report(revenue_data)
+        print("PDF успешно создан: revenue_analysis.pdf")
+        return pdf_buffer
+    except Exception as e:
+        logging.error(f"Ошибка при создании PDF: {e}")
+        print("Ошибка при создании PDF-отчёта.")
+        return None
+
+
+if __name__ == "__main__":
+    filepath = r"revenue_analys.json"
+    pdf_bytes = main_generate_revenue_pdf(filepath)
+    if pdf_bytes:
+        with open("revenue_analysis.pdf", "wb") as f:
+            f.write(pdf_bytes.getvalue())
+        print("PDF отчёт сохранён!")

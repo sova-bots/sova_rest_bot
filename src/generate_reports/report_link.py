@@ -1,0 +1,51 @@
+REPORT_GENERATORS = {
+    ("revenue", "parameters", "pdf"): "generate_revenue_parameters_pdf",
+    ("revenue", "parameters", "excel"): "generate_revenue_parameters_excel",
+    ("revenue", "analysis", "pdf"): "generate_revenue_analysis_pdf",
+    ("revenue", "analysis_only_negative", "pdf"): "generate_revenue_analysis_pdf",
+    ("revenue", "recommendations", "pdf"): "generate_revenue_analysis_pdf",
+    ("revenue", "analysis", "excel"): "generate_revenue_analysis_excel",
+    ("revenue", "analysis_only_negative", "excel"): "generate_revenue_analysis_excel",
+    ("revenue", "recommendations", "excel"): "generate_revenue_analysis_excel",
+
+    ("inventory", "parameters", "pdf"): "generate_inventory_parameters_pdf",
+    ("inventory", "parameters", "excel"): "generate_inventory_parameters_excel",
+    ("inventory", "only_negative", "pdf"): "generate_inventory_parameters_pdf",
+    ("inventory", "only_negative", "excel"): "generate_inventory_parameters_excel",
+
+    ("write-off", "parameters", "pdf"): "generate_write_off_parameters_pdf",
+    ("write-off", "parameters", "excel"): "generate_write_off_parameters_excel",
+    ("write-off", "only_negative", "pdf"): "generate_write_off_parameters_pdf",
+    ("write-off", "only_negative", "excel"): "generate_write_off_parameters_excel",
+
+    ("losses", "parameters", "pdf"): "losses_parameters_create_pdf_report",
+    ("losses", "parameters", "excel"): "losses_parameters_create_excel_report",
+    ("losses", "only_negative", "pdf"): "losses_only_negative_create_pdf_report",
+    ("losses", "only_negative", "excel"): "losses_only_negative_create_excel_report",
+
+    ("loss-forecast", "parameters", "pdf"): "loss_forecast_parameters_create_pdf_report",
+    ("loss-forecast", "parameters", "excel"): "loss_forecast_parameters_create_excel_report",
+    ("loss-forecast", "only_negative", "pdf"): "loss_forecast_only_negative_create_pdf_report",
+    ("loss-forecast", "only_negative", "excel"): "loss_forecast_only_negative_create_excel_report",
+
+    ("food-cost", "parameters", "pdf"): "food_cost_parameters_create_pdf_report",
+    ("food-cost", "parameters", "excel"): "food_cost_parameters_create_excel_report",
+    ("food-cost", "analysis", "pdf"): "food_cost_analysis_create_pdf_report",
+    ("food-cost", "analysis", "excel"): "food_cost_analysis_create_excel_report",
+    ("food-cost", "analysis_only_negative", "pdf"): "food_cost_analysis_only_negative_create_pdf_report",
+    ("food-cost", "analysis_only_negative", "excel"): "food_cost_analysis_only_negative_create_excel_report",
+
+    ("markup", "parameters", "pdf"): "markup_parameters_create_pdf_report",
+    ("markup", "parameters", "excel"): "markup_parameters_create_excel_report",
+    ("markup", "analysis", "pdf"): "markup_analysis_create_pdf_report",
+    ("markup", "analysis", "excel"): "markup_analysis_create_excel_report",
+    ("markup", "analysis_only_negative", "pdf"): "markup_analysis_only_negative_create_pdf_report",
+    ("markup", "analysis_only_negative", "excel"): "markup_analysis_only_negative_create_excel_report",
+
+    ("turnover", "parameters", "pdf"): "turnover_parameters_create_pdf_report",
+    ("turnover", "parameters", "excel"): "turnover_parameters_create_excel_report",
+    ("turnover", "analysis", "pdf"): "turnover_analysis_create_pdf_report",
+    ("turnover", "analysis", "excel"): "turnover_analysis_create_excel_report",
+    ("turnover", "only_negative", "pdf"): "turnover_analysis_only_negative_create_pdf_report",
+    ("turnover", "only_negative", "excel"): "turnover_analysis_only_negative_create_excel_report",
+}
