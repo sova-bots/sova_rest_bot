@@ -154,25 +154,31 @@ async def get_all_stop_departments() -> list[str] | None:
             await conn.close()
 
 
-async def get_access_list_data() -> list[dict[str, str | list[str]]] | None:
+async def get_access_list_data() -> dict[str, list[str]] | None:
     """
-    Получение tg_id, slug и id_departments из таблицы access_list.
+    Получение словаря, где ключ — tg_id, а значение — список department_id (из id_departments) из таблицы access_list.
     """
     try:
         conn = await asyncpg.connect(**DB_CONFIG)
 
         query = """
-        SELECT tg_id, slug, id_departments FROM access_list;
+        SELECT tg_id, id_departments FROM access_list;
         """
         rows = await conn.fetch(query)
 
-        result = []
+        result = {}
+
         for row in rows:
-            result.append({
-                'tg_id': row['tg_id'],
-                'slug': row['slug'],
-                'id_departments': row['id_departments']  # Это будет список str, если колонка действительно text[]
-            })
+            tg_id = row['tg_id']
+            departments = row['id_departments']
+
+            # Проверка: если это строка с запятыми, а не массив
+            if isinstance(departments, str):
+                departments = [d.strip() for d in departments.split(',') if d.strip()]
+            elif not isinstance(departments, list):
+                departments = []
+
+            result[tg_id] = departments
 
         return result
 

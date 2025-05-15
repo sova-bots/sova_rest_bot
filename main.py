@@ -73,16 +73,17 @@ async def on_start(bot: Bot):
     else:
         logging.warning("[on_start] STOP-Departments не найдены или произошла ошибка.")
 
-    # Получаем и логируем access-list
+    # Получаем и логируем access-list (словарь: tg_id -> [id_departments])
     access_data = await get_access_list_data()
     if access_data:
-        for item in access_data:
-            logging.info(f"[on_start] Access: tg_id={item['tg_id']}, slug={item['slug']}, id_departments={item['id_departments']}")
+        for tg_id, departments in access_data.items():
+            logging.info(f"[on_start] Access: tg_id={tg_id}, id_departments={departments}")
     else:
         logging.warning("[on_start] Access-List не найден или произошла ошибка.")
 
     await schedule_all_subscriptions(bot)
     start_scheduler()
+
 
 async def main() -> None:
     bot = Bot(token=cf.TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
