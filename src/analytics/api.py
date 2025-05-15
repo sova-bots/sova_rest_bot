@@ -2,15 +2,65 @@ import requests
 
 from asyncio import get_event_loop
 
-from .api_util import get_dates, get_requests_datas_from_state_data, ReportRequestData
+from .api_util import get_dates
 
-from .db.db import user_tokens_db
+from .db.db import user_tokens_db, get_access_list_data
 from src.util.log import logger
 import config as cf
 
+from dataclasses import dataclass
+
+from .constant.urls import all_report_urls
+from .handlers.types.report_all_departments_types import ReportAllDepartmentTypes
+
+
+@dataclass
+class ReportRequestData:
+    token: str
+    url: str
+    group: str
+    date_from: str
+    date_to: str
+    departments: list[str]
+
+
+async def get_requests_datas_from_state_data(tgid: int, state_data: dict, type_prefix: str) -> list[ReportRequestData]:
+    token = user_tokens_db.get_token(tgid=str(tgid))
+
+    report_type = state_data.get("report:type", "null")
+
+    url_list = all_report_urls.get(type_prefix + report_type)
+    if url_list is None:
+        raise RuntimeError("No url. Please specify url for \"{report_type}\" report type in urls.py")
+
+    result = []
+
+    for url in url_list:
+        url_and_group = url.split('.')
+
+        url = url_and_group[0]
+        group = url_and_group[1] if len(url_and_group) > 1 else None
+
+        access_data = await get_access_list_data()
+        departments_data = await get_departments(tgid=tgid, access_data=access_data)
+
+        departments = state_data.get("report:department")
+        if departments in [ReportAllDepartmentTypes.ALL_DEPARTMENTS_INDIVIDUALLY,
+                           ReportAllDepartmentTypes.SUM_DEPARTMENTS_TOTALLY]:
+            departments = list(departments_data.keys())
+        else:
+            departments = [departments]
+
+        period = state_data.get("report:period")
+        date_from, date_to = get_dates(period=period)
+
+        data = ReportRequestData(token, url, group, date_from.isoformat(), date_to.isoformat(), departments)
+        result.append(data)
+    return result
+
 
 async def get_reports_from_state(tgid: int, state_data: dict, type_prefix: str) -> list[dict] | None:
-    request_data_list = get_requests_datas_from_state_data(tgid, state_data, type_prefix)
+    request_data_list = await get_requests_datas_from_state_data(tgid, state_data, type_prefix)
     return await get_reports(request_data_list)
 
 
@@ -53,7 +103,7 @@ def m_req_get_report(token: str, url: str, group: str, departments: list[str], d
     return req.json()
 
 
-async def get_departments(tgid: int, stop_list: list[str] = []) -> dict:
+async def get_departments(tgid: int, stop_list: list[str] = [], access_data: dict = {}) -> dict:
     token = user_tokens_db.get_token(tgid=str(tgid))
     loop = get_event_loop()
     departments = await loop.run_in_executor(None, m_req_get_departments, token)
@@ -63,7 +113,15 @@ async def get_departments(tgid: int, stop_list: list[str] = []) -> dict:
     for id_ in stop_list:
         removed = departments_remapped.pop(id_, None)  # если не найдёт id_ в ключах departments_remapped, то вернёт None
 
-    return departments_remapped
+    # пропускной лист
+    if tgid not in access_data.keys():
+        return {}
+    departments_result = {}
+    for department_id, department_name in departments_remapped.items():
+        if department_id in access_data[tgid]:
+            departments_result[department_id] = department_name
+
+    return departments_result
 
 
 def m_req_get_departments(token: str) -> dict:
@@ -73,5 +131,5 @@ def m_req_get_departments(token: str) -> dict:
     )
     if req.status_code != 200:
         logger.msg("ERROR", f"Could not get departments: {token=}")
-        return []
+        return {}
     return req.json()['departments']

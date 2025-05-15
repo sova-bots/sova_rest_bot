@@ -6,6 +6,10 @@ from ..handlers.types.report_all_departments_types import ReportAllDepartmentTyp
 
 async def all_departments(tgid: int) -> dict:
     departments: dict = await get_departments(tgid)
+
+    if not departments:
+        return {}
+
     departments.update({
         ReportAllDepartmentTypes.ALL_DEPARTMENTS_INDIVIDUALLY: "Вся сеть (по объектам отдельно)",
         ReportAllDepartmentTypes.SUM_DEPARTMENTS_TOTALLY: "Вся сеть (итого по объектам)"
@@ -71,7 +75,3 @@ all_time_periods = {
     "weekly": "Еженедельно",
     "monthly": "Ежемесячно"
 }
-
-
-
-

@@ -28,7 +28,7 @@ from src.mailing.commands.registration.notifications.check_time import scheduler
     start_scheduler, subscription_router
 from src.mailing.commands.registration.notifications.sub_mail import save_time_router
 
-
+from src.analytics.db.db import get_all_stop_departments, get_access_list_data
 
 router = Router(name=__name__)
 
@@ -44,7 +44,7 @@ routers = [
     analytics_router,
     mailing_router,
     save_time_router,
-    subscription_router
+    subscription_router,
 ]
 
 dp = Dispatcher()
@@ -62,8 +62,24 @@ async def include_routers(dp: Dispatcher) -> None:
 
 async def on_start(bot: Bot):
     logging.info("Бот запускается...")
+
+    # Получаем и логируем stop-departments
+    departments = await get_all_stop_departments()
+    if departments:
+        logging.info(f"[on_start] STOP-Departments: {departments}")
+    else:
+        logging.warning("[on_start] STOP-Departments не найдены или произошла ошибка.")
+
+    # Получаем и логируем access-list (словарь: tg_id -> [id_departments])
+    access_data = await get_access_list_data()
+    if access_data:
+        for tg_id, departments in access_data.items():
+            logging.info(f"[on_start] Access: tg_id={tg_id}, id_departments={departments}")
+    else:
+        logging.warning("[on_start] Access-List не найден или произошла ошибка.")
+
     await schedule_all_subscriptions(bot)
-    start_scheduler()  # Запуск планиировщика
+    start_scheduler()
 
 
 async def main() -> None:

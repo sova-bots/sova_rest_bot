@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 from dataclasses import dataclass
 
@@ -8,52 +8,8 @@ from .db.db import user_tokens_db
 import config as cf
 from src.util.log import logger
 
-from .handlers.types.report_all_departments_types import ReportAllDepartmentTypes
 
-
-@dataclass
-class ReportRequestData:
-    token: str
-    url: str
-    group: str
-    date_from: str
-    date_to: str
-    departments: list[str]
-
-
-def get_requests_datas_from_state_data(tgid: int, state_data: dict, type_prefix: str) -> list[ReportRequestData]:
-    token = user_tokens_db.get_token(tgid=str(tgid))
-
-    report_type = state_data.get("report:type")
-
-    url_list = all_report_urls.get(type_prefix + report_type)
-    if url_list is None:
-        raise RuntimeError("No url. Please specify url for \"{report_type}\" report type in urls.py")
-
-    result = []
-
-    for url in url_list:
-        url_and_group = url.split('.')
-
-        url = url_and_group[0]
-        group = url_and_group[1] if len(url_and_group) > 1 else None
-
-        departments = state_data.get("report:department")
-        if departments in [ReportAllDepartmentTypes.ALL_DEPARTMENTS_INDIVIDUALLY,
-                           ReportAllDepartmentTypes.SUM_DEPARTMENTS_TOTALLY]:
-            departments = []
-        else:
-            departments = [departments]
-
-        period = state_data.get("report:period")
-        date_from, date_to = get_dates(period=period)
-
-        data = ReportRequestData(token, url, group, date_from.isoformat(), date_to.isoformat(), departments)
-        result.append(data)
-    return result
-
-
-def get_dates(period: str) -> tuple[datetime.date, datetime.date]:
+def get_dates(period: str) -> tuple[date, date]:
     today = datetime.now(tz=cf.TIMEZONE).date()
     match period:
         case "last-day":
@@ -90,6 +46,3 @@ def get_dates(period: str) -> tuple[datetime.date, datetime.date]:
             logger.msg("ERROR", f"Error SendReports UnknownReportPeriod: {period=}")
             raise RuntimeError(f"Error SendReports UnknownReportPeriod: {period=}")
     return date_from, date_to
-
-
-
