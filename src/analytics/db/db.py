@@ -1,4 +1,6 @@
 import sqlite3
+from typing import Optional
+
 import config as cf
 from asyncpg import create_pool, PostgresError
 
@@ -154,40 +156,42 @@ async def get_all_stop_departments() -> list[str] | None:
             await conn.close()
 
 
-async def get_access_list_data() -> dict[str, list[str]] | None:
+async def get_access_list_data() -> Optional[dict[int, list[str]]]:
     """
-    Получение словаря, где ключ — tg_id, а значение — список department_id (из id_departments) из таблицы access_list.
+    Получение словаря, где ключ — tg_id (int),
+    а значение — список department_id (list[str]) из таблицы access_list.
     """
     try:
         conn = await asyncpg.connect(**DB_CONFIG)
 
         query = """
-        SELECT tg_id, id_departments FROM access_list;
+        SELECT tg_id, id_departments FROM access_list
+        WHERE tg_id IS NOT NULL;
         """
         rows = await conn.fetch(query)
 
-        result = {}
+        result: dict[int, list[str]] = {}
 
         for row in rows:
             tg_id = row['tg_id']
-            departments = row['id_departments']
+            departments = row['id_departments']  # уже список, так как это ARRAY в PostgreSQL
 
-            # Проверка: если это строка с запятыми, а не массив
-            if isinstance(departments, str):
-                departments = [d.strip() for d in departments.split(',') if d.strip()]
-            elif not isinstance(departments, list):
+            # Гарантируем, что departments — это список строк
+            if isinstance(departments, list):
+                departments = [str(dep) for dep in departments]
+            else:
                 departments = []
 
             result[tg_id] = departments
 
         return result
 
-    except PostgresError as e:
+    except asyncpg.PostgresError as e:
         logging.error(f"[get_access_list_data] Ошибка БД: {e}")
         return None
     except Exception as e:
         logging.error(f"[get_access_list_data] Неожиданная ошибка: {e}")
         return None
     finally:
-        if 'conn' in locals():
+        if 'conn' in locals() and not conn.is_closed():
             await conn.close()

@@ -24,16 +24,22 @@ from src.mailing.commands.techsupport.techsupport_menu import router as techsupp
 from src.analytics.router import analytics_router
 from src.mailing.mailing_router import mailing_router
 
-from src.mailing.commands.registration.notifications.check_time import scheduler, schedule_all_subscriptions, \
-    start_scheduler, subscription_router
+from src.mailing.commands.registration.notifications.check_time import (
+    scheduler,
+    schedule_all_subscriptions,
+    start_scheduler,
+    subscription_router,
+)
 from src.mailing.commands.registration.notifications.sub_mail import save_time_router
 
 from src.generate_reports.sending_pdf_excel_reports import file_report_router
 
 from src.analytics.db.db import get_all_stop_departments, get_access_list_data
 
+# Основной роутер
 router = Router(name=__name__)
 
+# Все маршруты бота
 routers = [
     router,
     start_command_router,
@@ -47,21 +53,21 @@ routers = [
     mailing_router,
     save_time_router,
     subscription_router,
-    file_report_router
+    file_report_router,
 ]
 
-dp = Dispatcher()
-
+# Пример команды для теста
 @router.message(Command("test"))
 async def test_command(message: Message):
-    await message   .answer("sleep 5")
+    await message.answer("sleep 5")
     await asyncio.sleep(5)
     await message.answer("sleep end")
 
 
 async def include_routers(dp: Dispatcher) -> None:
-    for router in routers:
-        dp.include_router(router)
+    for r in routers:
+        dp.include_router(r)
+
 
 async def on_start(bot: Bot):
     logging.info("Бот запускается...")
@@ -81,39 +87,47 @@ async def on_start(bot: Bot):
     else:
         logging.warning("[on_start] Access-List не найден или произошла ошибка.")
 
+    # Запланировать подписки
     await schedule_all_subscriptions(bot)
+
+    # Запустить планировщик
     start_scheduler()
 
 
 async def main() -> None:
+    logging.basicConfig(level=logging.INFO)
+
     bot = Bot(token=cf.TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     storage = MemoryStorage()
     dp = Dispatcher(storage=storage)
 
-    await bot.delete_webhook()
+    await bot.delete_webhook(drop_pending_updates=True)
 
+    # Подключаем маршруты
     await include_routers(dp)
 
-    await on_start(bot)  # Включаем планировщик и загружаем подписки
+    # Выполняем действия при старте (загрузка access_list, запуск планировщика и т.д.)
+    await on_start(bot)
 
+    # Запускаем рассылку, если включена
     if cf.notifications:
         sender = NotificationSender(bot)
         sender.start()
 
     try:
-        logger.info('Бот запущен!')
+        logger.info("Бот запущен!")
         await dp.start_polling(bot)
     except (CancelledError, KeyboardInterrupt, SystemExit):
-        dp.shutdown()
+        logger.info("Бот останавливается...")
+        await dp.shutdown()
 
         if cf.notifications:
             sender.stop()
 
-        # Останавливаем планировщик
         scheduler.shutdown()
-        logging.info("Планировщик остановлен.")
+        logger.info("Планировщик остановлен.")
+        logger.info("Бот остановлен.")
 
-        logger.info('Бот остановлен.')
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     asyncio.run(main())
