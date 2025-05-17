@@ -41,8 +41,7 @@ async def get_requests_datas_from_state_data(tgid: int, state_data: dict, type_p
         url = url_and_group[0]
         group = url_and_group[1] if len(url_and_group) > 1 else None
 
-        access_data = await get_access_list_data()
-        departments_data = await get_departments(tgid=tgid, access_data=access_data)
+        departments_data = await get_departments(tgid)
 
         departments = state_data.get("report:department")
         if departments in [ReportAllDepartmentTypes.ALL_DEPARTMENTS_INDIVIDUALLY,
@@ -103,7 +102,7 @@ def m_req_get_report(token: str, url: str, group: str, departments: list[str], d
     return req.json()
 
 
-async def get_departments(tgid: int, stop_list: list[str] = [], access_data: dict = {}) -> dict:
+async def get_departments(tgid: int, stop_list: list[str] = [], access_data: dict | None = None) -> dict:
     token = user_tokens_db.get_token(tgid=str(tgid))
     loop = get_event_loop()
     departments = await loop.run_in_executor(None, m_req_get_departments, token)
@@ -113,10 +112,15 @@ async def get_departments(tgid: int, stop_list: list[str] = [], access_data: dic
     for id_ in stop_list:
         removed = departments_remapped.pop(id_, None)  # если не найдёт id_ в ключах departments_remapped, то вернёт None
 
+    # получение пропускного листа
+    if access_data is None:
+        access_data = await get_access_list_data() 
+
     # пропускной лист
     if tgid not in access_data.keys():
         return {}
     departments_result = {}
+
     for department_id, department_name in departments_remapped.items():
         if department_id in access_data[tgid]:
             departments_result[department_id] = department_name
