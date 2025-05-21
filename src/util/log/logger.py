@@ -2,6 +2,7 @@ import config as cf
 from datetime import datetime
 from colorama import Fore, Style
 from colorama import init as colorama_init
+from pprint import pformat
 
 
 def init() -> None:
@@ -30,6 +31,13 @@ def warning(message: str, color: Fore = Fore.YELLOW) -> None: # type: ignore
 
 def error(message: str, color: Fore = Fore.RED) -> None: # type: ignore
     msg(LogMessageType.ERROR, message, color)
+
+
+def prdict(message: str, **dicts) -> None:
+    debug(message)
+    for name, dictionary in dicts.items():
+        formatted = pformat(dictionary, sort_dicts=False).replace("\'", '\"')
+        print(f"{Fore.GREEN}{name}{Style.RESET_ALL}=\n{Fore.CYAN}{formatted}{Style.RESET_ALL}")
 
 
 def debug(message: str, color: Fore = Fore.MAGENTA) -> None: # type: ignore

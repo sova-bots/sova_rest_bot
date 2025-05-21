@@ -28,11 +28,11 @@ MONTHLY_DAY = '8'
 
 
 DB_CONFIG = {
-    'user': 'postgres',  # Correct username
-    'password': '0000',  # Correct password
-    'database': 'sova-rest-bot',
-    'host': 'localhost',  # or your DB host if remote
-    'port': '5432'  # or your DB port
+    'user': getenv('DB_CONFIG_USER'),
+    'password': getenv('DB_CONFIG_PASSWORD'),
+    'database': getenv('DB_CONFIG_DATABASE'),
+    'host': getenv('DB_CONFIG_HOST'),
+    'port': getenv('DB_CONFIG_PORT'),
 }
 
-DB_LINK = "postgresql://postgres:0000@localhost/sova-rest-bot"
+DB_LINK = getenv('DB_LINK')
