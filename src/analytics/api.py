@@ -83,7 +83,7 @@ def m_req_get_report(token: str, url: str, group: str, departments: list[str], d
         "departments": departments
     }
 
-    logger.debug(f"SendRequest: {url=}, {data=}, {token=}")
+    logger.prdict("SendRequest:", url=url, data=data, token=token)
 
     req = requests.post(
         url=f"{cf.API_PATH}/api/{url}",
@@ -94,11 +94,12 @@ def m_req_get_report(token: str, url: str, group: str, departments: list[str], d
         json=data
     )
 
-    logger.debug(f"ResievedResponse: {req.text}, status={req.status_code}; request: {url=}, {data=}, {token=}")
-
     if req.status_code != 200:
-        logger.msg("ERROR", f"Could not get request: {url=}, {data=}, {token=}")
+        logger.msg("ERROR", f"Could not get request: {url=}, {data=}, {token=}, {req.text=}")
         return None
+
+    logger.prdict("ResievedResponse:", response=req.json())
+
     return req.json()
 
 

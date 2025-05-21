@@ -530,9 +530,11 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
         # Потеря выручки (топ-10 сотрудников с наибольшей потерей)
         message += "<i>7.1 Потеря выручки по сотрудникам (топ-10):</i>\n"
         # Сортируем сотрудников по убыванию потери выручки
+
+        sort_key = "potential"
         loss_waiters = sorted(
-            [waiter for waiter in waiters if waiter.get('revenue', 0) < 0],
-            key=lambda x: x['revenue']
+            [waiter for waiter in waiters if waiter.get(sort_key, 0) < 0],
+            key=lambda x: x[sort_key]
         )[:10]  # Берём только топ-10
 
         for waiter in loss_waiters:
@@ -551,8 +553,8 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
             message += "<i>7.2 Похвалите сотрудников (топ-10):</i>\n"
             # Сортируем сотрудников по убыванию выручки
             praise_waiters = sorted(
-                [waiter for waiter in waiters if waiter.get('revenue', 0) > 0],
-                key=lambda x: x['revenue'],
+                [waiter for waiter in waiters if waiter.get(sort_key, 0) > 0],
+                key=lambda x: x[sort_key],
                 reverse=True
             )[:10]  # Берём только топ-10
 

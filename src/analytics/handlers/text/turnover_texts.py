@@ -79,13 +79,9 @@ def product_turnover_text(text_data: TextData) -> list[str]:
 
     report_lines = []
     for item in data["data"]:
-        turnover = item.get(turnover_key)
-        remainder_end = item.get("remainder_end")
+        turnover = item.get(turnover_key, "<i>нет данных</i>")
+        remainder_end = item.get("remainder_end", "<i>нет данных</i>")
 
-        if turnover is None:
-            turnover = "<i>нет данных</i>"
-        if remainder_end is None:
-            remainder_end = "<i>нет данных</i>"
         # Форматируем цену с разделителем тысяч
         formatted_price = f"{remainder_end:,}".replace(",", " ")
         report_lines.append(f"{item['label']}: {formatted_price} руб, {turnover} дней")
