@@ -258,7 +258,7 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
         for metric in positive_changes:
             message += (
                 f"+ {metric['label']}: {metric['value']:.1f}%, "
-                f"{int(metric['previous']):,.0f} → {int(metric['current']):,.0f}\n"
+                f"{metric['previous']:,.0f} → {metric['current']:,.0f}\n"
             )
         message += "\n"
 

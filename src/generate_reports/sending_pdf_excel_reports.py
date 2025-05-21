@@ -51,80 +51,6 @@ async def handle_send_any_report(callback: CallbackQuery, state: FSMContext):
     await send_generated_report(callback, msg_data)
 
 
-async def send_generated_report(callback: CallbackQuery, msg_data: MsgData) -> None:
-    state_data = await msg_data.state.get_data()
-    report_type = state_data.get("report:type")
-    format_type = state_data.get("report:format_type")
-    file_type = state_data.get("report:delivery_format")
-
-    func_name = REPORT_GENERATORS.get((report_type, format_type, file_type))
-
-    if func_name == "generate_revenue_parameters_pdf":
-        await generate_revenue_pdf(callback, msg_data)
-    elif func_name == "generate_revenue_parameters_excel":
-        await generate_revenue_excel(callback, msg_data)
-    elif func_name == "generate_revenue_analysis_pdf":
-        await generate_revenue_analysis_pdf(callback, msg_data)
-    elif func_name == "generate_revenue_analysis_excel":
-        await generate_revenue_analysis_excel(callback, msg_data)
-
-    elif func_name == 'generate_inventory_parameters_pdf'  or func_name == 'generate_inventory_only_negative_pdf':
-        await generate_inventory_parameters_pdf(callback, msg_data)
-    elif func_name == 'generate_inventory_parameters_excel' or func_name == 'generate_inventory_only_negative_excel':
-        await generate_inventory_parameters_excel(callback, msg_data)
-
-    elif func_name == "generate_write_off_parameters_pdf":
-        await generate_write_off_parameters_pdf(callback, msg_data)
-    elif func_name == "generate_write_off_parameters_excel":
-        await generate_write_off_parameters_excel(callback, msg_data)
-
-    elif func_name == 'losses_parameters_create_pdf_report':
-        await generate_losses_parameters_pdf(callback, msg_data)
-    elif func_name == 'losses_parameters_create_excel_report':
-        await generate_losses_parameters_excel(callback, msg_data)
-    elif func_name == 'losses_only_negative_create_pdf_report':
-        await generate_losses_only_negative_pdf(callback, msg_data)
-    elif func_name == 'losses_only_negative_create_excel_report':
-        await generate_losses_only_negative_excel(callback, msg_data)
-
-    elif func_name == 'loss_forecast_parameters_create_pdf_report':
-        await generate_loss_forecast_parameters_pdf(callback, msg_data)
-    elif func_name == 'loss_forecast_parameters_create_excel_report':
-        await generate_loss_forecast_parameters_excel(callback, msg_data)
-    elif func_name == 'loss_forecast_only_negative_create_pdf_report':
-        await generate_loss_forecast_only_negative_pdf(callback, msg_data)
-    elif func_name == 'loss_forecast_only_negative_create_excel_report':
-        await generate_loss_forecast_only_negative_excel(callback, msg_data)
-
-    elif func_name == 'food_cost_parameters_create_pdf_report':
-        await generate_food_cost_parameters_pdf(callback, msg_data)
-    elif func_name == 'food_cost_parameters_create_excel_report':
-        await generate_food_cost_parameters_excel(callback, msg_data)
-    elif func_name == 'food_cost_analysis_create_pdf_report' or func_name == 'food_cost_analysis_only_negative_create_pdf_report':
-        await generate_food_cost_analysis_pdf(callback, msg_data)
-    elif func_name in ('food_cost_analysis_create_excel_report',  'food_cost_analysis_only_negative_create_excel_report'):
-        await generate_food_cost_analysis_excel(callback, msg_data)
-
-    elif func_name == 'markup_parameters_create_pdf_report':
-        await generate_markup_parameters_pdf(callback, msg_data)
-    elif func_name == 'markup_parameters_create_excel_report':
-        await generate_markup_parameters_excel(callback, msg_data)
-    elif func_name in ('markup_analysis_create_pdf_report', 'markup_analysis_only_negative_create_pdf_report'):
-        await generate_markup_analysis_pdf(callback, msg_data)
-    elif func_name in ('markup_analysis_create_excel_report', 'markup_analysis_only_negative_create_excel_report'):
-        await generate_markup_analysis_excel(callback, msg_data)
-
-    elif func_name == 'turnover_parameters_create_pdf_report':
-        await generate_turnover_parameters_pdf(callback, msg_data)
-    elif func_name == 'turnover_parameters_create_excel_report':
-        await generate_turnover_parameters_excel(callback, msg_data)
-    elif func_name in ('turnover_analysis_create_pdf_report', 'turnover_analysis_only_negative_create_pdf_report'):
-        await generate_turnover_analysis_pdf(callback, msg_data)
-    elif func_name in ('turnover_analysis_create_excel_report','turnover_analysis_only_negative_create_excel_report'):
-        await generate_turnover_analysis_excel(callback, msg_data)
-    else:
-        await callback.message.answer("Формат или тип отчёта не поддерживается.")
-
 # PDF
 async def generate_revenue_pdf(callback: CallbackQuery, msg_data: MsgData):
     from src.generate_reports.revenue_analysis.revenue_pdf import revenue_parameters_create_pdf_report
@@ -974,3 +900,104 @@ async def handle_send_json_report(callback: CallbackQuery, state: FSMContext):
 
     await callback.message.answer(f"Файл {file_name} успешно сохранён и готов для формирования отчёта.")
     await callback.answer()
+
+
+# Создаем словарь для сопоставления имен функций с обработчиками
+REPORT_HANDLERS = {
+    # Revenue
+    "generate_revenue_parameters_pdf": generate_revenue_pdf,
+    "generate_revenue_parameters_excel": generate_revenue_excel,
+    "generate_revenue_analysis_pdf": generate_revenue_analysis_pdf,
+    "generate_revenue_analysis_excel": generate_revenue_analysis_excel,
+    
+    # Inventory
+    "generate_inventory_parameters_pdf": generate_inventory_parameters_pdf,
+    "generate_inventory_only_negative_pdf": generate_inventory_parameters_pdf,
+    "generate_inventory_parameters_excel": generate_inventory_parameters_excel,
+    "generate_inventory_only_negative_excel": generate_inventory_parameters_excel,
+    
+    # Write-off
+    "generate_write_off_parameters_pdf": generate_write_off_parameters_pdf,
+    "generate_write_off_parameters_excel": generate_write_off_parameters_excel,
+    "generate_write_off_only_negative_pdf": generate_write_off_parameters_pdf,
+    "generate_write_off_only_negative_excel": generate_write_off_parameters_excel,
+    
+    # Losses
+    "losses_parameters_create_pdf_report": generate_losses_parameters_pdf,
+    "losses_parameters_create_excel_report": generate_losses_parameters_excel,
+    "losses_only_negative_create_pdf_report": generate_losses_only_negative_pdf,
+    "losses_only_negative_create_excel_report": generate_losses_only_negative_excel,
+    
+    # Loss forecast
+    "loss_forecast_parameters_create_pdf_report": generate_loss_forecast_parameters_pdf,
+    "loss_forecast_parameters_create_excel_report": generate_loss_forecast_parameters_excel,
+    "loss_forecast_only_negative_create_pdf_report": generate_loss_forecast_only_negative_pdf,
+    "loss_forecast_only_negative_create_excel_report": generate_loss_forecast_only_negative_excel,
+    
+    # Food cost
+    "food_cost_parameters_create_pdf_report": generate_food_cost_parameters_pdf,
+    "food_cost_parameters_create_excel_report": generate_food_cost_parameters_excel,
+    "food_cost_analysis_create_pdf_report": generate_food_cost_analysis_pdf,
+    "food_cost_analysis_only_negative_create_pdf_report": generate_food_cost_analysis_pdf,
+    "food_cost_analysis_create_excel_report": generate_food_cost_analysis_excel,
+    "food_cost_analysis_only_negative_create_excel_report": generate_food_cost_analysis_excel,
+    
+    # Markup
+    "markup_parameters_create_pdf_report": generate_markup_parameters_pdf,
+    "markup_parameters_create_excel_report": generate_markup_parameters_excel,
+    "markup_analysis_create_pdf_report": generate_markup_analysis_pdf,
+    "markup_analysis_only_negative_create_pdf_report": generate_markup_analysis_pdf,
+    "markup_analysis_create_excel_report": generate_markup_analysis_excel,
+    "markup_analysis_only_negative_create_excel_report": generate_markup_analysis_excel,
+    
+    # Turnover
+    "turnover_parameters_create_pdf_report": generate_turnover_parameters_pdf,
+    "turnover_parameters_create_excel_report": generate_turnover_parameters_excel,
+    "turnover_analysis_create_pdf_report": generate_turnover_analysis_pdf,
+    "turnover_analysis_only_negative_create_pdf_report": generate_turnover_analysis_pdf,
+    "turnover_analysis_create_excel_report": generate_turnover_analysis_excel,
+    "turnover_analysis_only_negative_create_excel_report": generate_turnover_analysis_excel,
+}
+
+async def send_generated_report(callback: CallbackQuery, msg_data: MsgData) -> None:
+    state_data = await msg_data.state.get_data()
+    report_type = state_data.get("report:type")
+    format_type = state_data.get("report:format_type")
+    file_type = state_data.get("report:delivery_format")
+
+    # Получаем имя функции из REPORT_GENERATORS
+    func_name = REPORT_GENERATORS.get((report_type, format_type, file_type))
+    
+    if not func_name:
+        await callback.message.answer("Формат или тип отчёта не поддерживается.")
+        return
+
+    # Получаем обработчик из REPORT_HANDLERS
+    handler = REPORT_HANDLERS.get(func_name)
+    
+    if handler:
+        await handler(callback, msg_data)
+    else:
+        await callback.message.answer("Формат или тип отчёта не поддерживается.")
+
+
+async def send_generated_report(callback: CallbackQuery, msg_data: MsgData) -> None:
+    state_data = await msg_data.state.get_data()
+    report_type = state_data.get("report:type")
+    format_type = state_data.get("report:format_type")
+    file_type = state_data.get("report:delivery_format")
+
+    # Получаем имя функции из REPORT_GENERATORS
+    func_name = REPORT_GENERATORS.get((report_type, format_type, file_type))
+    
+    if not func_name:
+        await callback.message.answer("Формат или тип отчёта не поддерживается.")
+        return
+
+    # Получаем обработчик из REPORT_HANDLERS
+    handler = REPORT_HANDLERS.get(func_name)
+    
+    if handler:
+        await handler(callback, msg_data)
+    else:
+        await callback.message.answer("Формат или тип отчёта не поддерживается.")

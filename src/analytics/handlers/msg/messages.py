@@ -1,23 +1,12 @@
-import json
-
-from aiogram.types import Message, InlineKeyboardMarkup as IKM, InlineKeyboardButton as IKB
-from aiogram.fsm.context import FSMContext
-from aiogram.enums.parse_mode import ParseMode
-
-import asyncio
-
 from .msg_util import clear_report_state_data, set_input_state, make_kb, make_kb_report_menu, back_current_step_btn, \
     add_messages_to_delete, send_file_buttons_kb
-from ..types.msg_data import MsgData
-from .headers import make_header, make_header_from_state
-from ...api import get_reports, get_reports_from_state, get_departments
+from .headers import make_header_from_state
+from ...api import get_reports_from_state, get_departments
 
 from ..types.report_all_departments_types import ReportAllDepartmentTypes
 from aiogram.types import Message, InlineKeyboardMarkup as IKM, InlineKeyboardButton as IKB
 
 from src.util.log import logger
-from urllib.parse import unquote
-
 
 from aiogram.enums.parse_mode import ParseMode
 from .msg_util import clear_report_state_data, set_input_state, make_kb, make_kb_report_menu, back_current_step_btn, \
@@ -105,107 +94,37 @@ async def test_msg(msg_data: MsgData) -> None:
     await msg_data.msg.edit_text(text=f"{_department=}\n\n{_type=}\n\n{_period=}")
 
 
-async def parameters_msg(
-        msg_data: MsgData,
-        type_prefix: str = "",
-        only_negative: bool = False,
-        recommendations: bool = False
-) -> None:
-    state_data = await msg_data.state.get_data()
+async def send_aggregated_menu_once(msg_data: MsgData) -> None:
+    kb = IKM(inline_keyboard=[
+        [subscribe_to_mailing_btn],
+        *send_file_buttons_kb.inline_keyboard,
+        [back_current_step_btn]
+    ])
+    menu_msg = await msg_data.msg.answer(text="Что дальше?", reply_markup=kb)
+    await add_messages_to_delete(msg_data=msg_data, messages=[menu_msg])
 
-    report_format = state_data.get("report:format_type")
-    report_type = state_data.get("report:type")
-    department = state_data.get("report:department")
-    period = state_data.get("report:period")
 
-    loading_msg = await msg_data.msg.edit_text(text="Загрузка... ⏳")
-    back_kb = IKM(inline_keyboard=[[back_current_step_btn]])
+async def send_report_hint_once(msg_data: MsgData, report_type: str, report_format: str) -> None:
+    report_hint = await get_report_hint_text(msg_data.tgid, report_type, report_format)
+    if not report_hint:
+        return
 
-    # Если "один объект" или "вся сеть (итого)"
-    if department != ReportAllDepartmentTypes.ALL_DEPARTMENTS_INDIVIDUALLY:
-        reports = await get_reports_from_state(
-            tgid=msg_data.tgid,
-            state_data=state_data,
-            type_prefix=type_prefix,
-        )
+    urls = [url.strip() for url in report_hint["url"].split("\n") if url.strip()]
+    if not urls:
+        return
 
-        if None in reports:
-            await loading_msg.edit_text(text="Не удалось загрузить отчёт", reply_markup=back_kb)
-            return
+    hint_header = await msg_data.msg.answer(
+        text=f"<b>🔗 {report_hint['description']}:</b>",
+        parse_mode=ParseMode.HTML
+    )
+    await add_messages_to_delete(msg_data=msg_data, messages=[hint_header])
 
-        header = await make_header(msg_data)
-        await send_one_texts(
-            reports, msg_data, report_type, type_prefix, period, department,
-            only_negative, recommendations, header=header, aggregated=False
-        )
-
-    else:  # Если "вся сеть (по объектам отдельно)"
-        copied_state_data = state_data.copy()
-        department_reports = []
-
-        for dep_id, dep_name in (await get_departments(msg_data.tgid)).items():
-            copied_state_data["report:department"] = dep_id
-            reports = await get_reports_from_state(
-                tgid=msg_data.tgid,
-                state_data=copied_state_data,
-                type_prefix=type_prefix,
-            )
-
-            if None in reports:
-                await loading_msg.edit_text(text="Не удалось загрузить отчёт", reply_markup=back_kb)
-                return
-
-            header = await make_header_from_state(copied_state_data, msg_data.tgid)
-            department_reports.append({"reports": reports, "header": header})
-
-        header_text = (await make_header(msg_data)) + "\n\n⬇️⬇️⬇️"
-        header_msg = await msg_data.msg.answer(text=header_text)
-        await add_messages_to_delete(msg_data=msg_data, messages=[header_msg])
-
-        # Отправляем данные по каждому отделу без ссылок и меню
-        for department_report in department_reports:
-            await send_one_texts(
-                department_report["reports"],
-                msg_data,
-                report_type,
-                type_prefix,
-                period,
-                department,
-                only_negative,
-                recommendations,
-                header=department_report["header"],
-                aggregated=True  # В агрегированном режиме
-            )
-
-        # # После цикла отправляем один раз ссылки (подсказку), если они есть
-        # report_hint = await get_report_hint_text(msg_data.tgid, report_type, report_format)
-        # if report_hint:
-        #     # Если ссылка содержит несколько URL (разделённых символом переноса строки или другим разделителем)
-        #     urls = [url.strip() for url in report_hint["url"].split("\n") if url.strip()]
-        #     if urls:
-        #         # Отправляем заголовок ссылки
-        #         hint_header = await msg_data.msg.answer(
-        #             text=f"<b>🔗 {report_hint['description']}:</b>",
-        #             parse_mode=ParseMode.HTML
-        #         )
-        #         await add_messages_to_delete(msg_data=msg_data, messages=[hint_header])
-        #         # Отправляем первую ссылку (либо можно объединить все в одно сообщение, если требуется)
-        #         hint_msg = await msg_data.msg.answer(
-        #             text=f"1. <a href='{urls[0]}'>Материал</a>",
-        #             parse_mode=ParseMode.HTML,
-        #             disable_web_page_preview=True
-        #         )
-        #         await add_messages_to_delete(msg_data=msg_data, messages=[hint_msg])
-
-        # Отправляем единое меню для всех отделов
-        aggregated_kb = IKM(inline_keyboard=[
-            [subscribe_to_mailing_btn],
-            *send_file_buttons_kb.inline_keyboard,
-            [back_current_step_btn]
-        ])
-        await msg_data.msg.answer(text="Что дальше?", reply_markup=aggregated_kb)
-
-    await loading_msg.delete()
+    hint_msg = await msg_data.msg.answer(
+        text=f"<a href='{urls[0]}'>Перейти к материалу</a>",
+        parse_mode=ParseMode.HTML,
+        disable_web_page_preview=True
+    )
+    await add_messages_to_delete(msg_data=msg_data, messages=[hint_msg])
 
 
 async def send_one_texts(
@@ -218,7 +137,7 @@ async def send_one_texts(
         only_negative: bool,
         recommendations: bool,
         header: str = "",
-        aggregated: bool = False  # Новый параметр
+        aggregated: bool = False
 ) -> None:
     state_data = await msg_data.state.get_data()
     report_format = state_data.get("report:format_type")
@@ -231,13 +150,14 @@ async def send_one_texts(
     if report_type == "revenue" and recommendations:
         texts = revenue_analysis_text(text_data, recommendations=True)
 
-    # Отправка основного контента
+    # Отправка заголовка, если нужен
     if len(texts) == 1 and ("**" not in texts[0]):
         texts[0] = header + "\n\n" + texts[0]
     else:
         header_msg = await msg_data.msg.answer(text=header)
         await add_messages_to_delete(msg_data=msg_data, messages=[header_msg])
 
+    # Отправка текста, если он есть
     if not texts:
         text = "Ещё нет данных"
         text_msg = await msg_data.msg.answer(text=text, parse_mode=ParseMode.HTML)
@@ -250,7 +170,7 @@ async def send_one_texts(
         text_msg = await msg_data.msg.answer(text=text, parse_mode=parse_mode)
         await add_messages_to_delete(msg_data=msg_data, messages=[text_msg])
 
-    # Отправка ссылок с подробностями (подсказок) – выполняется, только если не агрегируем
+    # Только если отчет не агрегированный — добавляем подсказки и меню
     if not aggregated:
         report_hint = await get_report_hint_text(msg_data.tgid, report_type, report_format)
         if report_hint:
@@ -268,7 +188,94 @@ async def send_one_texts(
             [back_current_step_btn]
         ])
         await msg_data.msg.answer(text="Что дальше?", reply_markup=back_kb)
-        await msg_data.state.update_data({"report:json_data": reports})
+
+    # Сохраняем данные в state в любом случае
+    await msg_data.state.update_data({"report:json_data": reports})
+
+
+async def parameters_msg(
+    msg_data: MsgData,
+    type_prefix: str = "",
+    only_negative: bool = False,
+    recommendations: bool = False
+) -> None:
+    state_data = await msg_data.state.get_data()
+    report_format = state_data.get("report:format_type")
+    report_type = state_data.get("report:type")
+    department = state_data.get("report:department")
+    period = state_data.get("report:period")
+
+    loading_msg = await msg_data.msg.answer(text="Загрузка... ⏳")
+    await add_messages_to_delete(msg_data=msg_data, messages=[loading_msg])
+
+    back_kb = IKM(inline_keyboard=[[back_current_step_btn]])
+
+    # Если выбрано одно конкретное подразделение
+    if department != ReportAllDepartmentTypes.ALL_DEPARTMENTS_INDIVIDUALLY:
+        reports = await get_reports_from_state(
+            tgid=msg_data.tgid,
+            state_data=state_data,
+            type_prefix=type_prefix,
+        )
+
+        if None in reports:
+            await loading_msg.edit_text(text="Не удалось загрузить отчёт", reply_markup=back_kb)
+            return
+
+        header = await make_header_from_state(state_data, msg_data.tgid)
+
+        await send_one_texts(
+            reports=reports,
+            msg_data=msg_data,
+            report_type=report_type,
+            type_prefix=type_prefix,
+            period=period,
+            department=department,
+            only_negative=only_negative,
+            recommendations=recommendations,
+            header=header,
+            aggregated=False
+        )
+
+    # Если выбраны все подразделения по отдельности
+    else:
+        departments = await get_departments(msg_data.tgid)
+        if not departments:
+            await loading_msg.edit_text(text="Нет доступных подразделений", reply_markup=back_kb)
+            return
+
+        await loading_msg.delete()  # удаляем сообщение загрузки до начала показа отчётов
+
+        for dep_id, dep_name in departments.items():
+            copied_state = state_data.copy()
+            copied_state["report:department"] = dep_id
+
+            reports = await get_reports_from_state(
+                tgid=msg_data.tgid,
+                state_data=copied_state,
+                type_prefix=type_prefix,
+            )
+
+            if None in reports:
+                continue  # пропускаем, если отчёт не удалось получить
+
+            header = await make_header_from_state(copied_state, msg_data.tgid)
+
+            await send_one_texts(
+                reports=reports,
+                msg_data=msg_data,
+                report_type=report_type,
+                type_prefix=type_prefix,
+                period=period,
+                department=dep_id,
+                only_negative=only_negative,
+                recommendations=recommendations,
+                header=header,
+                aggregated=True  # Важно: aggregated=True — не добавляем кнопки и подсказки
+            )
+
+        # После всех отчётов — один раз показать меню
+        await send_aggregated_menu_once(msg_data)
 
 
 async def recommendations_msg(msg_data: MsgData) -> None:
@@ -276,6 +283,7 @@ async def recommendations_msg(msg_data: MsgData) -> None:
     report_format = state_data.get("report:format_type")
     period = state_data.get("report:period")
     report_type = state_data.get("report:type")
+    departments = state_data.get("report:departments")  # <-- добавим это, если ещё не было
 
     # Получаем шапку отчёта
     header = await make_header(msg_data)
@@ -295,29 +303,49 @@ async def recommendations_msg(msg_data: MsgData) -> None:
     # Основной текст рекомендаций
     text = recommendations.get(report_type)
     if text is None:
-        await msg_data.msg.edit_text(text="Не удалось получить рекомендации", reply_markup=back_kb)
+        await msg_data.msg.edit_text(
+            text="Не удалось получить рекомендации",
+            reply_markup=back_kb
+        )
         return
 
-    # Дополнительные ссылки
-    hint_texts = []
-    report_hint = await get_report_hint_text(msg_data.tgid, report_type, report_format)
-    if report_hint:
-        urls = report_hint["url"].split("\n")
-        for url in urls:
-            url = url.strip()
-            if url:
-                hint_texts.append(f"<b>🔗 Подробнее:</b> <a href='{url}'>{report_hint['description']}</a>")
+    # --- Обработка ссылки-подсказки (report_hint) ---
+    full_hint_block = ""
+    if departments == "all_departments":
+        # Только одна ссылка
+        report_hint = await get_report_hint_text(msg_data.tgid, report_type, report_format)
+        if report_hint:
+            url = report_hint["url"].strip().split("\n")[0]  # первая строка
+            description = report_hint["description"]
+            full_hint_block = f"\n\n<b>🔗 Подробнее:</b> <a href='{url}'>{description}</a>"
 
-        logger.info(
-            f"[report_hint] tgid={msg_data.tgid}, report_type={report_type}, report_format={report_format}, hint={report_hint}")
+            logger.info(
+                f"[report_hint:ALL] tgid={msg_data.tgid}, report_type={report_type}, report_format={report_format}, hint={report_hint}"
+            )
+    else:
+        # Могут быть несколько ссылок
+        report_hint = await get_report_hint_text(msg_data.tgid, report_type, report_format)
+        if report_hint:
+            urls = report_hint["url"].split("\n")
+            hint_texts = []
+            for url in urls:
+                url = url.strip()
+                if url:
+                    hint_texts.append(f"<b>🔗 Подробнее:</b> <a href='{url}'>{report_hint['description']}</a>")
+            full_hint_block = "\n\n" + "\n".join(hint_texts)
 
-    # Собираем итоговый текст
-    full_text = header + "\n" + text
-    if hint_texts:
-        full_text += "\n\n" + "\n".join(hint_texts)
+            logger.info(
+                f"[report_hint:MULTI] tgid={msg_data.tgid}, report_type={report_type}, report_format={report_format}, hint={report_hint}"
+            )
 
-    # Отправляем единое сообщение с одной клавиатурой
-    await msg_data.msg.edit_text(text=full_text, reply_markup=back_kb, parse_mode=ParseMode.HTML)
+    # Финальный текст
+    full_text = header + "\n" + text + full_hint_block
+
+    await msg_data.msg.edit_text(
+        text=full_text,
+        reply_markup=back_kb,
+        parse_mode=ParseMode.HTML
+    )
 
 
 
