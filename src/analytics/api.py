@@ -114,7 +114,7 @@ async def get_departments(tgid: int, stop_list: list[str] = [], access_data: dic
 
     # получение пропускного листа
     if access_data is None:
-        access_data = await get_access_list_data() 
+        access_data = await get_access_list_data()
 
     # пропускной лист
     if tgid not in access_data.keys():

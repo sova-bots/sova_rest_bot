@@ -28,12 +28,11 @@ MONTHLY_DAY = '8'
 
 
 DB_CONFIG = {
-    'user': 'postgres',
-    'password': '0000',
-    'database': 'sova-rest-bot',
-    'host': '84.201.189.176',
-    'port': '5432'
+    'user': getenv('DB_CONFIG_USER'),
+    'password': getenv('DB_CONFIG_PASSWORD'),
+    'database': getenv('DB_CONFIG_DATABASE'),
+    'host': getenv('DB_CONFIG_HOST'),
+    'port': getenv('DB_CONFIG_PORT'),
 }
 
 DB_LINK = getenv('DB_LINK')
-
