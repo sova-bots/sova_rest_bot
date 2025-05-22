@@ -1,0 +1,14 @@
+.venv
+.env
+.idea
+resources/keys
+test.py
+src/commands/server/util/user_tokens.db
+user_tokens.db
+TODO.md
+SOVA-rest.drawio
+pyrightconfig.json
+*.DS_Store
+src/analytis/.DS_Store
+__pycache__/
+*.py[cod]

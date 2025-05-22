@@ -1,0 +1,64 @@
+{
+    "data": [
+        {
+            "label": "1.Рогалик Пушкинская 192",
+            "revenue": 3077856,
+            "revenue_week": 2892572,
+            "revenue_month": 3431952,
+            "revenue_year": 2693620,
+            "revenue_dynamics_week": 6,
+            "revenue_dynamics_month": -10,
+            "revenue_dynamics_year": 14,
+            "revenue_forecast": 3077856
+        },
+        {
+            "label": "2.Рогалик Соколова 31/118",
+            "revenue": 3749088,
+            "revenue_week": 3635652,
+            "revenue_month": 4373300,
+            "revenue_year": 2586172,
+            "revenue_dynamics_week": 3,
+            "revenue_dynamics_month": -14,
+            "revenue_dynamics_year": 45,
+            "revenue_forecast": 3749088
+        },
+        {
+            "label": "3.Рогалик Красноармейская 202",
+            "revenue": 1977612,
+            "revenue_week": 1777446,
+            "revenue_month": 2488499,
+            "revenue_year": 1003112,
+            "revenue_dynamics_week": 11,
+            "revenue_dynamics_month": -21,
+            "revenue_dynamics_year": 97,
+            "revenue_forecast": 1977612
+        },
+        {
+            "label": "4. Рогалик Буденновский 44",
+            "revenue": 1635123,
+            "revenue_week": 1534492,
+            "revenue_month": 2011715,
+            "revenue_year": 992364,
+            "revenue_dynamics_week": 7,
+            "revenue_dynamics_month": -19,
+            "revenue_dynamics_year": 65,
+            "revenue_forecast": 1635123
+        }
+    ],
+    "sum": {
+        "label": "Всего",
+        "revenue": 10439679,
+        "revenue_week": 9840162,
+        "revenue_month": 12305466,
+        "revenue_year": 7275268,
+        "revenue_dynamics_week": 6,
+        "revenue_dynamics_month": -15,
+        "revenue_dynamics_year": 43,
+        "revenue_forecast": 10439679,
+        "share_of_revenue": null,
+        "avg_revenue": null,
+        "avg_checks": null,
+        "depth": null,
+        "potential": null
+    }
+}
