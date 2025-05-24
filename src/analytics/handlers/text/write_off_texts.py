@@ -19,11 +19,9 @@ def safe_get(data: dict, key: str, placeholder: str = "<i>нет данных</i
 def inventory_text(text_data: TextData) -> list[str]:
     data = text_data.reports[0]["data"]
 
-    # проверка, если нет данных
     if len(data) == 0:
         return ["Нет данных"]
 
-    # прверка если итого
     if text_data.department == ReportAllDepartmentTypes.SUM_DEPARTMENTS_TOTALLY:
         data = [text_data.reports[0]["sum"]]
         data[0]["shortage_percent"] = round(data[0]["shortage"] / data[0]["cost_price"] * 1000) / 10
@@ -44,15 +42,13 @@ def inventory_text(text_data: TextData) -> list[str]:
                 (not text_data.only_negative or report["surplus_percent"] > surplus_limit)
             )
 
-            # Недостача
             if add_shortage:
-                shortage = safe_get(report, 'shortage', '0')
+                shortage = safe_get(report, 'shortage', '0', comma=True).replace(",", " ")
                 shortage_percent = safe_get(report, 'shortage_percent', '0')
                 text += f"• Недостача: {shortage} руб; {shortage_percent}% от с/с\n"
 
-            # Излишки
             if add_surplus:
-                surplus = safe_get(report, 'surplus', '0')
+                surplus = safe_get(report, 'surplus', '0', comma=True).replace(",", " ")
                 surplus_percent = safe_get(report, 'surplus_percent', '0')
                 text += f"• Излишки: {surplus} руб; {surplus_percent}% от с/с\n"
 
@@ -65,11 +61,12 @@ def inventory_text(text_data: TextData) -> list[str]:
     if not texts:
         return ["Все показатели в пределах нормы"]
 
-    # Добавляем заголовок перед первым блоком
-    header = "📦 <b>Остатки / динамика</b>\n"
+    # Заголовок с новым названием: "СУММА / динамика"
+    header = "📦 <b>СУММА / динамика</b>\n"
     texts[0] = header + texts[0]
 
     return texts
+
 
 
 

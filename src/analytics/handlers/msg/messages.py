@@ -1,5 +1,5 @@
 from .msg_util import clear_report_state_data, set_input_state, make_kb, make_kb_report_menu, back_current_step_btn, \
-    add_messages_to_delete, send_file_buttons_kb
+    add_messages_to_delete, send_file_buttons_kb, back_to_main_menu_btn, back_previous_step_btn
 from .headers import make_header_from_state
 from ...api import get_reports_from_state, get_departments
 
@@ -36,8 +36,16 @@ async def department_msg(msg_data: MsgData) -> None:
 
     header = await make_header(msg_data) + "\n\n"
     text = header + "Выберите подразделение"
+
     kb = make_kb(departments, back_btn=False)
+
+    null_btn = IKB(text=" ", callback_data="ignore")
+
+    # Добавляем нижний ряд: [null_btn, back_previous_step_btn, null_btn]
+    kb.inline_keyboard.append([null_btn, back_previous_step_btn, null_btn])
+
     await msg_data.msg.edit_text(text=text, reply_markup=kb)
+
 
 
 async def branch_msg(msg_data: MsgData) -> None:
