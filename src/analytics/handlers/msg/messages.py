@@ -185,9 +185,6 @@ async def parameters_msg(msg_data: MsgData, type_prefix: str = "", only_negative
 
 async def send_one_texts(reports: list[dict], msg_data: MsgData, report_type: str, type_prefix: str, period: str,
                          department: str, only_negative: bool, recommendations: bool, header: str = "") -> None:
-
-
-
     state_data = await msg_data.state.get_data()
     report_format = state_data.get("report:format_type")
     period = state_data.get("report:period")

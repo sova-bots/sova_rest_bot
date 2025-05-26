@@ -109,7 +109,7 @@ def load_data_from_files(text_data: TextData):
         'revenue-date_of_week': revenue_date_of_week,
         'revenue-waiter': revenue_waiter,
         'revenue-price_segments': revenue_price_segments,
-        "check-depth": reports[8]['sum']
+        "check-depth": reports[9]['sum']
     }
 
     return data
@@ -215,27 +215,27 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
     metrics = [
         {
             "label": "средний чек",
-            "value": avg_check.get(f'avg_check_{dynamics_key}', 0),
-            "current": avg_check.get('avg_check', 0),
-            "previous": avg_check.get(f'avg_check_{revenue_key}', 0)
+            "value": f"{float(avg_check.get(f'avg_check_{dynamics_key}', 0)):,.1f}", # вообще float() не должно быть, но с сервера приходит str
+            "current": f"{float(avg_check.get('avg_check', 0)):,.0f}",
+            "previous": f"{float(avg_check.get(f'avg_check_{revenue_key}', 0)):,.0f}"
         },
         {
             "label": "глубина чека",
-            "value": check_depth.get(f'depth_{dynamic_key}', 0),
-            "current": check_depth.get('depth', 0),
-            "previous": check_depth.get(f'depth_{revenue_key}', 0)
+            "value": f"{float(check_depth.get(f'depth_{dynamic_key}', 0)):,.1f}",
+            "current": f"{float(check_depth.get('depth', 0)):,.2f}",
+            "previous": f"{float(check_depth.get(f'depth_{revenue_key}', 0)):,.2f}"
         },
         {
             "label": "количество чеков",
-            "value": guests_checks.get(f'checks_{dynamics_key}', 0),
-            "current": guests_checks.get('checks', 0),
-            "previous": guests_checks.get(f'checks_{revenue_key}', 0)
+            "value": f"{float(guests_checks.get(f'checks_{dynamics_key}', 0)):,.1f}",
+            "current": f"{float(guests_checks.get('checks', 0)):,.0f}",
+            "previous": f"{float(guests_checks.get(f'checks_{revenue_key}', 0)):,.0f}"
         }
     ]
 
     # Разделяем на отрицательные и положительные изменения
-    negative_changes = [m for m in metrics if m['value'] < 0]
-    positive_changes = [m for m in metrics if m['value'] >= 0]
+    negative_changes = [m for m in metrics if float(m['value']) < 0]
+    positive_changes = [m for m in metrics if float(m['value']) >= 0]
 
     # Вывести "всё в ворядке" если нет отрицательных динамик
     if only_negative and not negative_changes:
@@ -247,8 +247,8 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
         message += "<i>Отрицательная динамика:</i>\n"
         for metric in negative_changes:
             message += (
-                f"- {metric['label']}: {metric['value']:.1f}%, "
-                f"{metric['previous']:,.0f} → {int(metric['current']):,.0f}\n"  # вообще int() не должно быть, но с сервера приходит str
+                f"- {metric['label']}: {metric['value']}%, "
+                f"{metric['previous']} → {metric['current']}\n"  
             )
         message += "\n"
 
@@ -257,8 +257,8 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
         message += "<i>Положительная динамика:</i>\n"
         for metric in positive_changes:
             message += (
-                f"+ {metric['label']}: {metric['value']:.1f}%, "
-                f"{metric['previous']:,.0f} → {metric['current']:,.0f}\n"
+                f"+ {metric['label']}: {metric['value']}%, "
+                f"{metric['previous']} → {metric['current']}\n"
             )
         message += "\n"
 

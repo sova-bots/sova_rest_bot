@@ -97,10 +97,18 @@ def m_req_get_report(token: str, url: str, group: str, departments: list[str], d
     if req.status_code != 200:
         logger.msg("ERROR", f"Could not get request: {url=}, {data=}, {token=}, {req.text=}")
         return None
+    
+    request_response: dict = req.json()
 
-    logger.prdict("ResievedResponse:", response=req.json())
+    # фикс sum (sum неправильно показывает значения, если дано только одно подразделение. оч странно)
+    # это нужно для корректного отображения анализа (например выручки)
+    if len(departments) == 1:
+        request_response['sum'] = request_response['data'][0]
 
-    return req.json()
+
+    logger.prdict("ResievedResponse:", response=request_response)
+
+    return request_response
 
 
 async def get_departments(tgid: int, stop_list: list[str] = [], access_data: dict | None = None) -> dict:
