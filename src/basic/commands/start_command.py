@@ -43,8 +43,9 @@ def get_markup(user_id: int, has_token: bool) -> IKM:
 
     if has_token:
         btn = [IKB(text='Меню отчётов 🗓', callback_data='analytics_report_begin')]
-        inline_kb.append(btn)
-        btn = [IKB(text='Выйти из аккаунта', callback_data='analytics_report_unauthorize')]
+        # разкомментить для кнопки выхода из аккаунта
+        # inline_kb.append(btn)
+        # btn = [IKB(text='Выйти из аккаунта', callback_data='analytics_report_unauthorize')]
     else:
         btn = [IKB(text='Меню отчётов 🗓', callback_data='server_report_authorization')]        
     inline_kb.append(btn)
