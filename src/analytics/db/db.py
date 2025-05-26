@@ -102,7 +102,18 @@ async def get_report_hint_text(tg_id: int, report_type: str, report_format: str)
         WHERE ul.tg_id = $1
           AND ul.report_type = $2
           AND ul.report_format = $3
+          AND (
+                ul.department = 'all_departments'
+             OR ul.department = 'sum_departments'
+             OR ul.department IS NULL
+             OR ul.department ~ '^\d+$'
+          )
         ORDER BY
+            CASE ul.department
+                WHEN 'all_departments' THEN 1
+                WHEN 'sum_departments' THEN 2
+                ELSE 3
+            END,
             CASE WHEN rdl.report_format = ul.report_format THEN 1
                  WHEN rdl.report_format = 'all_format' THEN 2
                  ELSE 3

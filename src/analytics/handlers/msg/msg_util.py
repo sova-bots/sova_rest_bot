@@ -70,3 +70,11 @@ send_file_buttons_kb = IKM(inline_keyboard=[
     [send_pdf_report_btn, send_excel_report_btn],  # Первый ряд
     [back_to_main_menu_btn]   # Второй ряд
 ])
+
+
+report_keyboard = IKM(inline_keyboard=[
+    [back_current_step_btn],
+    [subscribe_to_mailing_btn],
+    [back_to_main_menu_btn]
+])
+

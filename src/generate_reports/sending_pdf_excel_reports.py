@@ -25,6 +25,8 @@ from src.generate_reports.turnover.turnover_pdf import create_pdf_report_for_tur
 from src.generate_reports.write_off.write_off_excel import write_off_parameters_create_excel_report
 from src.generate_reports.write_off.write_off_pdf import write_off_parameters_create_pdf_report
 
+from src.analytics.handlers.msg.msg_util import report_keyboard
+
 file_report_router = Router()
 
 
@@ -88,7 +90,11 @@ async def generate_revenue_excel(callback: CallbackQuery, msg_data: MsgData):
         excel_path = os.path.join(tempfile.gettempdir(), "revenue.xlsx")
         create_revenue_excel(revenue_data, excel_path)
 
-        await callback.message.answer_document(FSInputFile(excel_path), caption=caption)
+        await callback.message.answer_document(
+            FSInputFile(excel_path),
+            caption=caption,
+            reply_markup=report_keyboard
+        )
 
     except Exception as e:
         await callback.message.answer(f"Ошибка при создании Excel: {e}")
@@ -112,7 +118,11 @@ async def generate_revenue_analysis_pdf(callback: CallbackQuery, msg_data: MsgDa
         with open(pdf_path, "wb") as f:
             f.write(pdf_buffer.read())
 
-        await callback.message.answer_document(FSInputFile(pdf_path), caption=caption)
+        await callback.message.answer_document(
+            FSInputFile(pdf_path),
+            caption=caption,
+            reply_markup=report_keyboard
+        )
 
     except Exception as e:
         await callback.message.answer(f"Ошибка при создании PDF: {e}")
@@ -138,6 +148,7 @@ async def generate_revenue_analysis_excel(callback: CallbackQuery, msg_data: Msg
         await callback.message.answer_document(
             document=FSInputFile(excel_path),
             caption=caption,
+            reply_markup=report_keyboard
         )
     except Exception as e:
         logging.error(f"Ошибка при генерации Excel по инвентаризации: {e}")
@@ -164,6 +175,7 @@ async def generate_inventory_parameters_pdf(callback: CallbackQuery, msg_data: M
         await callback.message.answer_document(
             document=FSInputFile(pdf_path),
             caption=caption,
+            reply_markup=report_keyboard
         )
     except Exception as e:
         logging.error(f"Ошибка при генерации PDF по инвентаризации: {e}")
@@ -191,6 +203,7 @@ async def generate_inventory_parameters_excel(callback: CallbackQuery, msg_data:
         await callback.message.answer_document(
             document=FSInputFile(excel_path),
             caption=caption,
+            reply_markup=report_keyboard
         )
     except Exception as e:
         logging.error(f"Ошибка при генерации Excel по инвентаризации: {e}")
@@ -224,6 +237,7 @@ async def generate_write_off_parameters_pdf(callback: CallbackQuery, msg_data: M
         await callback.message.answer_document(
             document=FSInputFile(pdf_path),
             caption=caption,
+            reply_markup=report_keyboard
         )
     except Exception as e:
         logging.error(f"Ошибка при генерации PDF по потерям товаров: {e}")
@@ -249,6 +263,7 @@ async def generate_write_off_parameters_excel(callback: CallbackQuery, msg_data:
         await callback.message.answer_document(
             document=FSInputFile(excel_path),
             caption=caption,
+            reply_markup=report_keyboard
         )
     except Exception as e:
         logging.error(f"Ошибка при генерации Excel по инвентаризации: {e}")
@@ -281,6 +296,7 @@ async def generate_losses_parameters_pdf(callback: CallbackQuery, msg_data: MsgD
         await callback.message.answer_document(
             document=FSInputFile(pdf_path),
             caption=caption,
+            reply_markup=report_keyboard
         )
     except Exception as e:
         logging.error(f"Ошибка при генерации PDF по потерям товаров: {e}")
@@ -308,6 +324,7 @@ async def generate_losses_parameters_excel(callback: CallbackQuery, msg_data: Ms
         await callback.message.answer_document(
             document=FSInputFile(excel_path),
             caption=caption,
+            reply_markup=report_keyboard
         )
     except Exception as e:
         logging.error(f"Ошибка при генерации Excel по инвентаризации: {e}")
@@ -341,6 +358,7 @@ async def generate_losses_only_negative_pdf(callback: CallbackQuery, msg_data: M
         await callback.message.answer_document(
             document=FSInputFile(pdf_path),
             caption=caption,
+            reply_markup=report_keyboard
         )
     except Exception as e:
         logging.error(f"Ошибка при генерации PDF по потерям товаров: {e}")
@@ -368,6 +386,7 @@ async def generate_losses_only_negative_excel(callback: CallbackQuery, msg_data:
         await callback.message.answer_document(
             document=FSInputFile(excel_path),
             caption=caption,
+            reply_markup=report_keyboard
         )
     except Exception as e:
         logging.error(f"Ошибка при генерации Excel по инвентаризации: {e}")
@@ -394,6 +413,7 @@ async def generate_loss_forecast_parameters_pdf(callback: CallbackQuery, msg_dat
         await callback.message.answer_document(
             document=FSInputFile(pdf_path),
             caption=caption,
+            reply_markup=report_keyboard
         )
     except Exception as e:
         logging.error(f"Ошибка при генерации PDF по инвентаризации: {e}")
@@ -421,6 +441,7 @@ async def generate_loss_forecast_parameters_excel(callback: CallbackQuery, msg_d
         await callback.message.answer_document(
             document=FSInputFile(excel_path),
             caption=caption,
+            reply_markup=report_keyboard
         )
     except Exception as e:
         logging.error(f"Ошибка при генерации Excel по инвентаризации: {e}")
@@ -448,6 +469,7 @@ async def generate_loss_forecast_only_negative_pdf(callback: CallbackQuery, msg_
         await callback.message.answer_document(
             document=FSInputFile(pdf_path),
             caption=caption,
+            reply_markup=report_keyboard
         )
     except Exception as e:
         logging.error(f"Ошибка при генерации PDF по инвентаризации: {e}")
@@ -475,6 +497,7 @@ async def generate_loss_forecast_only_negative_excel(callback: CallbackQuery, ms
         await callback.message.answer_document(
             document=FSInputFile(excel_path),
             caption=caption,
+            reply_markup=report_keyboard
         )
     except Exception as e:
         logging.error(f"Ошибка при генерации Excel по инвентаризации: {e}")
@@ -500,6 +523,7 @@ async def generate_food_cost_parameters_pdf(callback: CallbackQuery, msg_data: M
         await callback.message.answer_document(
             document=FSInputFile(pdf_path),
             caption=caption,
+            reply_markup=report_keyboard
         )
     except Exception as e:
         logging.error(f"Ошибка при генерации PDF по инвентаризации: {e}")
@@ -527,6 +551,7 @@ async def generate_food_cost_parameters_excel(callback: CallbackQuery, msg_data:
         await callback.message.answer_document(
             document=FSInputFile(excel_path),
             caption=caption,
+            reply_markup=report_keyboard
         )
     except Exception as e:
         logging.error(f"Ошибка при генерации Excel по инвентаризации: {e}")
@@ -553,6 +578,7 @@ async def generate_food_cost_analysis_pdf(callback: CallbackQuery, msg_data: Msg
         await callback.message.answer_document(
             document=FSInputFile(pdf_path),
             caption=caption,
+            reply_markup=report_keyboard
         )
     except Exception as e:
         logging.error(f"Ошибка при генерации PDF по инвентаризации: {e}")
@@ -580,6 +606,7 @@ async def generate_food_cost_analysis_excel(callback: CallbackQuery, msg_data: M
         await callback.message.answer_document(
             document=FSInputFile(excel_path),
             caption=caption,
+            reply_markup=report_keyboard
         )
     except Exception as e:
         logging.error(f"Ошибка при генерации Excel по инвентаризации: {e}")
@@ -606,6 +633,7 @@ async def generate_markup_parameters_pdf(callback: CallbackQuery, msg_data: MsgD
         await callback.message.answer_document(
             document=FSInputFile(pdf_path),
             caption=caption,
+            reply_markup=report_keyboard
         )
     except Exception as e:
         logging.error(f"Ошибка при генерации PDF по инвентаризации: {e}")
@@ -632,6 +660,7 @@ async def generate_markup_parameters_excel(callback: CallbackQuery, msg_data: Ms
         await callback.message.answer_document(
             document=FSInputFile(excel_path),
             caption=caption,
+            reply_markup=report_keyboard
         )
     except Exception as e:
         logging.error(f"Ошибка при генерации Excel по инвентаризации: {e}")
@@ -657,6 +686,7 @@ async def generate_markup_analysis_pdf(callback: CallbackQuery, msg_data: MsgDat
         await callback.message.answer_document(
             document=FSInputFile(pdf_path),
             caption=caption,
+            reply_markup=report_keyboard
         )
     except Exception as e:
         logging.error(f"Ошибка при генерации PDF по инвентаризации: {e}")
@@ -684,6 +714,7 @@ async def generate_markup_analysis_excel(callback: CallbackQuery, msg_data: MsgD
         await callback.message.answer_document(
             document=FSInputFile(excel_path),
             caption=caption,
+            reply_markup=report_keyboard
         )
     except Exception as e:
         logging.error(f"Ошибка при генерации Excel по инвентаризации: {e}")
@@ -710,6 +741,7 @@ async def generate_turnover_parameters_pdf(callback: CallbackQuery, msg_data: Ms
         await callback.message.answer_document(
             document=FSInputFile(pdf_path),
             caption=caption,
+            reply_markup=report_keyboard
         )
     except Exception as e:
         logging.error(f"Ошибка при генерации PDF по инвентаризации: {e}")
@@ -736,6 +768,7 @@ async def generate_turnover_analysis_pdf(callback: CallbackQuery, msg_data: MsgD
         await callback.message.answer_document(
             document=FSInputFile(pdf_path),
             caption=caption,
+            reply_markup=report_keyboard
         )
     except Exception as e:
         logging.error(f"Ошибка при генерации PDF по инвентаризации: {e}")
@@ -763,6 +796,7 @@ async def generate_turnover_analysis_excel(callback: CallbackQuery, msg_data: Ms
         await callback.message.answer_document(
             document=FSInputFile(excel_path),
             caption=caption,
+            reply_markup=report_keyboard
         )
     except Exception as e:
         logging.error(f"Ошибка при генерации Excel по инвентаризации: {e}")
@@ -790,6 +824,7 @@ async def generate_turnover_parameters_excel(callback: CallbackQuery, msg_data: 
         await callback.message.answer_document(
             document=FSInputFile(excel_path),
             caption=caption,
+            reply_markup=report_keyboard
         )
     except Exception as e:
         logging.error(f"Ошибка при генерации Excel по инвентаризации: {e}")
@@ -865,6 +900,7 @@ async def send_report_stub(callback: CallbackQuery, msg_data: MsgData, format_ty
         await callback.message.answer_document(
             document=FSInputFile(temp_pdf_path),
             caption=text,
+            reply_markup=report_keyboard
         )
 
     except Exception as e:
@@ -959,27 +995,6 @@ REPORT_HANDLERS = {
     "turnover_analysis_only_negative_create_excel_report": generate_turnover_analysis_excel,
 }
 
-async def send_generated_report(callback: CallbackQuery, msg_data: MsgData) -> None:
-    state_data = await msg_data.state.get_data()
-    report_type = state_data.get("report:type")
-    format_type = state_data.get("report:format_type")
-    file_type = state_data.get("report:delivery_format")
-
-    # Получаем имя функции из REPORT_GENERATORS
-    func_name = REPORT_GENERATORS.get((report_type, format_type, file_type))
-    
-    if not func_name:
-        await callback.message.answer("Формат или тип отчёта не поддерживается.")
-        return
-
-    # Получаем обработчик из REPORT_HANDLERS
-    handler = REPORT_HANDLERS.get(func_name)
-    
-    if handler:
-        await handler(callback, msg_data)
-    else:
-        await callback.message.answer("Формат или тип отчёта не поддерживается.")
-
 
 async def send_generated_report(callback: CallbackQuery, msg_data: MsgData) -> None:
     state_data = await msg_data.state.get_data()
@@ -987,17 +1002,15 @@ async def send_generated_report(callback: CallbackQuery, msg_data: MsgData) -> N
     format_type = state_data.get("report:format_type")
     file_type = state_data.get("report:delivery_format")
 
-    # Получаем имя функции из REPORT_GENERATORS
     func_name = REPORT_GENERATORS.get((report_type, format_type, file_type))
-    
     if not func_name:
         await callback.message.answer("Формат или тип отчёта не поддерживается.")
         return
 
-    # Получаем обработчик из REPORT_HANDLERS
     handler = REPORT_HANDLERS.get(func_name)
-    
     if handler:
         await handler(callback, msg_data)
     else:
         await callback.message.answer("Формат или тип отчёта не поддерживается.")
+
+

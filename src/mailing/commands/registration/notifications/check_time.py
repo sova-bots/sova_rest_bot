@@ -104,7 +104,7 @@ async def get_subscriptions_from_db():
             SELECT user_id, subscription_type, periodicity, weekday, day_of_month, time, timezone_offset, 
                    date_periodity, department, report_type, menu_buttons as format_type
             FROM subscriptions 
-            WHERE periodicity IN ('daily', 'weekly', 'monthly')
+            WHERE periodicity IN ('daily', 'weekly', 'monthly', 'workdays')
         ''')
         logging.info(f"Получено {len(result)} подписок из базы данных.")
         return result
@@ -113,6 +113,7 @@ async def get_subscriptions_from_db():
         return []
     finally:
         await conn.close()
+
 
 async def add_subscription_task(
     bot: Bot,

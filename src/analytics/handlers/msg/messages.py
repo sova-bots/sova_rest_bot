@@ -128,7 +128,7 @@ async def send_report_hint_once(msg_data: MsgData, report_type: str, report_form
     await add_messages_to_delete(msg_data=msg_data, messages=[hint_header])
 
     hint_msg = await msg_data.msg.answer(
-        text=f"<a href='{urls[0]}'>Перейти к материалу</a>",
+        text=f"<a href='{urls[0]}'>Перейти к отчёту</a>",
         parse_mode=ParseMode.HTML,
         disable_web_page_preview=True
     )
@@ -178,8 +178,9 @@ async def send_one_texts(
         text_msg = await msg_data.msg.answer(text=text, parse_mode=parse_mode)
         await add_messages_to_delete(msg_data=msg_data, messages=[text_msg])
 
-    # Только если отчет не агрегированный — добавляем подсказки и меню
+    # Для агрегированных отчетов (все департаменты) показываем меню и подсказки только один раз в конце
     if not aggregated:
+        # Для отдельных департаментов показываем подсказки и меню сразу
         report_hint = await get_report_hint_text(msg_data.tgid, report_type, report_format)
         if report_hint:
             urls = report_hint["url"].split("\n")
@@ -195,7 +196,8 @@ async def send_one_texts(
             *send_file_buttons_kb.inline_keyboard,
             [back_current_step_btn]
         ])
-        await msg_data.msg.answer(text="Что дальше?", reply_markup=back_kb)
+        menu_msg = await msg_data.msg.answer(text="Что дальше?", reply_markup=back_kb)
+        await add_messages_to_delete(msg_data=msg_data, messages=[menu_msg])
 
     # Сохраняем данные в state в любом случае
     await msg_data.state.update_data({"report:json_data": reports})
@@ -218,7 +220,6 @@ async def parameters_msg(
 
     back_kb = IKM(inline_keyboard=[[back_current_step_btn]])
 
-    # Если выбрано одно конкретное подразделение
     if department != ReportAllDepartmentTypes.ALL_DEPARTMENTS_INDIVIDUALLY:
         reports = await get_reports_from_state(
             tgid=msg_data.tgid,
@@ -230,6 +231,7 @@ async def parameters_msg(
             await loading_msg.edit_text(text="Не удалось загрузить отчёт", reply_markup=back_kb)
             return
 
+        await loading_msg.delete()
         header = await make_header_from_state(state_data, msg_data.tgid)
 
         await send_one_texts(
@@ -245,29 +247,33 @@ async def parameters_msg(
             aggregated=False
         )
 
-    # Если выбраны все подразделения по отдельности
     else:
         departments = await get_departments(msg_data.tgid)
         if not departments:
             await loading_msg.edit_text(text="Нет доступных подразделений", reply_markup=back_kb)
             return
 
-        await loading_msg.delete()  # удаляем сообщение загрузки до начала показа отчётов
+        await loading_msg.delete()
 
         for dep_id, dep_name in departments.items():
-            copied_state = state_data.copy()
-            copied_state["report:department"] = dep_id
+            await msg_data.state.update_data({"report:department": dep_id})
+            state_data = await msg_data.state.get_data()
 
             reports = await get_reports_from_state(
                 tgid=msg_data.tgid,
-                state_data=copied_state,
+                state_data=state_data,
                 type_prefix=type_prefix,
             )
 
             if None in reports:
-                continue  # пропускаем, если отчёт не удалось получить
+                text_msg = await msg_data.msg.answer(
+                    text=f"⚠️ Не удалось загрузить отчёт по подразделению: {dep_name}",
+                    parse_mode=ParseMode.HTML
+                )
+                await add_messages_to_delete(msg_data=msg_data, messages=[text_msg])
+                continue
 
-            header = await make_header_from_state(copied_state, msg_data.tgid)
+            header = await make_header_from_state(state_data, msg_data.tgid)
 
             await send_one_texts(
                 reports=reports,
@@ -279,11 +285,128 @@ async def parameters_msg(
                 only_negative=only_negative,
                 recommendations=recommendations,
                 header=header,
-                aggregated=True  # Важно: aggregated=True — не добавляем кнопки и подсказки
+                aggregated=True
             )
 
-        # После всех отчётов — один раз показать меню
+        # После всех подразделений — ОДИН раз показываем подсказки и меню
+        await msg_data.state.update_data({"report:department": ReportAllDepartmentTypes.ALL_DEPARTMENTS_INDIVIDUALLY})
+        report_hint = await get_report_hint_text(msg_data.tgid, report_type, report_format)
+        if report_hint:
+            urls = report_hint["url"].split("\n")
+            for url in urls:
+                url = url.strip()
+                if url:
+                    hint_text = f"<b>🔗 Подробнее:</b> <a href='{url}'>{report_hint['description']}</a>"
+                    hint_msg = await msg_data.msg.answer(text=hint_text, parse_mode=ParseMode.HTML)
+                    await add_messages_to_delete(msg_data=msg_data, messages=[hint_msg])
+
+        back_kb = IKM(inline_keyboard=[
+            [subscribe_to_mailing_btn],
+            *send_file_buttons_kb.inline_keyboard,
+            [back_current_step_btn]
+        ])
+        menu_msg = await msg_data.msg.answer(text="Что дальше?", reply_markup=back_kb)
+        await add_messages_to_delete(msg_data=msg_data, messages=[menu_msg])
+
+
+async def parameters_msg(
+    msg_data: MsgData,
+    type_prefix: str = "",
+    only_negative: bool = False,
+    recommendations: bool = False
+) -> None:
+    state_data = await msg_data.state.get_data()
+    report_format = state_data.get("report:format_type")
+    report_type = state_data.get("report:type")
+    department = state_data.get("report:department")
+    period = state_data.get("report:period")
+
+    loading_msg = await msg_data.msg.answer(text="Загрузка... ⏳")
+    await add_messages_to_delete(msg_data=msg_data, messages=[loading_msg])
+
+    back_kb = IKM(inline_keyboard=[[back_current_step_btn]])
+
+    # Обычный отчёт, не по всем департаментам
+    if department != ReportAllDepartmentTypes.ALL_DEPARTMENTS_INDIVIDUALLY:
+        reports = await get_reports_from_state(
+            tgid=msg_data.tgid,
+            state_data=state_data,
+            type_prefix=type_prefix,
+        )
+
+        # Проверка: пустой список или ошибка получения отчета
+        if not reports or any(report is None for report in reports):
+            await loading_msg.edit_text(text="Не удалось загрузить отчёт", reply_markup=back_kb)
+            return
+
+        await loading_msg.delete()
+        header = await make_header_from_state(state_data, msg_data.tgid)
+
+        await send_one_texts(
+            reports=reports,
+            msg_data=msg_data,
+            report_type=report_type,
+            type_prefix=type_prefix,
+            period=period,
+            department=department,
+            only_negative=only_negative,
+            recommendations=recommendations,
+            header=header,
+            aggregated=False
+        )
+
+    # Отчёт по всем департаментам (агрегированный)
+    else:
+        departments = await get_departments(msg_data.tgid)
+        if not departments:
+            await loading_msg.edit_text(text="Нет доступных подразделений", reply_markup=back_kb)
+            return
+
+        await loading_msg.delete()
+
+        # Собираем и отображаем отчёты для каждого департамента отдельно
+        for dep_id, dep_name in departments.items():
+            try:
+                temp_state = state_data.copy()
+                temp_state["report:department"] = dep_id
+
+                reports = await get_reports_from_state(
+                    tgid=msg_data.tgid,
+                    state_data=temp_state,
+                    type_prefix=type_prefix,
+                )
+
+                # Пропускаем, если отчёта нет или он пустой
+                if not reports or any(report is None for report in reports):
+                    continue
+
+                header = await make_header_from_state(temp_state, msg_data.tgid)
+
+                await send_one_texts(
+                    reports=reports,
+                    msg_data=msg_data,
+                    report_type=report_type,
+                    type_prefix=type_prefix,
+                    period=period,
+                    department=dep_id,
+                    only_negative=only_negative,
+                    recommendations=recommendations,
+                    header=header,
+                    aggregated=True  # <- aggregated=True, чтобы меню и ссылки не дублировались
+                )
+
+            except Exception as e:
+                logger.error(f"Ошибка при обработке департамента {dep_id}: {e}")
+                continue
+
+        # В конце выводим общее меню и подсказки один раз
+        await send_report_hint_once(msg_data, report_type, report_format)
         await send_aggregated_menu_once(msg_data)
+
+    # Сохраняем json-данные в состояние, если нужен экспорт
+    # (например, последний отчёт может быть полезен для отправки Excel)
+    await msg_data.state.update_data({"report:json_data": reports})
+
 
 
 async def recommendations_msg(msg_data: MsgData) -> None:
