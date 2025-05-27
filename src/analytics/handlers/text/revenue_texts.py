@@ -305,48 +305,11 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
     if revenue_dish:
         message += f"<b>3 Выручка по группам блюд ({dynamics_label}):</b>\n"
 
-        # Словарь для категорий блюд
-        dish_categories = {
-            "Салаты": [],
-            "Супы": [],
-            "Выпечка": [],
-            "Кофе": [],
-            "Другие": []  # Для всех остальных блюд
-        }
-
-        # Группируем блюда по категориям
-        for dish in revenue_dish:
-            label = dish['label'].lower()
-            if "салат" in label:
-                dish_categories["Салаты"].append(dish)
-            elif "суп" in label:
-                dish_categories["Супы"].append(dish)
-            elif "выпечка" in label or "пирог" in label or "торт" in label:
-                dish_categories["Выпечка"].append(dish)
-            elif "кофе" in label or "капучино" in label or "латте" in label:
-                dish_categories["Кофе"].append(dish)
-            else:
-                dish_categories["Другие"].append(dish)
-
-        # Собираем данные по категориям
-        category_data = []
-        for category, dishes in dish_categories.items():
-            if dishes:
-                total_revenue_previous = sum(dish.get(f'revenue_{revenue_key}', 0) for dish in dishes)
-                total_revenue_current = sum(dish.get('revenue', 0) for dish in dishes)
-                total_dynamics = ((
-                                          total_revenue_current - total_revenue_previous) / total_revenue_previous) * 100 if total_revenue_previous != 0 else 0
-
-                category_data.append({
-                    "category": category,
-                    "dynamics": total_dynamics,
-                    "revenue_previous": total_revenue_previous,
-                    "revenue_current": total_revenue_current
-                })
-
         # Сортируем категории по динамике (сначала отрицательные, затем положительные)
-        negative_changes = [item for item in category_data if item['dynamics'] < 0]
-        positive_changes = [item for item in category_data if item['dynamics'] >= 0]
+        for item in revenue_dish:
+            logger.debug(f"{item["label"]} - {item[f'revenue_{dynamics_key}']}% - {item[f'revenue_{revenue_key}']:,.0f} -> {item['revenue']:,.0f}")
+        negative_changes = [item for item in revenue_dish if item[f'revenue_{dynamics_key}'] is not None and item[f'revenue_{dynamics_key}'] < 0]
+        positive_changes = [item for item in revenue_dish if item[f'revenue_{dynamics_key}'] is not None and item[f'revenue_{dynamics_key}'] >= 0]
 
         # Вывести "всё в ворядке" если нет отрицательных динамик
         if only_negative and not negative_changes:
@@ -358,8 +321,8 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
             message += "<i>Отрицательная динамика:</i>\n"
             for item in negative_changes:
                 message += (
-                    f"{item['category']}: {item['dynamics']:.1f}%, "
-                    f"{item['revenue_previous']:,.0f} → {item['revenue_current']:,.0f}\n"
+                    f"- {item['label']}: {item[f'revenue_{dynamics_key}']:.0f}%, "
+                    f"{item[f'revenue_{revenue_key}']:,.0f} → {item['revenue']:,.0f}\n"
                 )
             message += "\n"
 
@@ -368,8 +331,8 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
             message += "<i>Положительная динамика:</i>\n"
             for item in positive_changes:
                 message += (
-                    f"{item['category']}: {item['dynamics']:.1f}%, "
-                    f"{item['revenue_previous']:,.0f} → {item['revenue_current']:,.0f}\n"
+                    f"- {item['label']}: {item[f'revenue_{dynamics_key}']:.0f}%, "
+                    f"{item[f'revenue_{revenue_key}']:,.0f} → {item['revenue']:,.0f}\n"
                 )
             message += "\n"
 
@@ -592,7 +555,16 @@ def revenue_analysis_text(text_data: TextData, recommendations: bool = False) ->
 
     text = analyze_revenue(data, period, text_data.only_negative, recommendations)
     max_length = 4096
-    parts = [text[i:i + max_length] for i in range(0, len(text), max_length)]
+    parts: list[str] = []
+    for word in text.split('\n'):
+        if len(parts) == 0:
+            parts.append(word)
+            continue
+        if len(parts[-1] + word) <= max_length:
+            parts[-1] += '\n' + word
+        else:
+            parts.append(word)
+    # parts = [text[i:i + max_length] for i in range(0, len(text), max_length)]
     return parts
 
 
