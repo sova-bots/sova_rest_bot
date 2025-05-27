@@ -33,14 +33,14 @@ def forecast_text(text_data: TextData) -> list[str]:
     increasing_prices.sort(key=lambda x: x[3], reverse=True)
     decreasing_prices.sort(key=lambda x: x[3], reverse=True)
 
-    total_loss = round(data["sum"].get("forecast", 0), 2)
+    total_loss = round(data["sum"].get("forecast", 0))
 
     result_text = """
 🔥 <b>Рост закупочных цен:</b>
 <b><i>цена старая / цена новая / прогноз потерь за период</i></b>
 🔝 ТОП 10:
 """ + "\n".join(
-        [f"{i + 1}. {name} {old} руб / {new} руб / {loss:,} руб"
+        [f"{i + 1}. {name} {old} руб / {new} руб / {loss:,.0f} руб"
          for i, (name, old, new, loss) in enumerate(increasing_prices[:10])])
 
     if not text_data.only_negative:
@@ -49,7 +49,7 @@ def forecast_text(text_data: TextData) -> list[str]:
 <b><i>цена старая / цена новая / прогноз экономии за период</i></b>
 🔝 ТОП 10:
 """ + "\n".join(
-            [f"{i + 1}. {name} {old} руб / {new} руб / -{abs(loss):,} руб"
+            [f"{i + 1}. {name} {old} руб / {new} руб / -{abs(loss):,.0f} руб"
              for i, (name, old, new, loss) in enumerate(decreasing_prices[:10])])
 
     if total_loss > 0:
