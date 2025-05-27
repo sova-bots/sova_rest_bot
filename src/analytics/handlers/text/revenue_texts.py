@@ -382,9 +382,9 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
     if recommendations and negative_changes:
         message += revenue_recommendations["time"] + "\n"
 
-    # 5. Выручка по ценовым сегментам
+    # 5. Чеĸи по ценовым сегментам
     revenue_price_segments = data.get('revenue-price_segments', [])
-    message += f"<b>5 Выручка по ценовым сегментам ({dynamics_label}):</b>\n"
+    message += f"<b>5 Чеĸи по ценовым сегментам ({dynamics_label}):</b>\n"
 
     if revenue_price_segments:
         negative_changes = []
