@@ -47,8 +47,8 @@ def get_markup(user_id: int, has_token: bool) -> IKM:
         btn = [IKB(text='Меню отчётов 🗓', callback_data='analytics_report_begin')]
     inline_kb.append(btn)
 
-    btn = [IKB(text='Меню тех-поддержки 🛠', callback_data='techsupport_menu')]
-    inline_kb.append(btn)
+    # btn = [IKB(text='Меню тех-поддержки 🛠', callback_data='techsupport_menu')]
+    # inline_kb.append(btn)
 
     btn = [IKB(text='Текущие подписки 📬', callback_data='show_subscriptions')]
     inline_kb.append(btn)

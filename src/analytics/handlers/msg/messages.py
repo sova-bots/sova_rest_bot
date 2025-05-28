@@ -36,16 +36,8 @@ async def department_msg(msg_data: MsgData) -> None:
 
     header = await make_header(msg_data) + "\n\n"
     text = header + "Выберите подразделение"
-
-    kb = make_kb(departments, back_btn=False)
-
-    null_btn = IKB(text=" ", callback_data="ignore")
-
-    # Добавляем нижний ряд: [null_btn, back_previous_step_btn, null_btn]
-    kb.inline_keyboard.append([null_btn, back_previous_step_btn, null_btn])
-
+    kb = make_kb(departments, back_btn=True)
     await msg_data.msg.edit_text(text=text, reply_markup=kb)
-
 
 
 async def branch_msg(msg_data: MsgData) -> None:

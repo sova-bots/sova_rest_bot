@@ -1,17 +1,20 @@
 from ..types.text_data import TextData
 from ..types.report_all_departments_types import ReportAllDepartmentTypes
 
-from pprint import pprint
 
-
-from ..types.text_data import TextData
+def to_float(value):
+    """Преобразует строку в число, заменяет null/None/пустую строку на 0."""
+    if value in [None, "null", "", "None"]:
+        return 0.0
+    try:
+        return float(value)
+    except (ValueError, TypeError):
+        return 0.0
 
 
 def turnover_text(text_data: TextData) -> list[str]:
-    # прверка если итого
     if text_data.department == ReportAllDepartmentTypes.SUM_DEPARTMENTS_TOTALLY:
         return ["Отчёт в разработке"]
-
 
     period = text_data.period
     data = text_data.reports[0]
@@ -30,7 +33,6 @@ def turnover_text(text_data: TextData) -> list[str]:
 
     turnover_key, dynamic_key = period_mapping[period]
 
-    # Определяем тип динамики
     dynamic_label = ""
     if "week" in period:
         dynamic_label = "динамика неделя"
@@ -46,17 +48,24 @@ def turnover_text(text_data: TextData) -> list[str]:
     report = f"Оборачиваемость остатков:\n\nостатки на конец периода в днях / {dynamic_label}\n\n"
 
     if kitchen_data:
-        report += f"🥩 <b>Кухня:</b> {kitchen_data[turnover_key]:.0f} дней, {kitchen_data[dynamic_key]:+.0f}%\n"
+        turnover = to_float(kitchen_data.get(turnover_key))
+        dynamic = to_float(kitchen_data.get(dynamic_key))
+        report += f"🥩 <b>Кухня:</b> {turnover:.0f} дней, {dynamic:+.0f}%\n"
+
     if bar_data:
-        report += f"🍷 <b>Бар:</b> {bar_data[turnover_key]:.0f} дней, {bar_data[dynamic_key]:+.0f}%\n"
+        turnover = to_float(bar_data.get(turnover_key))
+        dynamic = to_float(bar_data.get(dynamic_key))
+        report += f"🍷 <b>Бар:</b> {turnover:.0f} дней, {dynamic:+.0f}%\n"
+
     if hozes_data:
-        report += f"🧹 <b>Хозы:</b> {hozes_data[turnover_key]:.0f} дней, {hozes_data[dynamic_key]:+.0f}%\n"
+        turnover = to_float(hozes_data.get(turnover_key))
+        dynamic = to_float(hozes_data.get(dynamic_key))
+        report += f"🧹 <b>Хозы:</b> {turnover:.0f} дней, {dynamic:+.0f}%\n"
 
     return [report]
 
 
 def product_turnover_text(text_data: TextData) -> list[str]:
-    # прверка если итого
     if text_data.department == ReportAllDepartmentTypes.SUM_DEPARTMENTS_TOTALLY:
         return ["Отчёт в разработке"]
 
@@ -79,12 +88,11 @@ def product_turnover_text(text_data: TextData) -> list[str]:
 
     report_lines = []
     for item in data["data"]:
-        turnover = item.get(turnover_key, "<i>нет данных</i>")
-        remainder_end = item.get("remainder_end", "<i>нет данных</i>")
+        turnover = to_float(item.get(turnover_key))
+        remainder_end = to_float(item.get("remainder_end"))
 
-        # Форматируем цену с разделителем тысяч
-        formatted_price = f"{remainder_end:,}".replace(",", " ")
-        report_lines.append(f"{item['label']}: {formatted_price} руб, {turnover} дней")
+        formatted_price = f"{int(remainder_end):,}".replace(",", " ")
+        report_lines.append(f"{item['label']}: {formatted_price} руб, {turnover:.0f} дней")
 
     report = turnover_text(text_data)[0] + "\n" + "\n• ".join(report_lines)
 
