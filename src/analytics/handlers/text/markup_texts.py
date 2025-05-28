@@ -67,13 +67,13 @@ def generate_markup_store_report(data, period="month", only_negative=False):
         markup = item["markup"]
         dynamics = item.get(dynamics_key, 0)  # Получаем динамику по ключу
 
-        if dynamics is None:
-            continue
+        # if dynamics is None:
+        #     continue
 
         if dynamics < 0:
-            negative_changes.append(f"<b>{label}</b>:  {markup:,.1f}%")
+            negative_changes.append(f"<b>{label}</b>:  {markup:,.1f}% (динамика {dynamics:+,}%)")
         else:
-            positive_changes.append(f"<b>{label}</b>:  {markup:,.1f}%")
+            positive_changes.append(f"<b>{label}</b>:  {markup:,.1f}% (динамика {dynamics:+,}%)")
 
     # Вывод отрицательных изменений
     if negative_changes:
