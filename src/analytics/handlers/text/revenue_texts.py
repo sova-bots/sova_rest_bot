@@ -502,7 +502,8 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
 
         for waiter in loss_waiters:
             message += (
-                f"{waiter['label']} {waiter['revenue']} руб\n"
+                f"{waiter['label']}\n"
+                f"| потенциал {waiter['potential']:,.0f} руб\n"
                 f"| среднедневная выручка {waiter['avg_revenue']:,.0f} руб\n"
                 f"| средний чек {waiter['avg_checks']:,.0f} руб\n"
                 f"| глубина чека {waiter['depth']}\n\n"
@@ -524,6 +525,7 @@ def analyze_revenue(data, period="week", only_negative: bool = False, recommenda
             for waiter in praise_waiters:
                 message += (
                     f"<b><i>{waiter['label']}</i></b>\n"
+                    f"| потенциал {waiter['potential']:,.0f} руб\n"
                     f"| среднедневная выручка {waiter['avg_revenue']:,.0f} руб\n"
                     f"| средний чек {waiter['avg_checks']:,.0f} руб\n"
                     f"| глубина чека {waiter['depth']}\n\n"
