@@ -1,6 +1,8 @@
 from ..types.text_data import TextData
 from ..types.report_all_departments_types import ReportAllDepartmentTypes
 
+from src.util.log import logger
+
 shortage_limit = 2.0
 surplus_limit = 3.0
 
@@ -109,14 +111,14 @@ def write_off_text(text_data: TextData) -> list[str]:
         write_off_value = item.get("write_off")
         dynamics_value = item.get(dynamics_key)
 
-        if write_off_value is None or dynamics_value is None:
+        if write_off_value is None:
             continue
 
         if text_data.only_negative and dynamics_value < 0:
             continue
 
         write_off_str = f"{int(write_off_value):,}".replace(",", " ")
-        dynamics_str = f"{dynamics_value:.0f}%"
+        dynamics_str = f"{dynamics_value:.0f}%" if dynamics_value is not None else "нет данных"
 
         text = f"• <b>{item['label']}</b> {write_off_str} руб; {dynamics_str}"
         texts[cnt_texts].append(text)
@@ -133,4 +135,4 @@ def write_off_text(text_data: TextData) -> list[str]:
     # Заголовок со ссылкой на период
     header = f"📉 <b>Списания / динамика {period_label}</b>\n"
 
-    return [header + "\n".join(block) for block in texts if block]
+    return [header + "\n\n".join(block) for block in texts]
