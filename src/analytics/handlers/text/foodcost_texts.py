@@ -9,6 +9,24 @@ period_mapping = {
     "last-year": "food_cost_dynamics_year",
 }
 
+period_bar_mapping = {
+    "this-week": "food_cost_bar_dynamics_week",
+    "last-week": "food_cost_bar_dynamics_week",
+    "this-month": "food_cost_bar_dynamics_month",
+    "last-month": "food_cost_bar_dynamics_month",
+    "this-year": "food_cost_bar_dynamics_year",
+    "last-year": "food_cost_bar_dynamics_year",
+}
+
+period_kitchen_mapping = {
+    "this-week": "food_cost_kitchen_dynamics_week",
+    "last-week": "food_cost_kitchen_dynamics_week",
+    "this-month": "food_cost_kitchen_dynamics_month",
+    "last-month": "food_cost_kitchen_dynamics_month",
+    "this-year": "food_cost_kitchen_dynamics_year",
+    "last-year": "food_cost_kitchen_dynamics_year",
+}
+
 
 def foodcost_text(text_data: TextData) -> list[str]:
     cost_data = text_data.reports[0]
@@ -18,6 +36,8 @@ def foodcost_text(text_data: TextData) -> list[str]:
         return ["Ошибка: Некорректный период."]
 
     period_key = period_mapping[period]
+    period_bar_key = period_bar_mapping[period]
+    period_kitchen_key = period_kitchen_mapping[period]
 
     # Определение типа сравнения для подписи
     dynamic_label = ""
@@ -31,8 +51,8 @@ def foodcost_text(text_data: TextData) -> list[str]:
     kitchen_cost = cost_data["sum"].get("food_cost_kitchen", "Нет данных")
     bar_cost = cost_data["sum"].get("food_cost_bar", "Нет данных")
 
-    kitchen_dynamic = cost_data["sum"].get(period_key)
-    bar_dynamic = cost_data["sum"].get(period_key)
+    kitchen_dynamic = cost_data["sum"].get(period_bar_key)
+    bar_dynamic = cost_data["sum"].get(period_kitchen_key)
 
     kitchen_dynamic_text = f", {kitchen_dynamic:+.1f}%" if kitchen_dynamic not in [None, 0] else ""
     bar_dynamic_text = f", {bar_dynamic:+.1f}%" if bar_dynamic not in [None, 0] else ""
