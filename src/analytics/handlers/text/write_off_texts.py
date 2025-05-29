@@ -1,6 +1,8 @@
 from ..types.text_data import TextData
 from ..types.report_all_departments_types import ReportAllDepartmentTypes
 
+from src.util.log import logger
+
 shortage_limit = 2.0
 surplus_limit = 3.0
 
@@ -19,9 +21,11 @@ def safe_get(data: dict, key: str, placeholder: str = "<i>нет данных</i
 def inventory_text(text_data: TextData) -> list[str]:
     data = text_data.reports[0]["data"]
 
+    # проверка, если нет данных
     if len(data) == 0:
         return ["Нет данных"]
 
+    # прверка если итого
     if text_data.department == ReportAllDepartmentTypes.SUM_DEPARTMENTS_TOTALLY:
         data = [text_data.reports[0]["sum"]]
         data[0]["shortage_percent"] = round(data[0]["shortage"] / data[0]["cost_price"] * 1000) / 10
@@ -42,13 +46,15 @@ def inventory_text(text_data: TextData) -> list[str]:
                 (not text_data.only_negative or report["surplus_percent"] > surplus_limit)
             )
 
+            # Недостача
             if add_shortage:
-                shortage = safe_get(report, 'shortage', '0', comma=True).replace(",", " ")
+                shortage = safe_get(report, 'shortage', '0')
                 shortage_percent = safe_get(report, 'shortage_percent', '0')
                 text += f"• Недостача: {shortage} руб; {shortage_percent}% от с/с\n"
 
+            # Излишки
             if add_surplus:
-                surplus = safe_get(report, 'surplus', '0', comma=True).replace(",", " ")
+                surplus = safe_get(report, 'surplus', '0')
                 surplus_percent = safe_get(report, 'surplus_percent', '0')
                 text += f"• Излишки: {surplus} руб; {surplus_percent}% от с/с\n"
 
@@ -61,12 +67,11 @@ def inventory_text(text_data: TextData) -> list[str]:
     if not texts:
         return ["Все показатели в пределах нормы"]
 
-    # Заголовок с новым названием: "СУММА / динамика"
-    header = "📦 <b>СУММА / динамика</b>\n"
+    # Добавляем заголовок перед первым блоком
+    header = "📦 <b>Остатки / динамика</b>\n"
     texts[0] = header + texts[0]
 
     return texts
-
 
 
 
@@ -106,14 +111,14 @@ def write_off_text(text_data: TextData) -> list[str]:
         write_off_value = item.get("write_off")
         dynamics_value = item.get(dynamics_key)
 
-        if write_off_value is None or dynamics_value is None:
+        if write_off_value is None:
             continue
 
         if text_data.only_negative and dynamics_value < 0:
             continue
 
         write_off_str = f"{int(write_off_value):,}".replace(",", " ")
-        dynamics_str = f"{dynamics_value:.0f}%"
+        dynamics_str = f"{dynamics_value:.0f}%" if dynamics_value is not None else "нет данных"
 
         text = f"• <b>{item['label']}</b> {write_off_str} руб; {dynamics_str}"
         texts[cnt_texts].append(text)
@@ -130,4 +135,4 @@ def write_off_text(text_data: TextData) -> list[str]:
     # Заголовок со ссылкой на период
     header = f"📉 <b>Списания / динамика {period_label}</b>\n"
 
-    return [header + "\n".join(block) for block in texts if block]
+    return [header + "\n\n".join(block) for block in texts]
