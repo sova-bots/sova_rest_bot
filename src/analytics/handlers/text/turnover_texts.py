@@ -20,13 +20,14 @@ def turnover_text(text_data: TextData) -> list[str]:
     data = text_data.reports[0]
 
     period_mapping = {
-        "this-week": ("turnover_in_days_week", "turnover_in_days_dynamic_week"),
-        "last-week": ("turnover_in_days_week", "turnover_in_days_dynamic_week"),
-        "this-month": ("turnover_in_days_month", "turnover_in_days_dynamic_month"),
-        "last-month": ("turnover_in_days_month", "turnover_in_days_dynamic_month"),
-        "this-year": ("turnover_in_days_year", "turnover_in_days_dynamic_year"),
-        "last-year": ("turnover_in_days_year", "turnover_in_days_dynamic_year"),
+        "this-week": ("turnover_in_days", "turnover_in_days_dynamic_week"),
+        "last-week": ("turnover_in_days", "turnover_in_days_dynamic_week"),
+        "this-month": ("turnover_in_days", "turnover_in_days_dynamic_month"),
+        "last-month": ("turnover_in_days", "turnover_in_days_dynamic_month"),
+        "this-year": ("turnover_in_days", "turnover_in_days_dynamic_year"),
+        "last-year": ("turnover_in_days", "turnover_in_days_dynamic_year"),
     }
+
 
     if period not in period_mapping:
         return ["Ошибка: Некорректный период."]
