@@ -48,14 +48,14 @@ def inventory_text(text_data: TextData) -> list[str]:
 
             # Недостача
             if add_shortage:
-                shortage = safe_get(report, 'shortage', '0')
-                shortage_percent = safe_get(report, 'shortage_percent', '0')
+                shortage = safe_get(report, 'shortage', '0', comma=True)
+                shortage_percent = safe_get(report, 'shortage_percent', '0', comma=True)
                 text += f"• Недостача: {shortage} руб; {shortage_percent}% от с/с\n"
 
             # Излишки
             if add_surplus:
-                surplus = safe_get(report, 'surplus', '0')
-                surplus_percent = safe_get(report, 'surplus_percent', '0')
+                surplus = safe_get(report, 'surplus', '0', comma=True)
+                surplus_percent = safe_get(report, 'surplus_percent', '0', comma=True)
                 text += f"• Излишки: {surplus} руб; {surplus_percent}% от с/с\n"
 
             if add_shortage or add_surplus:
@@ -68,7 +68,7 @@ def inventory_text(text_data: TextData) -> list[str]:
         return ["Все показатели в пределах нормы"]
 
     # Добавляем заголовок перед первым блоком
-    header = "📦 <b>Сумма / динамика</b>\n"
+    header = "📦 <b>Сумма /  % от с/с </b>\n"
     texts[0] = header + texts[0]
 
     return texts
